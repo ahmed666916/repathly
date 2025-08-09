@@ -1,554 +1,714 @@
 import React, { useState, useEffect } from 'react';
 import {
-  View,
-  Text,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  ImageBackground,
+  StatusBar,
+  SafeAreaView,
   Alert,
+  Image,
+  Dimensions,
 } from 'react-native';
+import { Text, View } from '@/components/Themed';
 import { FontAwesome } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 
-interface Recommendation {
+const { width } = Dimensions.get('window');
+
+interface Place {
   id: string;
   name: string;
   category: string;
   rating: number;
-  reviews: number;
+  reviewCount: number;
   description: string;
-  location: string;
+  imageUri: string;
+  address: string;
+  priceLevel: number;
   selected: boolean;
-}
-
-interface InterestCategory {
-  id: string;
-  name: string;
-  icon: string;
-  recommendations: Recommendation[];
 }
 
 export default function RecommendationsScreen() {
   const router = useRouter();
-  const params = useLocalSearchParams();
-  const [categories, setCategories] = useState<InterestCategory[]>([]);
-  const [selectedPlaces, setSelectedPlaces] = useState<Recommendation[]>([]);
-  
-  // Route planner'dan gelen bilgileri al
-  const finalDestination = params.finalDestination as string;
-  const waypoints = params.waypoints ? JSON.parse(params.waypoints as string) : [];
-  
-  console.log('Final destination:', finalDestination);
-  console.log('Waypoints:', waypoints);
+  const { selectedInterests, destination, waypoints } = useLocalSearchParams();
+  const [places, setPlaces] = useState<Place[]>([]);
 
-  // Mock data - gerçek uygulamada API'den gelecek
   useEffect(() => {
-    // Başlangıç şehri (İstanbul) ve son rota şehrini belirle
-    const startCity = 'İstanbul';
-    const excludeCities = [startCity];
+    generateLocationBasedRecommendations();
+  }, [selectedInterests, destination, waypoints]);
+
+  const generateLocationBasedRecommendations = () => {
+    const interests = selectedInterests ? JSON.parse(selectedInterests as string) : [];
+    const waypointsList = waypoints ? JSON.parse(waypoints as string) : [];
     
-    // Eğer son rota şehri başlangıç şehriyle aynıysa, onu da hariç tut
-    if (finalDestination && finalDestination.toLowerCase().includes('istanbul')) {
-      // İstanbul ile aynı, zaten hariç tutulacak
-    } else if (finalDestination) {
-      excludeCities.push(finalDestination);
+    // Rota sırası: İstanbul (başlangıç) → ara noktalar → hedef (son)
+    const routeOrder = [];
+    
+    // Ara noktalar varsa önce onlar
+    if (waypointsList && waypointsList.length > 0) {
+      routeOrder.push(...waypointsList);
     }
     
-    console.log('Excluded cities:', excludeCities);
+    // Son olarak hedef
+    if (destination) {
+      routeOrder.push(destination);
+    }
+    
+    // Her lokasyon için ve her ilgi alanı için 10'ar yer oluştur (rota sırasına göre)
+    const generatedPlaces: Place[] = [];
+    
+    routeOrder.forEach((location, locationIndex) => {
+      interests.forEach((interest: string) => {
+        const placesForInterest = generatePlacesForLocationAndInterest(location as string, interest, locationIndex, routeOrder.length);
+        generatedPlaces.push(...placesForInterest);
+      });
+    });
+    
+    setPlaces(generatedPlaces);
+  };
 
-    const allRecommendations = {
+  const generatePlacesForLocationAndInterest = (location: string, interest: string, locationIndex: number, totalLocations: number): Place[] => {
+    const places: Place[] = [];
+    
+    // Rota yapısına göre öneri sayısını belirle
+    let placesPerLocation: number;
+    
+    if (totalLocations === 1) {
+      // Sadece hedef var → 10 öneri
+      placesPerLocation = 10;
+    } else if (totalLocations === 2) {
+      // 1 ara nokta + 1 hedef → 5+5 = 10 toplam
+      placesPerLocation = 5;
+    } else if (totalLocations === 3) {
+      // 2 ara nokta + 1 hedef → 5+5+5 = 15 toplam  
+      placesPerLocation = 5;
+    } else if (totalLocations === 4) {
+      // 3 ara nokta + 1 hedef → 5+5+5+5 = 20 toplam
+      placesPerLocation = 5;
+    } else {
+      // 4+ nokta varsa → 4'er öneri (maksimum 24)
+      placesPerLocation = 4;
+    }
+    
+    // Belirlenen sayıda yer oluştur
+    for (let i = 1; i <= placesPerLocation; i++) {
+      const place = createPlaceForInterest(location, interest, i, locationIndex);
+      places.push(place);
+    }
+    
+    return places;
+  };
+
+  const createPlaceForInterest = (location: string, interest: string, index: number, locationIndex: number): Place => {
+    const placeTemplates = {
       food: [
-        {
-          id: 'food_1',
-          name: 'Pandeli Restaurant',
-          category: 'food',
-          rating: 4.5,
-          reviews: 1250,
-          description: 'Osmanlı mutfağının eşsiz lezzetleri',
-          location: 'İstanbul',
-          selected: false,
-        },
-        {
-          id: 'food_2',
-          name: 'Hamdi Restaurant',
-          category: 'food',
-          rating: 4.3,
-          reviews: 980,
-          description: 'Güneydoğu mutfağı ve kebap çeşitleri',
-          location: 'İstanbul',
-          selected: false,
-        },
-        {
-          id: 'food_3',
-          name: 'Ankara Tandır Evi',
-          category: 'food',
-          rating: 4.4,
-          reviews: 850,
-          description: 'Geleneksel Ankara tandır lezzetleri',
-          location: 'Ankara',
-          selected: false,
-        },
-        {
-          id: 'food_4',
-          name: 'İzmir Köfte',
-          category: 'food',
-          rating: 4.2,
-          reviews: 720,
-          description: 'Ege\'nin meşhur köfte çeşitleri',
-          location: 'İzmir',
-          selected: false,
-        },
-        {
-          id: 'food_5',
-          name: 'Bursa İskender',
-          category: 'food',
-          rating: 4.1,
-          reviews: 650,
-          description: 'Orijinal İskender kebabının evi',
-          location: 'Bursa',
-          selected: false,
-        },
-        {
-          id: 'food_6',
-          name: 'Antalya Balık Evi',
-          category: 'food',
-          rating: 4.3,
-          reviews: 580,
-          description: 'Akdeniz\'in taze balık lezzetleri',
-          location: 'Antalya',
-          selected: false,
-        },
+        { prefix: 'Lezzetli', suffix: 'Restoran', desc: 'Geleneksel ve modern mutfağın buluştuğu nokta' },
+        { prefix: 'Meşhur', suffix: 'Lokantası', desc: 'Şehrin en sevilen lezzetleri' },
+        { prefix: 'Gurme', suffix: 'Bistro', desc: 'Özel tarifler ve benzersiz tatlar' },
+        { prefix: 'Tarihi', suffix: 'Meyhanesi', desc: 'Asırlık geleneksel lezzetler' },
+        { prefix: 'Modern', suffix: 'Kitchen', desc: 'Çağdaş gastronomi deneyimi' }
+      ],
+      history: [
+        { prefix: 'Tarihi', suffix: 'Müzesi', desc: 'Geçmişin izlerini keşfedin' },
+        { prefix: 'Antik', suffix: 'Kalıntıları', desc: 'Asırlık tarihi yapılar' },
+        { prefix: 'Osmanlı', suffix: 'Eserleri', desc: 'İmparatorluk mirasını görün' },
+        { prefix: 'Arkeolojik', suffix: 'Alanı', desc: 'Kazılarla ortaya çıkan tarih' },
+        { prefix: 'Kültür', suffix: 'Merkezi', desc: 'Yaşayan tarih ve kültür' }
+      ],
+      art: [
+        { prefix: 'Sanat', suffix: 'Galerisi', desc: 'Çağdaş sanat eserleri' },
+        { prefix: 'Kültür', suffix: 'Merkezi', desc: 'Sanat ve kültür buluşması' },
+        { prefix: 'Modern', suffix: 'Müzesi', desc: 'Çağdaş sanatın kalbi' },
+        { prefix: 'Sergi', suffix: 'Salonu', desc: 'Dönemsel sanat sergileri' },
+        { prefix: 'Atölye', suffix: 'Evi', desc: 'Sanatçıların yaratım alanı' }
+      ],
+      adventure: [
+        { prefix: 'Macera', suffix: 'Parkı', desc: 'Adrenalin dolu aktiviteler' },
+        { prefix: 'Spor', suffix: 'Kompleksi', desc: 'Her türlü spor imkanı' },
+        { prefix: 'Doğa', suffix: 'Sporları', desc: 'Açık havada heyecan' },
+        { prefix: 'Ekstrem', suffix: 'Merkezi', desc: 'Sınırlarınızı zorlayın' },
+        { prefix: 'Aktivite', suffix: 'Alanı', desc: 'Aktif yaşam deneyimi' }
+      ],
+      nature: [
+        { prefix: 'Doğa', suffix: 'Parkı', desc: 'Yeşilin ve havanın tadını çıkarın' },
+        { prefix: 'Botanik', suffix: 'Bahçesi', desc: 'Binlerce bitki türü' },
+        { prefix: 'Manzara', suffix: 'Tepesi', desc: 'Nefes kesen manzaralar' },
+        { prefix: 'Mesire', suffix: 'Alanı', desc: 'Piknik ve dinlence' },
+        { prefix: 'Orman', suffix: 'Yürüyüşü', desc: 'Doğayla iç içe yürüyüş' }
+      ],
+      nightlife: [
+        { prefix: 'Trendy', suffix: 'Bar', desc: 'Şehrin en popüler gece mekanı' },
+        { prefix: 'Rooftop', suffix: 'Lounge', desc: 'Manzaralı gece eğlencesi' },
+        { prefix: 'Jazz', suffix: 'Club', desc: 'Canlı müzik ve dans' },
+        { prefix: 'Cocktail', suffix: 'Bar', desc: 'Özel kokteyl tarifleri' },
+        { prefix: 'Live', suffix: 'Music', desc: 'Canlı müzik performansları' }
       ]
     };
 
-    const mockCategories: InterestCategory[] = [
-      {
-        id: 'food',
-        name: 'Yemek & İçecek',
-        icon: '🍽️',
-        recommendations: allRecommendations.food.filter(item => 
-          !excludeCities.some(city => 
-            item.location.toLowerCase().includes(city.toLowerCase())
-          )
-        ),
-      },
-      {
-        id: 'history',
-        name: 'Tarih & Müze',
-        icon: '🏛️',
-        recommendations: [
-          {
-            id: 'history_1',
-            name: 'Ayasofya Müzesi',
-            category: 'history',
-            rating: 4.6,
-            reviews: 15000,
-            description: 'Bizans ve Osmanlı mimarisinin şaheseri',
-            location: 'Sultanahmet',
-            selected: false,
-          },
-          {
-            id: 'history_2',
-            name: 'Topkapı Sarayı',
-            category: 'history',
-            rating: 4.5,
-            reviews: 12000,
-            description: 'Osmanlı İmparatorluğu\'nun kalbi',
-            location: 'Sultanahmet',
-            selected: false,
-          },
-          {
-            id: 'history_3',
-            name: 'Sultanahmet Camii',
-            category: 'history',
-            rating: 4.7,
-            reviews: 18000,
-            description: 'Altı minareli büyüleyici cami',
-            location: 'Sultanahmet',
-            selected: false,
-          },
-          {
-            id: 'history_4',
-            name: 'Galata Kulesi',
-            category: 'history',
-            rating: 4.3,
-            reviews: 8500,
-            description: 'İstanbul\'un panoramik manzarası',
-            location: 'Galata',
-            selected: false,
-          },
-          {
-            id: 'history_5',
-            name: 'Dolmabahçe Sarayı',
-            category: 'history',
-            rating: 4.4,
-            reviews: 7200,
-            description: 'Osmanlı\'nın son dönem sarayı',
-            location: 'Beşiktaş',
-            selected: false,
-          },
-        ],
-      },
-      {
-        id: 'art',
-        name: 'Sanat & Kültür',
-        icon: '🎨',
-        recommendations: [
-          {
-            id: 'art_1',
-            name: 'İstanbul Modern',
-            category: 'art',
-            rating: 4.3,
-            reviews: 2800,
-            description: 'Çağdaş Türk sanatının evi',
-            location: 'Karaköy',
-            selected: false,
-          },
-          {
-            id: 'art_2',
-            name: 'Pera Müzesi',
-            category: 'art',
-            rating: 4.2,
-            reviews: 2100,
-            description: 'Sanat ve kültür merkezi',
-            location: 'Beyoğlu',
-            selected: false,
-          },
-          {
-            id: 'art_3',
-            name: 'Sadberk Hanım Müzesi',
-            category: 'art',
-            rating: 4.1,
-            reviews: 950,
-            description: 'Türk ve İslam sanatları',
-            location: 'Sarıyer',
-            selected: false,
-          },
-          {
-            id: 'art_4',
-            name: 'Rahmi M. Koç Müzesi',
-            category: 'art',
-            rating: 4.4,
-            reviews: 1800,
-            description: 'Endüstri, ulaştırma ve teknoloji',
-            location: 'Hasköy',
-            selected: false,
-          },
-          {
-            id: 'art_5',
-            name: 'Türk ve İslam Eserleri Müzesi',
-            category: 'art',
-            rating: 4.0,
-            reviews: 1200,
-            description: 'Zengin İslami sanat koleksiyonu',
-            location: 'Sultanahmet',
-            selected: false,
-          },
-        ],
-      },
-      {
-        id: 'nature',
-        name: 'Doğa & Manzara',
-        icon: '🌿',
-        recommendations: [
-          {
-            id: 'nature_1',
-            name: 'Çamlıca Tepesi',
-            category: 'nature',
-            rating: 4.2,
-            reviews: 3500,
-            description: 'İstanbul\'un en yüksek tepesi',
-            location: 'Üsküdar',
-            selected: false,
-          },
-          {
-            id: 'nature_2',
-            name: 'Emirgan Korusu',
-            category: 'nature',
-            rating: 4.5,
-            reviews: 2800,
-            description: 'Lale festivali ve doğa yürüyüşü',
-            location: 'Sarıyer',
-            selected: false,
-          },
-          {
-            id: 'nature_3',
-            name: 'Büyükada',
-            category: 'nature',
-            rating: 4.3,
-            reviews: 4200,
-            description: 'Prens Adaları\'nın en büyüğü',
-            location: 'Adalar',
-            selected: false,
-          },
-          {
-            id: 'nature_4',
-            name: 'Gülhane Parkı',
-            category: 'nature',
-            rating: 4.1,
-            reviews: 2100,
-            description: 'Tarihi yarımada\'nın yeşil alanı',
-            location: 'Eminönü',
-            selected: false,
-          },
-          {
-            id: 'nature_5',
-            name: 'Yıldız Parkı',
-            category: 'nature',
-            rating: 4.0,
-            reviews: 1650,
-            description: 'Şehrin kalbinde doğa',
-            location: 'Beşiktaş',
-            selected: false,
-          },
-        ],
-      },
-    ];
+    const templates = placeTemplates[interest as keyof typeof placeTemplates] || placeTemplates.food;
+    const template = templates[index % templates.length];
+    
+    const images = {
+      food: [
+        'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=400&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1551218808-94e220e084d2?w=400&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400&h=300&fit=crop'
+      ],
+      history: [
+        'https://images.unsplash.com/photo-1580655653885-65763b2597d0?w=400&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1571115764595-644a1f56a55c?w=400&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400&h=300&fit=crop'
+      ],
+      art: [
+        'https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=400&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1536924940846-227afb31e2a5?w=400&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1574270185629-9e1b9d8fd72f?w=400&h=300&fit=crop'
+      ],
+      adventure: [
+        'https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=400&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1540979388789-6cee28a1cdc9?w=400&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1571019613914-85e0c0e24465?w=400&h=300&fit=crop'
+      ],
+      nature: [
+        'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1506197603052-3cc9c3a201bd?w=400&h=300&fit=crop'
+      ],
+      nightlife: [
+        'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1470337458703-46ad1756a187?w=400&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1511593358241-7eea1f3c84e5?w=400&h=300&fit=crop'
+      ]
+    };
 
-    setCategories(mockCategories);
-  }, [finalDestination]);
-
-  const togglePlaceSelection = (categoryId: string, placeId: string) => {
-    setCategories(prev =>
-      prev.map(category =>
-        category.id === categoryId
-          ? {
-              ...category,
-              recommendations: category.recommendations.map(rec =>
-                rec.id === placeId ? { ...rec, selected: !rec.selected } : rec
-              ),
-            }
-          : category
-      )
-    );
-
-    // Update selected places
-    const updatedPlace = categories
-      .find(cat => cat.id === categoryId)
-      ?.recommendations.find(rec => rec.id === placeId);
-
-    if (updatedPlace) {
-      setSelectedPlaces(prev => {
-        const isAlreadySelected = prev.some(place => place.id === placeId);
-        if (isAlreadySelected) {
-          return prev.filter(place => place.id !== placeId);
-        } else {
-          return [...prev, { ...updatedPlace, selected: true }];
-        }
-      });
-    }
+    const imageSet = images[interest as keyof typeof images] || images.food;
+    
+    return {
+      id: `${interest}_${location}_${index}_${locationIndex}`,
+      name: `${template.prefix} ${location} ${template.suffix}`,
+      category: interest,
+      rating: 4.0 + Math.random() * 1.0, // 4.0 - 5.0 arası
+      reviewCount: Math.floor(Math.random() * 500) + 50, // 50-550 arası
+      description: template.desc,
+      imageUri: imageSet[index % imageSet.length],
+      address: `${location} yakınları`,
+      priceLevel: Math.floor(Math.random() * 4) + 1, // 1-4 arası
+      selected: false
+    };
   };
 
-  const handleCreateRoute = () => {
-    if (selectedPlaces.length === 0) {
-      Alert.alert('Yer Seçimi', 'Lütfen en az bir yer seçin.');
+  const togglePlaceSelection = (placeId: string) => {
+    setPlaces(prev => 
+      prev.map(place => 
+        place.id === placeId 
+          ? { ...place, selected: !place.selected }
+          : place
+      )
+    );
+  };
+
+  const handleCompleteRoute = () => {
+    const selectedCount = places.filter(p => p.selected).length;
+    if (selectedCount === 0) {
+      Alert.alert('Uyarı', 'Lütfen en az bir yer seçin.');
       return;
     }
     
-    // Seçilen yerleri route parameter olarak geçir
-    router.push({
-      pathname: '/(app)/map',
-      params: {
-        selectedPlaces: JSON.stringify(selectedPlaces.map(place => place.name)),
-      },
-    });
+    Alert.alert('Başarılı', `${selectedCount} yer rotaya eklendi!`, [
+      { text: 'Tamam', onPress: () => router.push('/(app)/map') }
+    ]);
   };
 
-  const renderStars = (rating: number) => {
-    const stars = [];
-    const fullStars = Math.floor(rating);
-    const hasHalfStar = rating % 1 !== 0;
-
-    for (let i = 0; i < fullStars; i++) {
-      stars.push(<FontAwesome key={i} name="star" size={14} color="#FFD700" />);
+  // Önerileri önce lokasyona, sonra kategoriye göre grupla
+  const groupedByLocationAndCategory = () => {
+    const waypointsList = waypoints ? JSON.parse(waypoints as string) : [];
+    const routeOrder = [...waypointsList];
+    if (destination) routeOrder.push(destination);
+    
+    const grouped: { [location: string]: { [category: string]: Place[] } } = {};
+    
+    // Her lokasyon için grup oluştur
+    routeOrder.forEach(location => {
+      grouped[location as string] = {};
+    });
+    
+    // Yerleri lokasyon ve kategoriye göre grupla
+    places.forEach(place => {
+      const locationFromName = extractLocationFromName(place.name);
+      if (locationFromName && grouped[locationFromName]) {
+        if (!grouped[locationFromName][place.category]) {
+          grouped[locationFromName][place.category] = [];
+        }
+        grouped[locationFromName][place.category].push(place);
+      }
+    });
+    
+    return { grouped, routeOrder };
+  };
+  
+  const extractLocationFromName = (placeName: string): string | null => {
+    const waypointsList = waypoints ? JSON.parse(waypoints as string) : [];
+    const allLocations = [...waypointsList, destination].filter(Boolean);
+    
+    for (const location of allLocations) {
+      if (placeName.includes(location as string)) {
+        return location as string;
+      }
     }
+    return null;
+  };
 
-    if (hasHalfStar) {
-      stars.push(<FontAwesome key="half" name="star-half-o" size={14} color="#FFD700" />);
+  const getCategoryName = (category: string) => {
+    const categoryNames: { [key: string]: string } = {
+      food: 'Yemek & İçecek',
+      history: 'Tarih & Müze',
+      art: 'Sanat & Kültür',
+      adventure: 'Macera & Spor',
+      nature: 'Doğa & Manzara',
+      nightlife: 'Gece Hayatı'
+    };
+    return categoryNames[category] || category;
+  };
+
+  const getCategoryIcon = (category: string) => {
+    const categoryIcons: { [key: string]: string } = {
+      food: 'cutlery',
+      history: 'institution',
+      art: 'paint-brush',
+      adventure: 'bicycle',
+      nature: 'tree',
+      nightlife: 'moon-o'
+    };
+    return categoryIcons[category] || 'star';
+  };
+
+  const selectedCount = places.filter(p => p.selected).length;
+  const { grouped, routeOrder } = groupedByLocationAndCategory();
+
+  // Toplam öneri sayısını hesapla
+  const getTotalRecommendationCount = () => {
+    const interests = selectedInterests ? JSON.parse(selectedInterests as string) : [];
+    const totalLocations = routeOrder.length;
+    
+    let placesPerLocation: number;
+    if (totalLocations === 1) placesPerLocation = 10;
+    else if (totalLocations === 2) placesPerLocation = 5;
+    else if (totalLocations === 3) placesPerLocation = 5;
+    else if (totalLocations === 4) placesPerLocation = 5;
+    else placesPerLocation = 4;
+    
+    return totalLocations * interests.length * placesPerLocation;
+  };
+
+  const getLocationIcon = (index: number, total: number) => {
+    if (index === 0) return 'play'; // İlk durak
+    if (index === total - 1) return 'flag-checkered'; // Son durak
+    return 'map-marker'; // Ara duraklar
+  };
+
+  const getLocationDescription = (locationIndex: number, totalLocations: number) => {
+    const placesPerLocation = totalLocations === 1 ? 10 : 
+                             totalLocations <= 4 ? 5 : 4;
+    const interests = selectedInterests ? JSON.parse(selectedInterests as string) : [];
+    const totalPlacesForLocation = placesPerLocation * interests.length;
+    
+    if (locationIndex === 0 && totalLocations > 1) {
+      return `İlk durak - ${totalPlacesForLocation} öneri`;
+    } else if (locationIndex === totalLocations - 1 && totalLocations > 1) {
+      return `Son durak - ${totalPlacesForLocation} öneri`;
+    } else if (totalLocations === 1) {
+      return `Hedef nokta - ${totalPlacesForLocation} öneri`;
+    } else {
+      return `${locationIndex + 1}. durak - ${totalPlacesForLocation} öneri`;
     }
-
-    const remainingStars = 5 - Math.ceil(rating);
-    for (let i = 0; i < remainingStars; i++) {
-      stars.push(<FontAwesome key={`empty-${i}`} name="star-o" size={14} color="#FFD700" />);
-    }
-
-    return stars;
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Size Özel Öneriler</Text>
-        <Text style={styles.subtitle}>
-          İlgi alanlarınıza göre en popüler yerler
-        </Text>
-        {selectedPlaces.length > 0 && (
-          <Text style={styles.selectedCount}>
-            {selectedPlaces.length} yer seçildi
-          </Text>
-        )}
-      </View>
+    <ImageBackground
+      source={require('../../assets/images/loginbackground.png')}
+      style={styles.container}
+      resizeMode="cover"
+    >
+      <View style={styles.overlay}>
+        <StatusBar barStyle="light-content" />
+        <SafeAreaView style={styles.safeArea}>
+          {/* Header */}
+          <View style={styles.header}>
+            <TouchableOpacity
+              style={styles.backButton}
+              onPress={() => router.back()}
+            >
+              <FontAwesome name="arrow-left" size={20} color="#fff" />
+            </TouchableOpacity>
+            <Text style={styles.headerTitle}>Rota Önerileri</Text>
+            <View style={styles.placeholder} />
+          </View>
 
-      <ScrollView 
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContentContainer}
-        showsVerticalScrollIndicator={false}
-      >
-        {categories.map(category => (
-          <View key={category.id} style={styles.categorySection}>
-            <View style={styles.categoryHeader}>
-              <Text style={styles.categoryIcon}>{category.icon}</Text>
-              <Text style={styles.categoryTitle}>{category.name}</Text>
+          <ScrollView
+            style={styles.scrollView}
+            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}
+          >
+            {/* Info Section */}
+            <View style={styles.infoSection}>
+              <Text style={styles.title}>Rota Sırasına Göre Tavsiyeler</Text>
+              <Text style={styles.subtitle}>
+                {routeOrder.length} durakta toplam {getTotalRecommendationCount()} özel öneri
+              </Text>
+              <Text style={styles.routeInfo}>
+                {routeOrder.length === 1 ? 'Hedef başına 10 öneri' :
+                 routeOrder.length <= 4 ? 'Her durak için 5 öneri' : 'Her durak için 4 öneri'}
+              </Text>
             </View>
 
-            {category.recommendations.slice(0, 10).map(place => (
-              <TouchableOpacity
-                key={place.id}
-                style={[
-                  styles.placeCard,
-                  place.selected && styles.selectedPlaceCard,
-                ]}
-                onPress={() => togglePlaceSelection(category.id, place.id)}
-              >
-                <View style={styles.placeHeader}>
-                  <View style={styles.placeInfo}>
-                    <Text style={styles.placeName}>{place.name}</Text>
-                    <Text style={styles.placeLocation}>{place.location}</Text>
+            {/* Route-based Locations */}
+            {routeOrder.map((location, locationIndex) => (
+              <View key={location as string} style={styles.locationSection}>
+                {/* Location Header */}
+                <View style={styles.locationHeader}>
+                  <View style={styles.locationIconContainer}>
+                    <FontAwesome 
+                      name={getLocationIcon(locationIndex, routeOrder.length) as any} 
+                      size={16} 
+                      color="#fff" 
+                    />
                   </View>
-                  <View style={styles.placeStats}>
-                    <View style={styles.ratingContainer}>
-                      {renderStars(place.rating)}
-                      <Text style={styles.ratingText}>{place.rating}</Text>
-                    </View>
-                    <Text style={styles.reviewsText}>({place.reviews} yorum)</Text>
+                  <View style={styles.locationInfo}>
+                    <Text style={styles.locationTitle}>{location}</Text>
+                    <Text style={styles.locationSubtitle}>
+                      {getLocationDescription(locationIndex, routeOrder.length)}
+                    </Text>
                   </View>
-                  {place.selected && (
-                    <FontAwesome name="check-circle" size={24} color="#4CAF50" />
-                  )}
+                  <View style={styles.locationRoute}>
+                    <Text style={styles.routeStep}>{locationIndex + 1}</Text>
+                  </View>
                 </View>
-                <Text style={styles.placeDescription}>{place.description}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        ))}
-      </ScrollView>
 
-      {selectedPlaces.length > 0 && (
-        <View style={styles.footer}>
-          <TouchableOpacity style={styles.routeButton} onPress={handleCreateRoute}>
-            <FontAwesome name="map" size={18} color="#fff" style={styles.routeIcon} />
-            <Text style={styles.routeButtonText}>
-              Rotayı Gör ({selectedPlaces.length} yer)
-            </Text>
-            <FontAwesome name="chevron-right" size={16} color="#fff" />
-          </TouchableOpacity>
-        </View>
-      )}
-    </View>
+                {/* Categories for this location */}
+                {Object.entries(grouped[location as string] || {}).map(([category, categoryPlaces]) => (
+                  <View key={`${location}_${category}`} style={styles.categorySection}>
+                    <View style={styles.categoryHeader}>
+                      <FontAwesome name={getCategoryIcon(category) as any} size={18} color="#E91E63" />
+                      <Text style={styles.categoryTitle}>{getCategoryName(category)}</Text>
+                      <Text style={styles.categoryCount}>({categoryPlaces.length})</Text>
+                    </View>
+
+                    <ScrollView 
+                      horizontal 
+                      showsHorizontalScrollIndicator={false}
+                      contentContainerStyle={styles.horizontalScroll}
+                    >
+                      {categoryPlaces.map((place) => (
+                        <TouchableOpacity
+                          key={place.id}
+                          style={[
+                            styles.placeCard,
+                            place.selected && styles.selectedPlaceCard
+                          ]}
+                          onPress={() => togglePlaceSelection(place.id)}
+                          activeOpacity={0.8}
+                        >
+                          <ImageBackground
+                            source={{ uri: place.imageUri }}
+                            style={styles.placeImage}
+                            imageStyle={styles.placeImageStyle}
+                          >
+                            <View style={styles.placeOverlay}>
+                              {place.selected && (
+                                <View style={styles.checkContainer}>
+                                  <FontAwesome name="check" size={16} color="#fff" />
+                                </View>
+                              )}
+                            </View>
+                          </ImageBackground>
+                          
+                          <View style={styles.placeInfo}>
+                            <Text style={styles.placeName} numberOfLines={1}>{place.name}</Text>
+                            <Text style={styles.placeAddress} numberOfLines={1}>{place.address}</Text>
+                            <Text style={styles.placeDescription} numberOfLines={2}>{place.description}</Text>
+                            
+                            <View style={styles.placeStats}>
+                              <View style={styles.ratingContainer}>
+                                <FontAwesome name="star" size={14} color="#FFB800" />
+                                <Text style={styles.ratingText}>{place.rating.toFixed(1)}</Text>
+                                <Text style={styles.reviewText}>({place.reviewCount})</Text>
+                              </View>
+                              
+                              <View style={styles.priceContainer}>
+                                {Array.from({ length: place.priceLevel }, (_, i) => (
+                                  <FontAwesome key={i} name="dollar" size={12} color="#E91E63" />
+                                ))}
+                              </View>
+                            </View>
+                          </View>
+                        </TouchableOpacity>
+                      ))}
+                    </ScrollView>
+                  </View>
+                ))}
+                
+                {/* Divider */}
+                {locationIndex < routeOrder.length - 1 && (
+                  <View style={styles.routeDivider}>
+                    <View style={styles.dividerLine} />
+                    <FontAwesome name="chevron-down" size={14} color="rgba(255,255,255,0.5)" />
+                    <View style={styles.dividerLine} />
+                  </View>
+                )}
+              </View>
+            ))}
+          </ScrollView>
+
+          {/* Complete Route Button */}
+          <View style={styles.bottomButtonContainer}>
+            <TouchableOpacity
+              style={[
+                styles.completeButton,
+                selectedCount === 0 && styles.disabledButton
+              ]}
+              onPress={handleCompleteRoute}
+              disabled={selectedCount === 0}
+            >
+              <FontAwesome 
+                name="check-circle" 
+                size={20} 
+                color={selectedCount > 0 ? "#fff" : "#999"} 
+                style={styles.buttonIcon} 
+              />
+              <Text style={[
+                styles.completeButtonText,
+                selectedCount === 0 && styles.disabledButtonText
+              ]}>
+                Rotayı Tamamla ({selectedCount})
+              </Text>
+              <FontAwesome 
+                name="chevron-right" 
+                size={18} 
+                color={selectedCount > 0 ? "#fff" : "#999"} 
+              />
+            </TouchableOpacity>
+          </View>
+        </SafeAreaView>
+      </View>
+    </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+  },
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+  },
+  safeArea: {
+    flex: 1,
   },
   header: {
-    padding: 20,
-    backgroundColor: '#fff',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    paddingHorizontal: 20,
+    paddingVertical: 15,
   },
-  title: {
-    fontSize: 24,
+  backButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  headerTitle: {
+    fontSize: 18,
     fontWeight: 'bold',
-    marginBottom: 8,
-    color: '#333',
+    color: '#fff',
   },
-  subtitle: {
-    fontSize: 16,
-    color: '#666',
-    textAlign: 'center',
-  },
-  selectedCount: {
-    fontSize: 14,
-    color: '#4CAF50',
-    fontWeight: '600',
-    marginTop: 8,
+  placeholder: {
+    width: 40,
   },
   scrollView: {
     flex: 1,
   },
-  scrollContentContainer: {
-    paddingBottom: 100, // Alt kısım için ekstra boşluk
+  scrollContent: {
+    paddingBottom: 120,
+  },
+  infoSection: {
+    paddingHorizontal: 20,
+    paddingVertical: 20,
+    alignItems: 'center',
+  },
+  locationSection: {
+    marginBottom: 30,
+  },
+  locationHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 15,
+    backgroundColor: 'rgba(233, 30, 99, 0.2)',
+    marginBottom: 15,
+  },
+  locationIconContainer: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#E91E63',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  locationInfo: {
+    flex: 1,
+  },
+  locationTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#fff',
+    marginBottom: 2,
+  },
+  locationSubtitle: {
+    fontSize: 14,
+    color: 'rgba(255, 255, 255, 0.8)',
+  },
+  locationRoute: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  routeStep: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#fff',
+  },
+  routeDivider: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 15,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#fff',
+    textAlign: 'center',
+    marginBottom: 10,
+  },
+  subtitle: {
+    fontSize: 16,
+    color: 'rgba(255, 255, 255, 0.8)',
+    textAlign: 'center',
+    lineHeight: 22,
+    marginBottom: 8,
+  },
+  routeInfo: {
+    fontSize: 14,
+    color: 'rgba(255, 255, 255, 0.6)',
+    textAlign: 'center',
+    fontStyle: 'italic',
   },
   categorySection: {
-    marginBottom: 20,
+    marginBottom: 25,
   },
   categoryHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 20,
-    paddingVertical: 15,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
-  },
-  categoryIcon: {
-    fontSize: 24,
-    marginRight: 10,
+    marginBottom: 15,
   },
   categoryTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
-    color: '#333',
+    color: '#fff',
+    marginLeft: 10,
+    flex: 1,
+  },
+  categoryCount: {
+    fontSize: 14,
+    color: 'rgba(255, 255, 255, 0.7)',
+  },
+  horizontalScroll: {
+    paddingLeft: 20,
+    paddingRight: 10,
   },
   placeCard: {
-    backgroundColor: '#fff',
-    marginHorizontal: 20,
-    marginVertical: 5,
-    padding: 15,
-    borderRadius: 10,
-    elevation: 2,
+    width: width * 0.7,
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    borderRadius: 15,
+    marginRight: 15,
+    overflow: 'hidden',
+    elevation: 5,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
-    shadowRadius: 2,
+    shadowRadius: 5,
     borderWidth: 2,
     borderColor: 'transparent',
   },
   selectedPlaceCard: {
-    borderColor: '#4CAF50',
-    backgroundColor: '#f8fff8',
+    borderColor: '#E91E63',
   },
-  placeHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 8,
+  placeImage: {
+    height: 140,
+    justifyContent: 'flex-end',
+  },
+  placeImageStyle: {
+    borderTopLeftRadius: 13,
+    borderTopRightRadius: 13,
+  },
+  placeOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    justifyContent: 'flex-start',
+    alignItems: 'flex-end',
+    padding: 10,
+  },
+  checkContainer: {
+    backgroundColor: '#E91E63',
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   placeInfo: {
-    flex: 1,
+    padding: 15,
   },
   placeName: {
     fontSize: 16,
     fontWeight: 'bold',
     color: '#333',
-    marginBottom: 2,
+    marginBottom: 5,
   },
-  placeLocation: {
-    fontSize: 14,
+  placeAddress: {
+    fontSize: 12,
     color: '#666',
+    marginBottom: 8,
+  },
+  placeDescription: {
+    fontSize: 14,
+    color: '#555',
+    lineHeight: 18,
+    marginBottom: 10,
   },
   placeStats: {
-    alignItems: 'flex-end',
-    marginRight: 10,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   ratingContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 2,
   },
   ratingText: {
     fontSize: 14,
@@ -556,43 +716,52 @@ const styles = StyleSheet.create({
     color: '#333',
     marginLeft: 5,
   },
-  reviewsText: {
+  reviewText: {
     fontSize: 12,
-    color: '#999',
+    color: '#666',
+    marginLeft: 3,
   },
-  placeDescription: {
-    fontSize: 14,
-    color: '#555',
-    lineHeight: 20,
-  },
-  footer: {
-    padding: 20,
-    backgroundColor: '#fff',
-    borderTopWidth: 1,
-    borderTopColor: '#eee',
-  },
-  routeButton: {
+  priceContainer: {
     flexDirection: 'row',
-    backgroundColor: '#4CAF50',
-    paddingVertical: 15,
+  },
+  bottomButtonContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
     paddingHorizontal: 20,
-    borderRadius: 10,
+    paddingVertical: 15,
+    paddingBottom: 35,
+  },
+  completeButton: {
+    backgroundColor: '#E91E63',
+    borderRadius: 25,
+    paddingVertical: 15,
+    paddingHorizontal: 25,
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    elevation: 3,
+    elevation: 5,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
   },
-  routeIcon: {
+  disabledButton: {
+    backgroundColor: '#666',
+  },
+  buttonIcon: {
     marginRight: 10,
   },
-  routeButtonText: {
+  completeButtonText: {
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
     flex: 1,
     textAlign: 'center',
+  },
+  disabledButtonText: {
+    color: '#999',
   },
 });

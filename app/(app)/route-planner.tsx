@@ -1,427 +1,348 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { View, StyleSheet, Text, TextInput, TouchableOpacity, Dimensions, Alert, Keyboard } from 'react-native';
+import React, { useState } from 'react';
+import {
+  View,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  ImageBackground,
+  StatusBar,
+  TextInput,
+  ScrollView,
+  Alert,
+  SafeAreaView,
+} from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
-import MapView, { Marker } from 'react-native-maps';
-import MapViewDirections from 'react-native-maps-directions';
-import { useRouter } from 'expo-router';
-
-const { width, height } = Dimensions.get('window');
-const GOOGLE_MAPS_API_KEY = 'AIzaSyD20dEgYCXYcs-C4uGDMUTSvSbdxYDuk5o';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 
 export default function RoutePlannerScreen() {
   const router = useRouter();
-  const [activeTransport, setActiveTransport] = useState('DRIVING');
-  const [toLocation, setToLocation] = useState('');
-  const [waypoints, setWaypoints] = useState('');
-  const [currentLocation, setCurrentLocation] = useState(null);
-  const [coordinates, setCoordinates] = useState({
-    from: null,
-    to: null,
-  });
-  const [showMap, setShowMap] = useState(false);
-  const [showWaypointsInput, setShowWaypointsInput] = useState(false);
-  const [locationPermission, setLocationPermission] = useState(false);
-  const mapRef = useRef(null);
+  const { destination } = useLocalSearchParams();
+  const [waypoints, setWaypoints] = useState<string[]>([]);
+  const [currentWaypoint, setCurrentWaypoint] = useState('');
 
-  const transportTypes = [
-    { id: 'DRIVING', icon: 'car', label: 'Araba' },
-    { id: 'BICYCLING', icon: 'motorcycle', label: 'Motorsiklet' },
-    { id: 'WALKING', icon: 'male', label: 'Yaya' },
-  ];
-
-  // İstanbul'u sabit başlangıç konumu olarak ayarla
-  useEffect(() => {
-    const istanbulCoords = {
-      latitude: 41.0082,
-      longitude: 28.9784,
-    };
-    
-    setCurrentLocation(istanbulCoords);
-    setLocationPermission(true);
-    console.log('İstanbul koordinatları başlangıç konumu olarak ayarlandı:', istanbulCoords);
-  }, []);
-
-  const getCoordinates = async (placeName) => {
-    try {
-      const response = await fetch(
-        `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
-          placeName
-        )}&key=${GOOGLE_MAPS_API_KEY}`
-      );
-      const json = await response.json();
-      if (json.results.length > 0) {
-        const { lat, lng } = json.results[0].geometry.location;
-        return { latitude: lat, longitude: lng };
-      }
-      return null;
-    } catch (error) {
-      console.error('Geocoding Error:', error);
-      return null;
-    }
-  };
-
-  const getWaypointCoordinates = async (waypointsText) => {
-    if (!waypointsText.trim()) return [];
-    
-    const waypointNames = waypointsText.split(',').map(name => name.trim()).filter(name => name);
-    const waypointCoords = [];
-    
-    for (const name of waypointNames) {
-      const coords = await getCoordinates(name);
-      if (coords) {
-        waypointCoords.push(coords);
-      }
-    }
-    
-    return waypointCoords;
-  };
-
-  const handleRouteSearch = async () => {
-    Keyboard.dismiss();
-    if (!currentLocation) {
-      Alert.alert('Konum Bulunamadı', 'Mevcut konumunuz alınamadı. Lütfen konum izni verdiğinizden emin olun.');
-      return;
-    }
-    
-    // İlk tıklamada sadece "Son rota" inputunu göster
-    if (!showWaypointsInput) {
-      setShowWaypointsInput(true);
-      return;
-    }
-    
-    if (toLocation) {
-      if (GOOGLE_MAPS_API_KEY === 'YOUR_GOOGLE_MAPS_API_KEY') {
-        Alert.alert('API Anahtarı Eksik', 'Lütfen koda Google Maps API anahtarınızı ekleyin.');
+  const validatePlace = (place: string): Promise<{ isValid: boolean; suggestion?: string }> => {
+    return new Promise((resolve) => {
+      const trimmedPlace = place.trim();
+      
+      // Minimum uzunluk kontrolü
+      if (trimmedPlace.length < 2) {
+        resolve({ isValid: false });
         return;
       }
-
-      const toCoords = await getCoordinates(toLocation);
-
-      if (toCoords) {
-        let waypointCoords = [];
-        if (waypoints.trim()) {
-          waypointCoords = await getWaypointCoordinates(waypoints);
-        }
-
-        setCoordinates({ 
-          from: currentLocation, 
-          to: toCoords,
-          waypoints: waypointCoords 
-        });
-        setShowMap(true);
-        
-        const allCoords = [currentLocation, ...waypointCoords, toCoords];
-        setTimeout(() => {
-          mapRef.current?.fitToCoordinates(allCoords, {
-            edgePadding: { top: 50, right: 50, bottom: 50, left: 50 },
-            animated: true,
-          });
-        }, 500);
-      } else {
-        Alert.alert('Konum Bulunamadı', 'Girdiğiniz hedef konum bulunamadı. Lütfen kontrol edin.');
+      
+      // Harf içeriyor mu kontrolü
+      const hasLetters = /[a-zA-ZçğıöşüÇĞIİÖŞÜ]/.test(trimmedPlace);
+      if (!hasLetters) {
+        resolve({ isValid: false });
+        return;
       }
-    } else {
-      Alert.alert('Son Rota Gerekli', 'Lütfen son rota olarak gitmek istediğiniz yeri girin.');
+      
+      // Hatalı girişleri engelle
+      const invalidPatterns = [
+        /^[0-9]+$/, // Sadece sayı
+        /^[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+$/, // Sadece özel karakter
+        /^(.)\1{4,}$/, // Tekrar eden karakter (aaaaa)
+        /^test$/i,
+        /^asd$/i,
+        /^qwe$/i,
+        /^abc$/i
+      ];
+      
+      const isInvalid = invalidPatterns.some(pattern => pattern.test(trimmedPlace));
+      if (isInvalid) {
+        resolve({ isValid: false });
+        return;
+      }
+      
+      resolve({ isValid: true });
+    });
+  };
+
+  const addWaypoint = async () => {
+    if (currentWaypoint.trim() === '') {
+      Alert.alert('Uyarı', 'Lütfen uğramak istediğiniz yeri girin.');
+      return;
     }
+
+    // Basit validasyon yap
+    const validation = await validatePlace(currentWaypoint.trim());
+    
+    if (!validation.isValid) {
+      Alert.alert(
+        'Geçersiz Giriş',
+        'Lütfen geçerli bir ara durak adı girin.\n\nÖrnekler: Taksim, Kadıköy, Central Park',
+        [
+          {
+            text: 'Tamam',
+            style: 'default'
+          }
+        ]
+      );
+      return;
+    }
+
+    setWaypoints([...waypoints, currentWaypoint.trim()]);
+    setCurrentWaypoint('');
+  };
+
+  const removeWaypoint = (index: number) => {
+    const updatedWaypoints = waypoints.filter((_, i) => i !== index);
+    setWaypoints(updatedWaypoints);
+  };
+
+  const handleViewRoute = () => {
+    router.push({
+      pathname: '/(app)/map',
+      params: {
+        destination: destination as string,
+        waypoints: JSON.stringify(waypoints),
+      },
+    });
   };
 
   return (
-    <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <FontAwesome name="arrow-left" size={24} color="#333" />
-        </TouchableOpacity>
-        <View style={styles.headerCenter}>
-          <Text style={styles.headerTitle}>Rota Planlayıcı</Text>
-          <Text style={styles.headerSubtitle}>Hedef ve rotanızı belirleyin</Text>
-        </View>
-        <View style={styles.placeholder} />
-      </View>
+    <ImageBackground
+      source={require('../../assets/images/loginbackground.png')}
+      style={styles.container}
+      resizeMode="cover"
+    >
+      <View style={styles.overlay}>
+        <StatusBar barStyle="light-content" />
+        <SafeAreaView style={styles.safeArea}>
+          <ScrollView contentContainerStyle={styles.scrollContent}>
+            {/* Header */}
+            <View style={styles.header}>
+              <TouchableOpacity
+                style={styles.backButton}
+                onPress={() => router.back()}
+              >
+                <FontAwesome name="arrow-left" size={20} color="#fff" />
+              </TouchableOpacity>
+              <Text style={styles.headerTitle}>Rota Planlama</Text>
+              <View style={styles.placeholder} />
+            </View>
 
-      {/* Transport Type Selection */}
-      <View style={styles.transportContainer}>
-        {transportTypes.map((transport) => (
-          <TouchableOpacity
-            key={transport.id}
-            style={[
-              styles.transportButton,
-              activeTransport === transport.id && styles.activeTransportButton,
-            ]}
-            onPress={() => setActiveTransport(transport.id)}
-          >
-            <FontAwesome
-              name={transport.icon}
-              size={20}
-              color={activeTransport === transport.id ? '#fff' : '#666'}
-            />
-            <Text
-              style={[
-                styles.transportText,
-                activeTransport === transport.id && styles.activeTransportText,
-              ]}
+            {/* Destination Display */}
+            <View style={styles.destinationContainer}>
+              <Text style={styles.destinationLabel}>Hedef:</Text>
+              <View style={styles.destinationDisplay}>
+                <FontAwesome name="map-marker" size={18} color="#E91E63" />
+                <Text style={styles.destinationText}>{destination}</Text>
+              </View>
+            </View>
+
+            {/* Waypoints Input */}
+            <View style={styles.waypointsSection}>
+              <Text style={styles.sectionTitle}>Başka nerelere uğramak istersiniz?</Text>
+              
+              <View style={styles.inputContainer}>
+                <FontAwesome name="plus-circle" size={20} color="#E91E63" style={styles.inputIcon} />
+                <TextInput
+                  style={styles.waypointInput}
+                  placeholder="Ara durak ekleyin..."
+                  placeholderTextColor="rgba(255, 255, 255, 0.7)"
+                  value={currentWaypoint}
+                  onChangeText={setCurrentWaypoint}
+                  onSubmitEditing={addWaypoint}
+                  returnKeyType="done"
+                />
+                <TouchableOpacity style={styles.addButton} onPress={addWaypoint}>
+                  <FontAwesome name="plus" size={16} color="#fff" />
+                </TouchableOpacity>
+              </View>
+
+              {/* Waypoints List */}
+              {waypoints.length > 0 && (
+                <View style={styles.waypointsList}>
+                  <Text style={styles.waypointsListTitle}>Ara Duraklar:</Text>
+                  {waypoints.map((waypoint, index) => (
+                    <View key={index} style={styles.waypointItem}>
+                      <FontAwesome name="location-arrow" size={16} color="#4CAF50" />
+                      <Text style={styles.waypointText}>{waypoint}</Text>
+                      <TouchableOpacity
+                        style={styles.removeButton}
+                        onPress={() => removeWaypoint(index)}
+                      >
+                        <FontAwesome name="times" size={14} color="#ff4757" />
+                      </TouchableOpacity>
+                    </View>
+                  ))}
+                </View>
+              )}
+
+
+            </View>
+
+            {/* View Route Button */}
+            <TouchableOpacity
+              style={styles.viewRouteButton}
+              onPress={handleViewRoute}
             >
-              {transport.label}
-            </Text>
-          </TouchableOpacity>
-        ))}
+              <FontAwesome name="map" size={20} color="#fff" style={styles.buttonIcon} />
+              <Text style={styles.viewRouteButtonText}>Rotayı Gör</Text>
+              <FontAwesome name="chevron-right" size={18} color="#fff" />
+            </TouchableOpacity>
+          </ScrollView>
+        </SafeAreaView>
       </View>
-
-      {/* Location Inputs */}
-      <View style={styles.locationContainer}>
-        {/* Waypoints Input - First */}
-        <View style={styles.inputContainer}>
-          <FontAwesome name="plus-circle" size={16} color="#FF9800" style={styles.locationIcon} />
-          <TextInput
-            style={styles.locationInput}
-            placeholder="Gezmek istediğiniz şehirleri giriniz (virgülle ayırarak)"
-            value={waypoints}
-            onChangeText={setWaypoints}
-            multiline={true}
-          />
-        </View>
-
-        {/* Destination Input - Second */}
-        {showWaypointsInput && (
-          <View style={styles.inputContainer}>
-            <FontAwesome name="map-marker" size={16} color="#F44336" style={styles.locationIcon} />
-            <TextInput
-              style={styles.locationInput}
-              placeholder="Son rota olarak"
-              value={toLocation}
-              onChangeText={setToLocation}
-            />
-          </View>
-        )}
-      </View>
-
-      {/* Search Button */}
-      <TouchableOpacity style={styles.searchButton} onPress={handleRouteSearch}>
-        <Text style={styles.searchButtonText}>
-          {showWaypointsInput ? 'Rotayı Yeniden Hesapla' : 'Rota'}
-        </Text>
-        <FontAwesome name="chevron-right" size={16} color="#fff" />
-      </TouchableOpacity>
-
-      {/* Map View */}
-      {showMap && coordinates.from && coordinates.to && (
-        <View style={styles.mapContainer}>
-          <MapView
-            ref={mapRef}
-            style={styles.map}
-            initialRegion={{
-              latitude: (coordinates.from.latitude + coordinates.to.latitude) / 2,
-              longitude: (coordinates.from.longitude + coordinates.to.longitude) / 2,
-              latitudeDelta: Math.abs(coordinates.from.latitude - coordinates.to.latitude) + 0.1,
-              longitudeDelta: Math.abs(coordinates.from.longitude - coordinates.to.longitude) + 0.1,
-            }}
-          >
-            <Marker coordinate={coordinates.from} title="Mevcut Konumunuz" />
-            
-            {coordinates.waypoints && coordinates.waypoints.map((waypoint, index) => (
-              <Marker
-                key={index}
-                coordinate={waypoint}
-                title={`Ara Durak ${index + 1}`}
-                pinColor="orange"
-              />
-            ))}
-            
-            <Marker coordinate={coordinates.to} title="Hedef" />
-            
-            <MapViewDirections
-              origin={coordinates.from}
-              destination={coordinates.to}
-              waypoints={coordinates.waypoints || []}
-              apikey={GOOGLE_MAPS_API_KEY}
-              strokeWidth={4}
-              strokeColor="#4CAF50"
-              mode={activeTransport}
-              optimizeWaypoints={true}
-            />
-          </MapView>
-        </View>
-      )}
-
-      {/* Recommended Places Button */}
-      {showMap && (
-        <TouchableOpacity 
-          style={styles.recommendedButton} 
-          onPress={() => {
-            // Waypoints'leri ve final destination'ı recommendations sayfasına gönder
-            const waypointsList = waypoints.trim() ? waypoints.split(',').map(w => w.trim()) : [];
-            router.push({
-              pathname: '/(app)/recommendations',
-              params: {
-                finalDestination: toLocation,
-                waypoints: JSON.stringify(waypointsList)
-              }
-            });
-          }}
-        >
-          <FontAwesome name="star" size={18} color="#fff" style={styles.recommendedIcon} />
-          <Text style={styles.recommendedButtonText}>Önerilen Yerler</Text>
-          <FontAwesome name="chevron-right" size={16} color="#fff" />
-        </TouchableOpacity>
-      )}
-    </View>
+    </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+  },
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+  },
+  safeArea: {
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    paddingHorizontal: 20,
+    paddingBottom: 20,
   },
   header: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingTop: 50,
-    paddingBottom: 20,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    alignItems: 'center',
+    paddingVertical: 20,
   },
   backButton: {
-    padding: 5,
-  },
-  headerCenter: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    justifyContent: 'center',
     alignItems: 'center',
-    flex: 1,
   },
   headerTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#333',
-  },
-  headerSubtitle: {
-    fontSize: 14,
-    color: '#666',
-    marginTop: 2,
-  },
-  placeholder: {
-    width: 34,
-  },
-  transportContainer: {
-    flexDirection: 'row',
-    marginBottom: 20,
-    marginTop: 20,
-    paddingHorizontal: 20,
-  },
-  transportButton: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 15,
-    marginHorizontal: 5,
-    backgroundColor: '#fff',
-    borderRadius: 25,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-  },
-  activeTransportButton: {
-    backgroundColor: '#4CAF50',
-  },
-  transportText: {
-    marginLeft: 8,
-    fontSize: 14,
-    color: '#666',
-    fontWeight: '500',
-  },
-  activeTransportText: {
     color: '#fff',
   },
-  locationContainer: {
-    marginBottom: 25,
-    paddingHorizontal: 20,
+  placeholder: {
+    width: 40,
+  },
+  destinationContainer: {
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 15,
+    padding: 20,
+    marginBottom: 30,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+  },
+  destinationLabel: {
+    fontSize: 14,
+    color: 'rgba(255, 255, 255, 0.8)',
+    marginBottom: 10,
+  },
+  destinationDisplay: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  destinationText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#fff',
+    marginLeft: 10,
+  },
+  waypointsSection: {
+    flex: 1,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#fff',
+    marginBottom: 20,
+    textAlign: 'center',
   },
   inputContainer: {
     flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    paddingHorizontal: 15,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    borderRadius: 25,
     paddingVertical: 12,
-    marginBottom: 15,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
+    paddingHorizontal: 20,
+    alignItems: 'center',
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
   },
-  locationIcon: {
+  inputIcon: {
     marginRight: 15,
   },
-  locationInput: {
+  waypointInput: {
     flex: 1,
-    fontSize: 16,
-    color: '#333',
-  },
-  searchButton: {
-    flexDirection: 'row',
-    backgroundColor: '#4CAF50',
-    paddingVertical: 15,
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 20,
-    marginHorizontal: 20,
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-  },
-  searchButtonText: {
     color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginRight: 10,
+    fontSize: 16,
+    fontWeight: '500',
   },
-  mapContainer: {
-    height: 250,
-    marginHorizontal: 20,
-    borderRadius: 10,
-    overflow: 'hidden',
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
+  addButton: {
+    backgroundColor: '#E91E63',
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  waypointsList: {
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 15,
+    padding: 15,
+    marginBottom: 20,
+  },
+  waypointsListTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#fff',
     marginBottom: 15,
   },
-  map: {
-    flex: 1,
-  },
-  recommendedButton: {
+  waypointItem: {
     flexDirection: 'row',
-    backgroundColor: '#FF6B35',
-    paddingVertical: 15,
-    paddingHorizontal: 20,
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
     borderRadius: 10,
+    padding: 12,
+    marginBottom: 8,
+  },
+  waypointText: {
+    flex: 1,
+    color: '#fff',
+    fontSize: 14,
+    marginLeft: 10,
+  },
+  removeButton: {
+    backgroundColor: 'rgba(255, 71, 87, 0.2)',
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  viewRouteButton: {
+    flexDirection: 'row',
+    backgroundColor: '#4CAF50',
+    paddingVertical: 18,
+    paddingHorizontal: 30,
+    borderRadius: 25,
     alignItems: 'center',
     justifyContent: 'center',
-    marginHorizontal: 20,
-    marginBottom: 20,
-    elevation: 3,
+    elevation: 5,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    marginTop: 20,
   },
-  recommendedIcon: {
-    marginRight: 10,
+  buttonIcon: {
+    marginRight: 12,
   },
-  recommendedButtonText: {
+  viewRouteButtonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: 'bold',
     flex: 1,
     textAlign: 'center',
