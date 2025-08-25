@@ -1,81 +1,53 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, Text, TouchableOpacity, ImageBackground, StatusBar, TextInput, Alert } from 'react-native';
+import React, { useState, useCallback } from 'react';
+import {
+  StyleSheet,
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  ImageBackground,
+  SafeAreaView,
+  StatusBar,
+  Alert,
+} from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 
 export default function HomeScreen() {
   const router = useRouter();
   const [destination, setDestination] = useState('');
 
-  const validateDestination = (place: string): Promise<{ isValid: boolean; suggestion?: string }> => {
-    return new Promise((resolve) => {
-      // Basit ama etkili validasyon
-      const trimmedPlace = place.trim();
-      
-      // Minimum uzunluk kontrolü
-      if (trimmedPlace.length < 2) {
-        resolve({ isValid: false });
-        return;
+  // Sayfa focus olduğunda reset kontrolü
+  useFocusEffect(
+    useCallback(() => {
+      if ((global as any).shouldResetInputs) {
+        setDestination('');
+        (global as any).shouldResetInputs = false;
       }
-      
-      // Sadece sayı veya özel karakter kontrolü
-      const hasLetters = /[a-zA-ZçğıöşüÇĞIİÖŞÜ]/.test(trimmedPlace);
-      if (!hasLetters) {
-        resolve({ isValid: false });
-        return;
-      }
-      
-      // Çok yaygın hatalı girişleri engelle
-      const invalidPatterns = [
-        /^[0-9]+$/, // Sadece sayı
-        /^[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+$/, // Sadece özel karakter
-        /^(.)\1{4,}$/, // Aynı karakter 5+ kez (aaaaa)
-        /^test$/i,
-        /^asd$/i,
-        /^qwe$/i,
-        /^abc$/i,
-        /^undefined$/i,
-        /^null$/i
-      ];
-      
-      const isInvalid = invalidPatterns.some(pattern => pattern.test(trimmedPlace));
-      if (isInvalid) {
-        resolve({ isValid: false });
-        return;
-      }
-      
-      // Geçerli kabul et
-      resolve({ isValid: true });
+    }, [])
+  );
+
+  const handleContinue = () => {
+    if (!destination.trim()) {
+      Alert.alert('Hata', 'Lütfen nereye gitmek istediğinizi girin.');
+      return;
+    }
+
+    // Global'e kaydet
+    (global as any).routeDestination = destination.trim();
+    
+    // Ara nokta sayfasına git
+    router.push({
+      pathname: '/(app)/waypoints',
+      params: { destination: destination.trim() }
     });
   };
 
-  const handleStartPlanning = async () => {
-    if (destination.trim() === '') {
-      Alert.alert('Uyarı', 'Lütfen gitmek istediğiniz yeri girin.');
-      return;
-    }
-
-    // Basit validasyon yap
-    const validation = await validateDestination(destination.trim());
-    
-    if (!validation.isValid) {
-      Alert.alert(
-        'Geçersiz Giriş',
-        'Lütfen geçerli bir yer adı girin.\n\nÖrnekler: İstanbul, Paris, New York, Taksim',
-        [
-          {
-            text: 'Tamam',
-            style: 'default'
-          }
-        ]
-      );
-      return;
-    }
-
-    router.push({
-      pathname: '/(app)/route-planner',
-      params: { destination: destination.trim() }
-    });
+  const capitalizeText = (text: string) => {
+    return text
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
   };
 
   return (
@@ -84,48 +56,43 @@ export default function HomeScreen() {
       style={styles.container}
       resizeMode="cover"
     >
-      <View style={styles.overlay}>
+      <SafeAreaView style={styles.safeArea}>
         <StatusBar barStyle="light-content" />
         
         <View style={styles.content}>
-          {/* Welcome Header */}
-          <View style={styles.welcomeContainer}>
-            <Text style={styles.welcomeTitle}>Hoş Geldiniz</Text>
+          <View style={styles.welcomeSection}>
+            <Text style={styles.welcomeTitle}>Hoş Geldiniz!</Text>
             <Text style={styles.welcomeSubtitle}>
               Keşfe başlamak için rotanızı belirleyiniz
             </Text>
           </View>
 
-          {/* Destination Input */}
-          <View style={styles.inputContainer}>
-            <FontAwesome name="map-marker" size={20} color="#E91E63" style={styles.inputIcon} />
-            <TextInput
-              style={styles.destinationInput}
-              placeholder="Nereye gitmek istiyorsunuz?"
-              placeholderTextColor="rgba(255, 255, 255, 0.7)"
-              value={destination}
-              onChangeText={setDestination}
-            />
+          <View style={styles.inputSection}>
+            <Text style={styles.inputLabel}>Nereye gitmek istiyorsunuz?</Text>
+            <View style={styles.inputContainer}>
+              <FontAwesome name="map-marker" size={20} color="#E91E63" style={styles.inputIcon} />
+              <TextInput
+                style={styles.textInput}
+                placeholder="Örn: Antalya, Cappadocia, Bodrum..."
+                placeholderTextColor="rgba(255, 255, 255, 0.6)"
+                value={destination}
+                onChangeText={(text) => setDestination(capitalizeText(text))}
+                returnKeyType="done"
+                onSubmitEditing={handleContinue}
+              />
+            </View>
           </View>
 
-          {/* Start Planning Button */}
           <TouchableOpacity 
-            style={styles.startButton} 
-            onPress={handleStartPlanning}
+            style={[styles.continueButton, !destination.trim() && styles.continueButtonDisabled]}
+            onPress={handleContinue}
+            disabled={!destination.trim()}
           >
-            <FontAwesome name="route" size={20} color="#fff" style={styles.buttonIcon} />
-            <Text style={styles.startButtonText}>Rotayı Planlamaya Başla</Text>
-            <FontAwesome name="chevron-right" size={18} color="#fff" />
+            <Text style={styles.continueButtonText}>Devam Et</Text>
+            <FontAwesome name="arrow-right" size={20} color="#fff" />
           </TouchableOpacity>
         </View>
-
-        {/* Bottom Info */}
-        <View style={styles.bottomInfo}>
-          <Text style={styles.bottomInfoText}>
-            Hedef noktanızı belirleyerek kişiselleştirilmiş rota planlama deneyimine başlayın
-          </Text>
-        </View>
-      </View>
+      </SafeAreaView>
     </ImageBackground>
   );
 }
@@ -134,25 +101,24 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  overlay: {
+  safeArea: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
   },
   content: {
     flex: 1,
     justifyContent: 'center',
-    alignItems: 'center',
     paddingHorizontal: 30,
   },
-  welcomeContainer: {
+  welcomeSection: {
     alignItems: 'center',
     marginBottom: 60,
   },
   welcomeTitle: {
-    fontSize: 36,
+    fontSize: 32,
     fontWeight: 'bold',
     color: '#fff',
-    marginBottom: 15,
+    marginBottom: 10,
     textAlign: 'center',
   },
   welcomeSubtitle: {
@@ -161,65 +127,55 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 24,
   },
+  inputSection: {
+    marginBottom: 40,
+  },
+  inputLabel: {
+    fontSize: 16,
+    color: '#fff',
+    marginBottom: 15,
+    fontWeight: '600',
+  },
   inputContainer: {
     flexDirection: 'row',
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
-    borderRadius: 25,
-    paddingVertical: 15,
-    paddingHorizontal: 20,
     alignItems: 'center',
-    marginBottom: 25,
-    minWidth: 320,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    borderRadius: 15,
+    paddingHorizontal: 20,
+    paddingVertical: 15,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
+    borderColor: 'rgba(255, 255, 255, 0.3)',
   },
   inputIcon: {
     marginRight: 15,
   },
-  destinationInput: {
+  textInput: {
     flex: 1,
-    color: '#fff',
     fontSize: 16,
+    color: '#fff',
     fontWeight: '500',
   },
-  startButton: {
-    flexDirection: 'row',
+  continueButton: {
     backgroundColor: '#E91E63',
+    borderRadius: 15,
     paddingVertical: 18,
     paddingHorizontal: 30,
-    borderRadius: 25,
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 20,
     elevation: 5,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
-    shadowRadius: 6,
-    minWidth: 320,
+    shadowRadius: 8,
   },
-  buttonIcon: {
-    marginRight: 12,
+  continueButtonDisabled: {
+    backgroundColor: 'rgba(233, 30, 99, 0.5)',
   },
-  startButtonText: {
+  continueButtonText: {
     color: '#fff',
     fontSize: 18,
     fontWeight: 'bold',
-    flex: 1,
-    textAlign: 'center',
-  },
-
-  bottomInfo: {
-    position: 'absolute',
-    bottom: 40,
-    left: 30,
-    right: 30,
-    alignItems: 'center',
-  },
-  bottomInfoText: {
-    color: 'rgba(255, 255, 255, 0.8)',
-    fontSize: 14,
-    textAlign: 'center',
-    lineHeight: 20,
+    marginRight: 15,
   },
 });

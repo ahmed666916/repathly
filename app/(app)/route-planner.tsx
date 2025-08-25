@@ -12,13 +12,27 @@ import {
   SafeAreaView,
 } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
-import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router';
+import { useCallback } from 'react';
 
 export default function RoutePlannerScreen() {
   const router = useRouter();
   const { destination } = useLocalSearchParams();
   const [waypoints, setWaypoints] = useState<string[]>([]);
   const [currentWaypoint, setCurrentWaypoint] = useState('');
+
+  // Sayfa focus olduğunda reset kontrolü
+  useFocusEffect(
+    useCallback(() => {
+      const shouldReset = (global as any).shouldResetInputs;
+      if (shouldReset) {
+        console.log('Route planner sayfası temizleniyor...');
+        setWaypoints([]);
+        setCurrentWaypoint('');
+        (global as any).shouldResetInputs = false;
+      }
+    }, [])
+  );
 
   const validatePlace = (place: string): Promise<{ isValid: boolean; suggestion?: string }> => {
     return new Promise((resolve) => {
@@ -114,7 +128,14 @@ export default function RoutePlannerScreen() {
             <View style={styles.header}>
               <TouchableOpacity
                 style={styles.backButton}
-                onPress={() => router.back()}
+                onPress={() => {
+                  const r: any = router as any;
+                  if (r?.canGoBack?.()) {
+                    r.back();
+                  } else {
+                    r.replace('/(app)');
+                  }
+                }}
               >
                 <FontAwesome name="arrow-left" size={20} color="#fff" />
               </TouchableOpacity>
@@ -142,7 +163,14 @@ export default function RoutePlannerScreen() {
                   placeholder="Ara durak ekleyin..."
                   placeholderTextColor="rgba(255, 255, 255, 0.7)"
                   value={currentWaypoint}
-                  onChangeText={setCurrentWaypoint}
+                  onChangeText={(text) => {
+              // Her kelimenin ilk harfini büyük yap
+              const capitalizedText = text
+                .split(' ')
+                .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+                .join(' ');
+              setCurrentWaypoint(capitalizedText);
+            }}
                   onSubmitEditing={addWaypoint}
                   returnKeyType="done"
                 />

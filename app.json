@@ -15,13 +15,20 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.roadbuddy.app"
+      "bundleIdentifier": "com.roadbuddy.app",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Bu uygulama, rotalarınızı planlamak ve yakındaki yerleri önermek için konumunuzu kullanır."
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION"
+      ],
       "edgeToEdgeEnabled": true,
       "package": "com.roadbuddy.app"
     },

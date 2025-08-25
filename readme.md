@@ -94,3 +94,5 @@ flowchart TD
     K --> L[Ziyaret Sonrası Anket & Puanlama]
     L --> M[Yorum Yayınlama ve Topluluk Etkileşimi]
     M --> N[Dinamik Puan Güncelleme]
+
+```

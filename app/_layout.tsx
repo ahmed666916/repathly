@@ -3,8 +3,10 @@ import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import 'react-native-reanimated';
+import * as Location from 'expo-location';
+import { Alert } from 'react-native';
 
 import { useColorScheme } from '@/components/useColorScheme';
 
@@ -27,18 +29,55 @@ export default function RootLayout() {
     ...FontAwesome.font,
   });
 
+  const [locationReady, setLocationReady] = useState(false);
+
+  // Konum izni ve konum alma
+  useEffect(() => {
+    const requestLocation = async () => {
+      try {
+        let { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== 'granted') {
+          Alert.alert('Konum İzni Reddedildi', 'Uygulamanın özelliklerini tam olarak kullanabilmek için konum izni gereklidir.');
+          (global as any).userLocation = null; // Konum yoksa null olarak ayarla
+          return;
+        }
+
+        let location = await Location.getCurrentPositionAsync({
+          accuracy: Location.Accuracy.High,
+        });
+
+        // Global değişkene konumu ata
+        (global as any).userLocation = {
+          latitude: location.coords.latitude,
+          longitude: location.coords.longitude,
+          accuracy: location.coords.accuracy,
+        };
+        console.log('Kullanıcı konumu global olarak ayarlandı:', (global as any).userLocation);
+
+      } catch (err) {
+        console.warn('Konum alınamadı:', err);
+        Alert.alert('Konum Hatası', 'Konumunuz alınırken bir hata oluştu.');
+        (global as any).userLocation = null;
+      } finally {
+        setLocationReady(true); // Konum işlemi tamamlandı
+      }
+    };
+
+    requestLocation();
+  }, []);
+
   // Expo Router uses Error Boundaries to catch errors in the navigation tree.
   useEffect(() => {
     if (error) throw error;
   }, [error]);
 
   useEffect(() => {
-    if (loaded) {
+    if (loaded && locationReady) {
       SplashScreen.hideAsync();
     }
-  }, [loaded]);
+  }, [loaded, locationReady]);
 
-  if (!loaded) {
+  if (!loaded || !locationReady) {
     return null;
   }
 

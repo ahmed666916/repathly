@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
   StyleSheet,
   ScrollView,
@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { Text, View } from '@/components/Themed';
 import { FontAwesome } from '@expo/vector-icons';
-import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router';
 
 interface InterestCategory {
   id: string;
@@ -24,6 +24,14 @@ interface InterestCategory {
 export default function InterestSelectionScreen() {
   const router = useRouter();
   const { destination, waypoints } = useLocalSearchParams();
+  const handleBack = () => {
+    const r: any = router as any;
+    if (r?.canGoBack?.()) {
+      r.back();
+    } else {
+      r.replace('/(app)');
+    }
+  };
   const [categories, setCategories] = useState<InterestCategory[]>([
     {
       id: 'food',
@@ -75,6 +83,50 @@ export default function InterestSelectionScreen() {
     },
   ]);
 
+  // SÜPER AGRESIF reset kontrolü - sayfa her açıldığında ZORLA sıfırla
+  useEffect(() => {
+    console.log('🔥 İlgi alanları sayfası açıldı, ZORLA reset kontrolü yapılıyor...');
+    console.log('shouldResetInputs değeri:', (global as any).shouldResetInputs);
+    console.log('forceReset değeri:', (global as any).forceReset);
+    console.log('selectedInterests değeri:', (global as any).selectedInterests);
+    
+    // HER DURUMDA ÖNCE TEMİZLE - koşulsuz temizlik
+    console.log('🧹 ÖNCE HER DURUMDA TEMİZLENİYOR...');
+    setCategories(prev => 
+      prev.map(cat => ({ ...cat, selected: false }))
+    );
+    
+    // EĞER RESET FLAG'İ VARSA GLOBAL'İ DE TEMİZLE
+    if ((global as any).shouldResetInputs || (global as any).forceReset) {
+      console.log('🔥 GLOBAL STATE TEMİZLENİYOR...');
+      (global as any).selectedInterests = [];
+      delete (global as any).selectedInterests;
+      (global as any).shouldResetInputs = false;
+      (global as any).forceReset = false;
+    }
+  }, []);
+
+  // Sayfa focus olduğunda da ZORLA kontrol et
+  useFocusEffect(
+    useCallback(() => {
+      console.log('🎯 İlgi alanları sayfası focus oldu, ZORLA kontrol ediliyor...');
+      
+      // HER FOCUS'TA ÖNCE TEMİZLE
+      console.log('🧹 FOCUS TE TEMİZLENİYOR...');
+      setCategories(prev => 
+        prev.map(cat => ({ ...cat, selected: false }))
+      );
+      
+      if ((global as any).shouldResetInputs || (global as any).forceReset) {
+        console.log('🔥 FOCUS GLOBAL STATE TEMİZLENİYOR...');
+        (global as any).selectedInterests = [];
+        delete (global as any).selectedInterests;
+        (global as any).shouldResetInputs = false;
+        (global as any).forceReset = false;
+      }
+    }, [])
+  );
+
   const toggleCategory = (categoryId: string) => {
     setCategories(prev => 
       prev.map(cat => 
@@ -118,7 +170,7 @@ export default function InterestSelectionScreen() {
           <View style={styles.header}>
             <TouchableOpacity
               style={styles.backButton}
-              onPress={() => router.back()}
+              onPress={handleBack}
             >
               <FontAwesome name="arrow-left" size={20} color="#fff" />
             </TouchableOpacity>
@@ -133,7 +185,7 @@ export default function InterestSelectionScreen() {
           >
             {/* Title Section */}
             <View style={styles.titleSection}>
-              <Text style={styles.title}>Hangi alanlarda altın tavsiyeleri görmek istersiniz?</Text>
+              <Text style={styles.title}>İlgi alanlarınızı seçin lütfen</Text>
               <Text style={styles.subtitle}>
                 Size özel yerler önerebilmemiz için ilgi alanlarınızı seçin
               </Text>
@@ -166,7 +218,7 @@ export default function InterestSelectionScreen() {
                   </ImageBackground>
                   
                   <View style={styles.categoryInfo}>
-                    <FontAwesome name={category.icon} size={20} color="#E91E63" style={styles.categoryIcon} />
+                    <FontAwesome name={category.icon as any} size={20} color="#E91E63" style={styles.categoryIcon} />
                     <Text style={styles.categoryName}>{category.name}</Text>
                     <Text style={styles.categoryDescription}>{category.description}</Text>
                   </View>
