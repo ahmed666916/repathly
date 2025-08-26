@@ -10,9 +10,19 @@ import {
   StatusBar,
   ScrollView,
   Alert,
+  FlatList,
 } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router';
+
+interface PlaceSuggestion {
+  place_id: string;
+  description: string;
+  structured_formatting: {
+    main_text: string;
+    secondary_text: string;
+  };
+}
 
 export default function WaypointsScreen() {
   const router = useRouter();
@@ -21,22 +31,24 @@ export default function WaypointsScreen() {
   
   const [waypoints, setWaypoints] = useState<string[]>([]);
   const [currentWaypoint, setCurrentWaypoint] = useState('');
+  const [suggestions, setSuggestions] = useState<PlaceSuggestion[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
   // SÜPER AGRESIF reset kontrolü - sayfa her açıldığında ZORLA sıfırla
   useEffect(() => {
-    console.log('🔥 Waypoints sayfası açıldı, ZORLA reset kontrolü yapılıyor...');
+    console.log(' Waypoints sayfası açıldı, ZORLA reset kontrolü yapılıyor...');
     console.log('shouldResetInputs değeri:', (global as any).shouldResetInputs);
     console.log('forceReset değeri:', (global as any).forceReset);
     console.log('routeWaypoints değeri:', (global as any).routeWaypoints);
     
     // HER DURUMDA ÖNCE TEMİZLE
-    console.log('🧹 ÖNCE HER DURUMDA TEMİZLENİYOR...');
+    console.log(' ÖNCE HER DURUMDA TEMİZLENİYOR...');
     setWaypoints([]);
     setCurrentWaypoint('');
     
     // EĞER RESET FLAG'İ VARSA GLOBAL'İ DE TEMİZLE
     if ((global as any).shouldResetInputs || (global as any).forceReset) {
-      console.log('🔥 GLOBAL STATE TEMİZLENİYOR...');
+      console.log(' GLOBAL STATE TEMİZLENİYOR...');
       (global as any).routeWaypoints = '';
       delete (global as any).routeWaypoints;
       (global as any).shouldResetInputs = false;
@@ -47,15 +59,15 @@ export default function WaypointsScreen() {
   // Sayfa focus olduğunda da ZORLA kontrol et
   useFocusEffect(
     useCallback(() => {
-      console.log('🎯 Waypoints sayfası focus oldu, ZORLA kontrol ediliyor...');
+      console.log(' Waypoints sayfası focus oldu, ZORLA kontrol ediliyor...');
       
       // HER FOCUS'TA ÖNCE TEMİZLE
-      console.log('🧹 FOCUS TE TEMİZLENİYOR...');
+      console.log(' FOCUS TE TEMİZLENİYOR...');
       setWaypoints([]);
       setCurrentWaypoint('');
       
       if ((global as any).shouldResetInputs || (global as any).forceReset) {
-        console.log('🔥 FOCUS GLOBAL STATE TEMİZLENİYOR...');
+        console.log(' FOCUS GLOBAL STATE TEMİZLENİYOR...');
         (global as any).routeWaypoints = '';
         delete (global as any).routeWaypoints;
         (global as any).shouldResetInputs = false;
@@ -71,10 +83,57 @@ export default function WaypointsScreen() {
       .join(' ');
   };
 
+  const fetchPlaceSuggestions = async (input: string) => {
+    if (input.length < 1) {
+      setSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+
+    try {
+      const apiKey = 'AIzaSyD20dEgYCXYcs-C4uGDMUTSvSbdxYDuk5o';
+      console.log('Fetching waypoint suggestions for:', input);
+      
+      const response = await fetch(
+        `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(input)}&key=${apiKey}&language=tr&components=country:tr`
+      );
+      const data = await response.json();
+      
+      console.log('Waypoint API Response:', data);
+      
+      if (data.status === 'OK' && data.predictions) {
+        console.log('Setting waypoint suggestions:', data.predictions.slice(0, 5));
+        setSuggestions(data.predictions.slice(0, 5));
+        setShowSuggestions(true);
+      } else {
+        console.log('No waypoint predictions or error:', data.status);
+        setSuggestions([]);
+        setShowSuggestions(false);
+      }
+    } catch (error) {
+      console.error('Error fetching waypoint suggestions:', error);
+      setSuggestions([]);
+      setShowSuggestions(false);
+    }
+  };
+
+  const handleSuggestionSelect = (suggestion: PlaceSuggestion) => {
+    setCurrentWaypoint(suggestion.structured_formatting.main_text);
+    setSuggestions([]);
+    setShowSuggestions(false);
+  };
+
+  const handleWaypointChange = (text: string) => {
+    setCurrentWaypoint(text);
+    fetchPlaceSuggestions(text);
+  };
+
   const addWaypoint = () => {
-    if (currentWaypoint.trim() && !waypoints.includes(currentWaypoint.trim())) {
+    if (currentWaypoint.trim()) {
       setWaypoints([...waypoints, currentWaypoint.trim()]);
       setCurrentWaypoint('');
+      setSuggestions([]);
+      setShowSuggestions(false);
     }
   };
 
@@ -152,12 +211,12 @@ export default function WaypointsScreen() {
               <FontAwesome name="plus" size={20} color="#4CAF50" style={styles.inputIcon} />
               <TextInput
                 style={styles.textInput}
-                placeholder="Ara durak ekleyin..."
+                placeholder="Ara durak ekle..."
                 placeholderTextColor="rgba(255, 255, 255, 0.6)"
                 value={currentWaypoint}
-                onChangeText={(text) => setCurrentWaypoint(capitalizeText(text))}
-                onSubmitEditing={addWaypoint}
+                onChangeText={handleWaypointChange}
                 returnKeyType="done"
+                onSubmitEditing={addWaypoint}
               />
               <TouchableOpacity
                 style={[styles.addButton, !currentWaypoint.trim() && styles.addButtonDisabled]}
@@ -167,6 +226,35 @@ export default function WaypointsScreen() {
                 <FontAwesome name="check" size={16} color="#fff" />
               </TouchableOpacity>
             </View>
+            
+            {/* Suggestions List */}
+            {showSuggestions && suggestions.length > 0 && (
+              <View style={styles.suggestionsContainer}>
+                <ScrollView 
+                  style={styles.suggestionsScrollView}
+                  showsVerticalScrollIndicator={false}
+                  nestedScrollEnabled={true}
+                >
+                  {suggestions.map((item) => (
+                    <TouchableOpacity
+                      key={item.place_id}
+                      style={styles.suggestionItem}
+                      onPress={() => handleSuggestionSelect(item)}
+                    >
+                      <FontAwesome name="map-marker" size={16} color="#E91E63" style={styles.suggestionIcon} />
+                      <View style={styles.suggestionText}>
+                        <Text style={styles.suggestionMain} numberOfLines={1} ellipsizeMode="tail">
+                          {item.structured_formatting.main_text}
+                        </Text>
+                        <Text style={styles.suggestionSecondary} numberOfLines={2} ellipsizeMode="tail">
+                          {item.structured_formatting.secondary_text}
+                        </Text>
+                      </View>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </View>
+            )}
           </View>
 
           {waypoints.length > 0 && (
@@ -357,5 +445,49 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     marginRight: 15,
+  },
+  suggestionsContainer: {
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    borderRadius: 12,
+    marginTop: 8,
+    maxHeight: 200,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+    overflow: 'hidden',
+  },
+  suggestionItem: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    paddingHorizontal: 15,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(0, 0, 0, 0.1)',
+  },
+  suggestionIcon: {
+    marginRight: 12,
+    marginTop: 2,
+  },
+  suggestionText: {
+    flex: 1,
+    minWidth: 0,
+  },
+  suggestionMain: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 2,
+    flexWrap: 'wrap',
+  },
+  suggestionSecondary: {
+    fontSize: 14,
+    color: '#666',
+    flexWrap: 'wrap',
+    lineHeight: 18,
+  },
+  suggestionsScrollView: {
+    maxHeight: 200,
   },
 }); 

@@ -223,24 +223,64 @@ export default function RecommendationsScreen() {
     }
 
 
-    return finalPlaces.map((place: any) => ({
-        id: place.place_id,
-        name: place.name,
-        category: interest,
-        rating: place.rating || 0,
-        reviewCount: place.user_ratings_total || 0,
-        description: (place.types || []).join(', ').replace(/_/g, ' '),
-        imageUri: place.photos?.[0]
-            ? `https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=${place.photos[0].photo_reference}&key=${apiKey}`
-            : getDefaultImageForCategory(interest),
-        address: place.vicinity || 'Adres bilgisi yok',
-        priceLevel: place.price_level || 1,
-            selected: false,
-        googlePlaceId: place.place_id,
-        location: place.geometry?.location,
-        vicinity: place.vicinity,
-        sourceLocation: location
-    }));
+    // Get detailed place information to ensure consistent ratings
+    const detailedPlaces = await Promise.all(
+        finalPlaces.slice(0, targetCount).map(async (place: any) => {
+            try {
+                const detailsUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${place.place_id}&fields=rating,user_ratings_total,name,formatted_address,photos&key=${apiKey}&language=tr`;
+                const response = await fetch(detailsUrl);
+                const data = await response.json();
+                
+                if (data.status === 'OK' && data.result) {
+                    const result = data.result;
+                    return {
+                        id: place.place_id,
+                        name: result.name || place.name,
+                        category: interest,
+                        rating: result.rating || place.rating || 0,
+                        reviewCount: result.user_ratings_total || place.user_ratings_total || 0,
+                        description: (place.types || []).join(', ').replace(/_/g, ' '),
+                        imageUri: result.photos?.[0]
+                            ? `https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=${result.photos[0].photo_reference}&key=${apiKey}`
+                            : place.photos?.[0]
+                            ? `https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=${place.photos[0].photo_reference}&key=${apiKey}`
+                            : getDefaultImageForCategory(interest),
+                        address: result.formatted_address || place.vicinity || 'Adres bilgisi yok',
+                        priceLevel: place.price_level || 1,
+                        selected: false,
+                        googlePlaceId: place.place_id,
+                        location: place.geometry?.location,
+                        vicinity: place.vicinity,
+                        sourceLocation: location
+                    };
+                }
+            } catch (error) {
+                console.error('Error fetching place details:', error);
+            }
+            
+            // Fallback to original data
+            return {
+                id: place.place_id,
+                name: place.name,
+                category: interest,
+                rating: place.rating || 0,
+                reviewCount: place.user_ratings_total || 0,
+                description: (place.types || []).join(', ').replace(/_/g, ' '),
+                imageUri: place.photos?.[0]
+                    ? `https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=${place.photos[0].photo_reference}&key=${apiKey}`
+                    : getDefaultImageForCategory(interest),
+                address: place.vicinity || 'Adres bilgisi yok',
+                priceLevel: place.price_level || 1,
+                selected: false,
+                googlePlaceId: place.place_id,
+                location: place.geometry?.location,
+                vicinity: place.vicinity,
+                sourceLocation: location
+            };
+        })
+    );
+
+    return detailedPlaces;
   };
 
   const getDefaultImageForCategory = (interest: string): string => {
@@ -809,11 +849,15 @@ export default function RecommendationsScreen() {
                                   <Text style={styles.reviewText}>({place.reviewCount})</Text>
                     </View>
                                 
-                                <View style={styles.priceContainer}>
-                                  {Array.from({ length: place.priceLevel }, (_, i) => (
-                                    <FontAwesome key={i} name="dollar" size={12} color="#E91E63" />
-                                  ))}
-                  </View>
+                                <TouchableOpacity 
+                                  style={styles.detailButton}
+                                  onPress={() => router.push({
+                                    pathname: '/(app)/place-detail',
+                                    params: { placeData: JSON.stringify(place) }
+                                  })}
+                                >
+                                  <Text style={styles.detailButtonText}>Detaylı İncele</Text>
+                                </TouchableOpacity>
                 </View>
                 </View>
               </TouchableOpacity>
@@ -1098,6 +1142,17 @@ const styles = StyleSheet.create({
   },
   priceContainer: {
     flexDirection: 'row',
+  },
+  detailButton: {
+    backgroundColor: '#E91E63',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 15,
+  },
+  detailButtonText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '600',
   },
   bottomButtonContainer: {
     position: 'absolute',
