@@ -29,6 +29,12 @@ interface Place {
   address: string;
   priceLevel: number;
   googlePlaceId?: string;
+  visitedPlaces?: Array<{
+    name: string;
+    image: string;
+    rating: number;
+    description: string;
+  }>;
 }
 
 interface Review {
@@ -64,7 +70,6 @@ export default function PlaceDetailScreen() {
   const router = useRouter();
   const { placeData } = useLocalSearchParams();
   const [activeTab, setActiveTab] = useState(0);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [placeDetails, setPlaceDetails] = useState<PlaceDetails | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [displayedReviewCount, setDisplayedReviewCount] = useState(15);
@@ -77,7 +82,6 @@ export default function PlaceDetailScreen() {
   useEffect(() => {
     // Reset state when place changes
     setPlaceDetails(null);
-    setCurrentImageIndex(0);
     setActiveTab(0);
     setIsLoading(true);
     setDisplayedReviewCount(15);
@@ -305,8 +309,6 @@ export default function PlaceDetailScreen() {
     );
   }
 
-  const images = placeDetails?.photos || [place.imageUri];
-
   const handleBack = () => {
     router.back();
   };
@@ -394,11 +396,35 @@ export default function PlaceDetailScreen() {
     ));
   };
 
-  const renderImageItem = ({ item, index }: { item: string; index: number }) => (
-    <Image source={{ uri: item }} style={styles.sliderImage} />
-  );
-
   const renderTabContent = () => {
+    if (place.category === 'Şehir') {
+      // Şehirler için sadece gidilen yerler tab'ı
+      return (
+        <View style={styles.tabContent}>
+          {place.visitedPlaces && place.visitedPlaces.length > 0 ? (
+            place.visitedPlaces.map((visitedPlace, index) => (
+              <View key={index} style={styles.visitedPlaceCard}>
+                <Image source={{ uri: visitedPlace.image }} style={styles.visitedPlaceImage} />
+                <View style={styles.visitedPlaceContent}>
+                  <View style={styles.visitedPlaceHeader}>
+                    <Text style={styles.visitedPlaceName}>{visitedPlace.name}</Text>
+                    <View style={styles.visitedPlaceRating}>
+                      <FontAwesome5 name="star" size={14} color="#FFD700" />
+                      <Text style={styles.visitedPlaceRatingText}>{visitedPlace.rating}</Text>
+                    </View>
+                  </View>
+                  <Text style={styles.visitedPlaceDescription}>{visitedPlace.description}</Text>
+                </View>
+              </View>
+            ))
+          ) : (
+            <Text style={styles.noVisitedPlacesText}>Bu şehirde henüz ziyaret edilen yer bulunmuyor.</Text>
+          )}
+        </View>
+      );
+    }
+
+    // Normal yerler için eski tab yapısı
     switch (activeTab) {
       case 0: // Bilgiler ve Puan
         return (
@@ -496,66 +522,19 @@ export default function PlaceDetailScreen() {
           </View>
         );
 
-      case 2: // Saatler ve İletişim
+      case 2: // Saatler
         return (
           <View style={styles.tabContent}>
-            <View style={styles.hoursSection}>
-              <Text style={styles.sectionTitle}>Açılış Saatleri</Text>
-              {placeDetails?.openingHours?.isOpen !== undefined && (
-                <View style={styles.statusContainer}>
-                  <Text style={[
-                    styles.statusText,
-                    { color: placeDetails.openingHours.isOpen ? '#10B981' : '#EF4444' }
-                  ]}>
-                    {placeDetails.openingHours.isOpen ? '🟢 Şu anda açık' : '🔴 Şu anda kapalı'}
-                  </Text>
+            <Text style={styles.sectionTitle}>Çalışma Saatleri</Text>
+            {placeDetails?.openingHours?.weekdayText ? (
+              placeDetails.openingHours.weekdayText.map((hours, index) => (
+                <View key={index} style={styles.hoursItem}>
+                  <Text style={styles.hoursText}>{hours}</Text>
                 </View>
-              )}
-              <View style={styles.hoursContainer}>
-                {(placeDetails?.openingHours?.weekdayText?.length || 0) > 0 ? 
-                  placeDetails!.openingHours.weekdayText.map((dayText, index) => (
-                    <View key={index} style={styles.hourItem}>
-                      <Text style={styles.dayText}>{dayText}</Text>
-                    </View>
-                  )) :
-                  [
-                    'Pazartesi: 09:00 - 22:00',
-                    'Salı: 09:00 - 22:00', 
-                    'Çarşamba: 09:00 - 22:00',
-                    'Perşembe: 09:00 - 22:00',
-                    'Cuma: 09:00 - 23:00',
-                    'Cumartesi: 10:00 - 23:00',
-                    'Pazar: 10:00 - 21:00'
-                  ].map((dayText, index) => (
-                    <View key={index} style={styles.hourItem}>
-                      <Text style={styles.dayText}>{dayText}</Text>
-                    </View>
-                  ))
-                }
-              </View>
-            </View>
-
-            <View style={styles.contactSection}>
-              <Text style={styles.sectionTitle}>İletişim Bilgileri</Text>
-              {placeDetails?.contact?.phone && (
-                <View style={styles.contactItem}>
-                  <FontAwesome5 name="phone" size={16} color="#E91E63" />
-                  <Text style={styles.contactText}>{placeDetails.contact.phone}</Text>
-                </View>
-              )}
-              {placeDetails?.contact?.website && (
-                <View style={styles.contactItem}>
-                  <FontAwesome5 name="globe" size={16} color="#E91E63" />
-                  <Text style={styles.contactText}>{placeDetails.contact.website}</Text>
-                </View>
-              )}
-              {placeDetails?.contact?.email && (
-                <View style={styles.contactItem}>
-                  <FontAwesome5 name="envelope" size={16} color="#E91E63" />
-                  <Text style={styles.contactText}>{placeDetails.contact.email}</Text>
-                </View>
-              )}
-            </View>
+              ))
+            ) : (
+              <Text style={styles.noHoursText}>Çalışma saatleri bilgisi bulunmuyor.</Text>
+            )}
           </View>
         );
 
@@ -564,48 +543,21 @@ export default function PlaceDetailScreen() {
     }
   };
 
-  const tabs = ['Bilgiler', 'Yorumlar', 'Saatler'];
+  const tabs = place.category === 'Şehir' ? ['Gidilen Yerler'] : ['Bilgiler', 'Yorumlar', 'Saatler'];
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#000" />
+      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
       
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={handleBack} style={styles.backButton}>
-          <FontAwesome5 name="arrow-left" size={20} color="#fff" />
+          <FontAwesome5 name="arrow-left" size={20} color="#333" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{place.name}</Text>
         <TouchableOpacity style={styles.favoriteButton}>
-          <FontAwesome5 name="heart" size={20} color="#fff" />
+          <FontAwesome5 name="heart" size={20} color="#E91E63" />
         </TouchableOpacity>
-      </View>
-
-      {/* Image Slider */}
-      <View style={styles.imageSliderContainer}>
-        <FlatList
-          data={images}
-          renderItem={renderImageItem}
-          keyExtractor={(item, index) => index.toString()}
-          horizontal
-          pagingEnabled
-          showsHorizontalScrollIndicator={false}
-          onMomentumScrollEnd={(event) => {
-            const index = Math.round(event.nativeEvent.contentOffset.x / width);
-            setCurrentImageIndex(index);
-          }}
-        />
-        <View style={styles.imageIndicators}>
-          {images.map((_, index) => (
-            <View
-              key={index}
-              style={[
-                styles.indicator,
-                index === currentImageIndex && styles.activeIndicator
-              ]}
-            />
-          ))}
-        </View>
       </View>
 
       {/* Tab Navigation */}
@@ -711,25 +663,23 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingVertical: 15,
-    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
+    backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
     zIndex: 10,
   },
   backButton: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    backgroundColor: '#f8f9fa',
     justifyContent: 'center',
     alignItems: 'center',
   },
   headerTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#fff',
+    color: '#333',
     flex: 1,
     textAlign: 'center',
   },
@@ -737,37 +687,9 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    backgroundColor: '#f8f9fa',
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  imageSliderContainer: {
-    height: 250,
-    position: 'relative',
-  },
-  sliderImage: {
-    width: width,
-    height: 250,
-    resizeMode: 'cover',
-  },
-  imageIndicators: {
-    position: 'absolute',
-    bottom: 15,
-    left: 0,
-    right: 0,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  indicator: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: 'rgba(255, 255, 255, 0.5)',
-    marginHorizontal: 4,
-  },
-  activeIndicator: {
-    backgroundColor: '#fff',
   },
   tabContainer: {
     flexDirection: 'row',
@@ -1147,5 +1069,75 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#E91E63',
     fontWeight: '600',
+  },
+  visitedPlaceCard: {
+    flexDirection: 'row',
+    backgroundColor: '#f8f9fa',
+    borderRadius: 12,
+    overflow: 'hidden',
+    marginBottom: 15,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  visitedPlaceImage: {
+    width: 100,
+    height: 100,
+    borderRadius: 8,
+  },
+  visitedPlaceContent: {
+    flex: 1,
+    padding: 10,
+  },
+  visitedPlaceHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 5,
+  },
+  visitedPlaceName: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333',
+    flex: 1,
+  },
+  visitedPlaceRating: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  visitedPlaceRatingText: {
+    fontSize: 14,
+    color: '#FFD700',
+    marginLeft: 5,
+  },
+  visitedPlaceDescription: {
+    fontSize: 14,
+    color: '#555',
+    lineHeight: 20,
+  },
+  noVisitedPlacesText: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+    marginTop: 20,
+    fontStyle: 'italic',
+  },
+  hoursItem: {
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e9ecef',
+  },
+  hoursText: {
+    fontSize: 16,
+    color: '#333',
+  },
+  noHoursText: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+    marginTop: 20,
+    fontStyle: 'italic',
   },
 });

@@ -3,7 +3,13 @@ import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import { Tabs, useRouter } from 'expo-router';
 import { FontAwesome5 } from '@expo/vector-icons';
 
-function CustomTabBar({ state, descriptors, navigation }) {
+interface CustomTabBarProps {
+  state: any;
+  descriptors: any;
+  navigation: any;
+}
+
+function CustomTabBar({ state, descriptors, navigation }: CustomTabBarProps) {
   const router = useRouter();
 
   const fabAction = () => {
@@ -16,7 +22,7 @@ function CustomTabBar({ state, descriptors, navigation }) {
   return (
     <View style={styles.tabBarContainer}>
       <View style={styles.tabBar}>
-        {state.routes.map((route, index) => {
+        {state.routes.map((route: any, index: number) => {
           if (route.name === 'add') {
             return (
               <View key={index} style={styles.fabPlaceholder} />
@@ -46,7 +52,7 @@ function CustomTabBar({ state, descriptors, navigation }) {
             });
           };
 
-          const Icon = ({ color }) => {
+          const Icon = ({ color }: { color: string }) => {
             let iconName;
             if (label === 'Ana Sayfa') iconName = 'home';
             else if (label === 'İlgi Alanları') iconName = 'bell';
@@ -105,6 +111,55 @@ export default function TabLayout() {
         name="route-planner" 
         options={{ 
           title: 'Rota Planlayıcı',
+          href: null, // Tab bar'da gösterme
+        }} 
+      />
+      <Tabs.Screen 
+        name="profile" 
+        options={{ 
+          title: 'Profil',
+          href: null, // Tab bar'da gösterme
+        }} 
+      />
+      <Tabs.Screen 
+        name="user-profile" 
+        options={{ 
+          title: 'Kullanıcı Profili',
+          href: null, // Tab bar'da gösterme
+        }} 
+      />
+      <Tabs.Screen 
+        name="chats" 
+        options={{ 
+          title: 'Sohbetler',
+          href: null, // Tab bar'da gösterme
+        }} 
+      />
+      <Tabs.Screen 
+        name="chat" 
+        options={{ 
+          title: 'Sohbet',
+          href: null, // Tab bar'da gösterme
+        }} 
+      />
+      <Tabs.Screen 
+        name="route-preview" 
+        options={{ 
+          title: 'Rota Önizleme',
+          href: null, // Tab bar'da gösterme
+        }} 
+      />
+      <Tabs.Screen 
+        name="waypoints" 
+        options={{ 
+          title: 'Durak Noktaları',
+          href: null, // Tab bar'da gösterme
+        }} 
+      />
+      <Tabs.Screen 
+        name="fullscreen-map" 
+        options={{ 
+          title: 'Tam Ekran Harita',
           href: null, // Tab bar'da gösterme
         }} 
       />
