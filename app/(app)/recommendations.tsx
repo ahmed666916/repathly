@@ -37,6 +37,10 @@ interface Place {
   vicinity?: string;
   // Önerinin hangi rota lokasyonu için fetch edildiği
   sourceLocation?: string;
+  // Yeni lokasyon hiyerarşi bilgileri
+  locationHierarchy?: string; // 'il', 'ilçe', 'mahalle'
+  locationDisplayName?: string; // 'Ankara' veya 'Ankara > Çankaya' gibi
+  routeOrder?: number; // Güzergah sırası
 }
 
 export default function RecommendationsScreen() {
@@ -45,10 +49,59 @@ export default function RecommendationsScreen() {
   const [places, setPlaces] = useState<Place[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [loadingText, setLoadingText] = useState('Öneriler yükleniyor...');
+  const [searchRadius, setSearchRadius] = useState(30); // Default 30km
+  const [userCurrentCity, setUserCurrentCity] = useState<string>('İstanbul'); // Default İstanbul
 
   useEffect(() => {
-    generateLocationBasedRecommendations();
-  }, [selectedInterests, destination, waypoints]);
+    // Kullanıcının mevcut konumunu tespit et
+    detectUserCurrentCity();
+  }, []);
+
+  useEffect(() => {
+    if (userCurrentCity) {
+      generateLocationBasedRecommendations();
+    }
+  }, [selectedInterests, destination, waypoints, searchRadius, userCurrentCity]);
+
+  // Kullanıcının mevcut şehrini tespit eden fonksiyon
+  const detectUserCurrentCity = async () => {
+    try {
+      // Global'den kullanıcının konumunu al
+      const globalUserLocation = (global as any).userLocation;
+      
+      if (globalUserLocation) {
+        console.log('🌍 Kullanıcının GPS konumu:', globalUserLocation);
+        
+        // Reverse geocoding ile şehir adını al
+        const apiKey = 'AIzaSyD20dEgYCXYcs-C4uGDMUTSvSbdxYDuk5o';
+        const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${globalUserLocation.latitude},${globalUserLocation.longitude}&key=${apiKey}&language=tr&result_type=administrative_area_level_1`;
+        
+        const response = await fetch(geocodeUrl);
+        const data = await response.json();
+        
+        if (data.status === 'OK' && data.results[0]) {
+          const result = data.results[0];
+          
+          for (const component of result.address_components) {
+            if (component.types.includes('administrative_area_level_1')) {
+              const cityName = component.long_name;
+              console.log('📍 Kullanıcının bulunduğu şehir:', cityName);
+              setUserCurrentCity(cityName);
+              return;
+            }
+          }
+        }
+      }
+      
+      // Fallback: GPS yoksa İstanbul varsayılan
+      console.log('⚠️ GPS konumu bulunamadı, İstanbul varsayılan olarak kullanılıyor');
+      setUserCurrentCity('İstanbul');
+      
+    } catch (error) {
+      console.error('Kullanıcı konumu tespit hatası:', error);
+      setUserCurrentCity('İstanbul');
+    }
+  };
 
   // Sayfa focus olduğunda reset kontrolü
   useFocusEffect(
@@ -65,7 +118,13 @@ export default function RecommendationsScreen() {
     }, [])
   );
 
-  const fetchGooglePlaces = async (location: string, interest: string): Promise<Place[]> => {
+  const fetchGooglePlaces = async (location: string, interest: string, searchRadius: number): Promise<Place[]> => {
+    // KULLANICININ BULUNDUĞU ŞEHİR İÇİN ÖNERI ALMA - KESIN FİLTRE
+    if (location === userCurrentCity || location === `${userCurrentCity} Province` || location.includes(userCurrentCity)) {
+      console.log('🚫 Kullanıcının bulunduğu şehir için öneri alınmıyor:', location);
+      return [];
+    }
+    
     const apiKey = 'AIzaSyD20dEgYCXYcs-C4uGDMUTSvSbdxYDuk5o';
     const targetCount = 10;
     let allPlaces: any[] = [];
@@ -120,8 +179,9 @@ export default function RecommendationsScreen() {
     if (!coords) return [];
 
     // 1. ADIM: TextSearch ile popüler yerleri ara
+    const radiusMeters = searchRadius * 1000; // km to meters
     for (const query of config.textQueries) {
-        const url = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(query)}&location=${coords.lat},${coords.lng}&radius=50000&key=${apiKey}&language=tr`;
+        const url = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(query)}&location=${coords.lat},${coords.lng}&radius=${radiusMeters}&key=${apiKey}&language=tr`;
         try {
             const res = await fetch(url);
             const data = await res.json();
@@ -134,7 +194,7 @@ export default function RecommendationsScreen() {
     // 2. ADIM: Yeterli sonuç yoksa, NearbySearch ile destekle
     if (allPlaces.length < targetCount * 2) {
         for (const type of config.types) {
-             const url = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${coords.lat},${coords.lng}&radius=50000&type=${type}&key=${apiKey}&language=tr`;
+             const url = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${coords.lat},${coords.lng}&radius=${radiusMeters}&type=${type}&key=${apiKey}&language=tr`;
             try {
                 const res = await fetch(url);
                 const data = await res.json();
@@ -164,16 +224,8 @@ export default function RecommendationsScreen() {
         return R * c;
     };
     
-    // İlgi alanına göre dinamik mesafe eşiği (km)
-    const interestRadiusKm: Record<string, number> = {
-        nature: 80,
-        adventure: 70,
-        history: 50,
-        art: 40,
-        food: 30,
-        nightlife: 30,
-    };
-    const radiusKm = interestRadiusKm[interest] ?? 50;
+    // Kullanıcı tarafından belirlenen mesafe eşiği kullan
+    const radiusKm = searchRadius;
 
     // Coğrafi mesafe filtresi: şehir merkezi çevresinde kal
     const distanceFilteredPlaces = uniquePlaces.filter((p: any) => {
@@ -280,7 +332,21 @@ export default function RecommendationsScreen() {
         })
     );
 
-    return detailedPlaces;
+    // KULLANICININ ŞEHRİ FİLTRESİ - Son kontrol
+    const filteredPlaces = detailedPlaces.filter(place => {
+      const isUserCity = place.address?.includes(userCurrentCity) || 
+                        place.vicinity?.includes(userCurrentCity) ||
+                        place.sourceLocation?.includes(userCurrentCity);
+      
+      if (isUserCity) {
+        console.log('🚫 Kullanıcının şehri filtrelendi:', place.name, `(${userCurrentCity})`);
+        return false;
+      }
+      return true;
+    });
+
+    console.log(`✅ ${location} için ${filteredPlaces.length} yer döndürülüyor (${userCurrentCity} filtrelendi)`);
+    return filteredPlaces;
   };
 
   const getDefaultImageForCategory = (interest: string): string => {
@@ -297,237 +363,223 @@ export default function RecommendationsScreen() {
 
   const generateLocationBasedRecommendations = async () => {
     setIsLoading(true);
-    setLoadingText('Öneriler yükleniyor...');
+    setLoadingText('Rota güzergahı analiz ediliyor...');
     
     const interests = selectedInterests ? JSON.parse(selectedInterests as string) : [];
     const waypointsList = waypoints ? JSON.parse(waypoints as string) : [];
     
-    // Rota sırası: İstanbul (başlangıç) → ara noktalar → hedef (son)
-    const routeOrder = [];
-    
-    // Ara noktalar varsa önce onlar
-    if (waypointsList && waypointsList.length > 0) {
-      routeOrder.push(...waypointsList);
-    }
-    
-    // Son olarak hedef
-    if (destination) {
-      routeOrder.push(destination);
-    }
-    
-    // Google Places API'den gerçek yerler al
-    const realPlaces: Place[] = [];
-    let totalExpected = routeOrder.length * interests.length;
-    let currentProgress = 0;
-    
-    for (const location of routeOrder) {
-      for (const interest of interests) {
-        currentProgress++;
-        setLoadingText(`${location} için ${getCategoryName(interest)} yerleri aranıyor... (${currentProgress}/${totalExpected})`);
+    try {
+      // 1. ADIM: Rota güzergahını analiz et ve geçilen tüm il/ilçeleri bul
+      const routeLocations = await analyzeRouteAndGetLocations(waypointsList, destination as string);
+      console.log('🗺️ Rota boyunca bulunan lokasyonlar (sıralı):', routeLocations.map(l => ({ name: l.name, order: l.routeOrder })));
+      console.log('📍 Waypoints:', waypointsList);
+      console.log('🎯 Destination:', destination);
+      
+      // Kullanıcının bulunduğu şehri filtrele - öneri alma
+      const filteredLocations = routeLocations.filter(location => 
+        location.name !== userCurrentCity && 
+        location.name !== `${userCurrentCity} Province` &&
+        location.displayName !== userCurrentCity &&
+        !location.displayName.includes(userCurrentCity)
+      );
+      
+      setLoadingText(`${filteredLocations.length} şehir için öneriler hazırlanıyor...`);
+      
+      // 2. ADIM: Her lokasyon için öneriler al (İstanbul hariç)
+      const realPlaces: Place[] = [];
+      
+      console.log(`🚫 ${userCurrentCity} filtrelendi. Öneri alınacak şehirler:`, filteredLocations.map(l => l.name));
+      
+      let totalExpected = filteredLocations.length * interests.length;
+      let currentProgress = 0;
+      
+      for (const location of filteredLocations) {
+        for (const interest of interests) {
+          currentProgress++;
+          setLoadingText(`${location.displayName} için ${getCategoryName(interest)} yerleri aranıyor... (${currentProgress}/${totalExpected})`);
+          
+          try {
+            const placesForLocation = await fetchGooglePlaces(location.name, interest, searchRadius);
+            // Lokasyon bilgilerini ekle
+            const enrichedPlaces = placesForLocation.map(place => ({
+              ...place,
+              sourceLocation: location.name,
+              locationHierarchy: location.hierarchy,
+              locationDisplayName: location.displayName,
+              routeOrder: location.routeOrder
+            }));
+            realPlaces.push(...enrichedPlaces);
+          } catch (error) {
+            console.error(`Error fetching places for ${location.name}, ${interest}:`, error);
+          }
+          
+          // API rate limiting için kısa bekleme
+          await new Promise(resolve => setTimeout(resolve, 150));
+        }
+      }
+      
+      // Final kullanıcı şehri filtresi - places state'ine eklemeden önce
+      const finalFilteredPlaces = realPlaces.filter(place => {
+        const isUserCity = place.sourceLocation?.includes(userCurrentCity) ||
+                          place.locationDisplayName?.includes(userCurrentCity) ||
+                          place.address?.includes(userCurrentCity) ||
+                          place.vicinity?.includes(userCurrentCity) ||
+                          place.name?.includes(userCurrentCity);
         
-        try {
-          const placesForLocation = await fetchGooglePlaces(location as string, interest);
-          // Güvenli ekleme: sadece bu lokasyon için üretilmiş öneriler
-          const safePlaces = placesForLocation.filter(p => p.sourceLocation === (location as string));
-          realPlaces.push(...safePlaces);
-        } catch (error) {
-          console.error(`Error fetching places for ${location}, ${interest}:`, error);
-          // Hata durumunda mock data kullan
-          const mockPlaces = generatePlacesForLocationAndInterest(
-            location as string, 
-            interest, 
-            routeOrder.indexOf(location), 
-            routeOrder.length
-          );
-          realPlaces.push(...mockPlaces);
+        if (isUserCity) {
+          console.log(`🚫 Final filtrede ${userCurrentCity} yeri kaldırıldı:`, place.name);
+          return false;
+        }
+        return true;
+      });
+      
+      console.log(`✅ Final: ${realPlaces.length} -> ${finalFilteredPlaces.length} yer (${userCurrentCity} filtrelendi)`);
+      setPlaces(finalFilteredPlaces);
+      if (finalFilteredPlaces.length === 0) {
+        setLoadingText('Bu rota güzergahında öneriler bulunamadı.');
+        setTimeout(() => setIsLoading(false), 3000);
+      } else {
+        setIsLoading(false);
+      }
+      
+    } catch (error) {
+      console.error('Rota analizi hatası:', error);
+      setLoadingText('Rota analizi başarısız oldu.');
+      setTimeout(() => setIsLoading(false), 3000);
+    }
+  };
+
+  // GERÇEK ROTA GÜZERGAHINDAKİ İLLERİ SIRASIYLA BULAN FONKSİYON
+  const analyzeRouteAndGetLocations = async (waypoints: string[], destination: string): Promise<Array<{name: string, hierarchy: string, displayName: string, routeOrder: number}>> => {
+    const apiKey = 'AIzaSyD20dEgYCXYcs-C4uGDMUTSvSbdxYDuk5o';
+    const orderedCities: Array<{name: string, hierarchy: string, displayName: string, routeOrder: number}> = [];
+    
+    try {
+      console.log(`🛣️ ${userCurrentCity} -> ${destination} rotası analiz ediliyor...`);
+      
+      // TEK BİR DIRECTIONS ÇAĞRISI: Kullanıcının şehrinden hedefe direkt rota
+      const directionsUrl = `https://maps.googleapis.com/maps/api/directions/json?origin=${encodeURIComponent(userCurrentCity)}&destination=${encodeURIComponent(destination)}&key=${apiKey}&language=tr&region=tr`;
+      
+      const response = await fetch(directionsUrl);
+      const data = await response.json();
+      
+      if (data.status === 'OK' && data.routes[0]) {
+        const route = data.routes[0];
+        console.log('✅ Rota bulundu, adımlar analiz ediliyor...');
+        
+        let stepOrder = 0;
+        const seenProvinces = new Set<string>();
+        
+        // Her leg ve step'i sırayla işle
+        for (const leg of route.legs) {
+          for (let stepIndex = 0; stepIndex < leg.steps.length; stepIndex++) {
+            const step = leg.steps[stepIndex];
+            stepOrder++;
+            
+            // Her adımın koordinatlarını analiz et
+            const stepLocations = await analyzeStepLocation(step, apiKey, stepOrder);
+            
+            // Yeni illeri ekle (kullanıcının şehri hariç - kesin filtre)
+            for (const location of stepLocations) {
+              if (location.name !== userCurrentCity && 
+                  location.name !== `${userCurrentCity} Province` && 
+                  !location.name.includes(userCurrentCity) &&
+                  !location.displayName.includes(userCurrentCity) &&
+                  !seenProvinces.has(location.name)) {
+                
+                seenProvinces.add(location.name);
+                orderedCities.push({
+                  ...location,
+                  routeOrder: stepOrder
+                });
+                
+                console.log(`📍 ${stepOrder}. sırada: ${location.name} (${location.hierarchy})`);
+              }
+            }
+            
+            // Her 10 step'te bir kısa bekleme
+            if (stepIndex % 10 === 0) {
+              await new Promise(resolve => setTimeout(resolve, 100));
+            }
+          }
         }
         
-        // Kısa bir bekleme süresi ekle (API rate limiting için)
-        await new Promise(resolve => setTimeout(resolve, 100));
+        console.log('🎯 Final route cities:', orderedCities.map(c => c.name));
+        return orderedCities;
+        
+      } else {
+        console.error('❌ Directions API hatası:', data.status);
+        throw new Error(`Directions API Error: ${data.status}`);
       }
-    }
-    
-    setPlaces(realPlaces);
-    if (realPlaces.length === 0) {
-        setLoadingText('Bu kategori ve konum için popüler yer bulunamadı.');
-        // Hata durumunda 3 saniye sonra ekranı kapatmaması için isLoading'i false yap ama boş ekran göster
-        setTimeout(() => {
-             setIsLoading(false);
-        }, 3000);
-    } else {
-        setIsLoading(false);
+      
+    } catch (error) {
+      console.error('🚨 Rota analizi hatası:', error);
+      // Hata durumunda en azından hedef şehri döndür
+      return [
+        { name: destination, hierarchy: 'il', displayName: destination, routeOrder: 1 }
+      ];
     }
   };
 
-  const generatePlacesForLocationAndInterest = (location: string, interest: string, locationIndex: number, totalLocations: number): Place[] => {
-    const places: Place[] = [];
-    
-    // Her kategori ve şehir için minimum 10 öneri garanti et
-    const placesPerLocation = 10;
-    
-    // Belirlenen sayıda yer oluştur
-    for (let i = 1; i <= placesPerLocation; i++) {
-      const place = createPlaceForInterest(location, interest, i, locationIndex);
-      places.push(place);
-    }
-    
-    return places;
-  };
-
-  const createPlaceForInterest = (location: string, interest: string, index: number, locationIndex: number): Place => {
-    // Şehir-bazlı gerçek yerler
-    const realPlacesByCity = {
-      'Afyon': {
-        food: [
-          'Afyon Kebap Evi', 'İkbal Lokantası', 'Sandal Bedesteni Restaurant', 'Öz Afyon Mutfağı', 
-          'Tarihi Afyon Lokantası', 'Sultan Sofrası', 'Thermal Restoran', 'Mevlana Restaurant',
-          'Paşa Konağı', 'Afyon Lezzet Durağı', 'Kaymak Evi', 'Pide Palace'
-        ],
-        history: [
-          'Afyonkarahisar Kalesi', 'Afyon Müzesi', 'Gedik Ahmet Paşa Camii', 'Mevlevihane Camii',
-          'Ulu Camii', 'İmaret Camii', 'Afyon Arkeoloji Müzesi', 'Sandıklı Apollon Tapınağı',
-          'Roma Hamamları', 'Frigler Vadisi', 'Frig Yazıtları', 'Ayazini Köyü'
-        ]
-      },
-      'Konya': {
-        food: [
-          'Konya Mutfağı', 'Mevlana Restaurant', 'Şems-i Tebrizi Lokantası', 'Tiritçi Mithat',
-          'Konya Etli Ekmek', 'Hacı Şükrü Usta', 'Sultan Sofrası', 'Rumi Restaurant',
-          'Selçuklu Lokantası', 'Karatay Restoran', 'Sille Restaurant', 'Gevrek Restaurant'
-        ],
-        history: [
-          'Mevlana Türbesi', 'Karatay Medresesi', 'İnce Minareli Medrese', 'Konya Kalesi',
-          'Alaeddin Camii', 'Sahip Ata Külliyesi', 'Sırçalı Medrese', 'İplikçi Camii',
-          'Selimiye Camii', 'Konya Arkeoloji Müzesi', 'Sille Köyü', 'Çatalhöyük'
-        ]
-      },
-      'Antalya': {
-        food: [
-          'Vanilla Lounge', 'Seraser Fine Dining', 'Kaleiçi Restaurant', 'Arma Restaurant',
-          'Club Arma', 'Hasanağa Bahçesi', 'Pasa Bey Kebap', 'Big Yellow Taxi Benzin Cafe',
-          'Rokka Restaurant', 'Castle Cafe', 'Parlak Restaurant', 'Antalya Balık Evi'
-        ],
-        history: [
-          'Kaleiçi', 'Hadrian Kapısı', 'Yivli Minare', 'Antalya Müzesi',
-          'Hidırlık Kulesi', 'Kesik Minare', 'Karatay Medresesi', 'Saat Kulesi',
-          'Perge Antik Kenti', 'Aspendos Antik Tiyatrosu', 'Termessos', 'Side Antik Kenti'
-        ]
+  // Tek bir step'in lokasyonunu analiz eden yardımcı fonksiyon
+  const analyzeStepLocation = async (step: any, apiKey: string, stepOrder: number): Promise<Array<{name: string, hierarchy: string, displayName: string}>> => {
+    try {
+      const lat = step.start_location.lat;
+      const lng = step.start_location.lng;
+      
+      // Reverse geocoding
+      const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${apiKey}&language=tr&result_type=administrative_area_level_1|administrative_area_level_2`;
+      
+      const response = await fetch(geocodeUrl);
+      const data = await response.json();
+      
+      if (data.status === 'OK' && data.results[0]) {
+        const result = data.results[0];
+        const locations: Array<{name: string, hierarchy: string, displayName: string}> = [];
+        
+        let province = '';
+        let district = '';
+        
+        // Adres bileşenlerini parse et
+        for (const component of result.address_components) {
+          if (component.types.includes('administrative_area_level_1')) {
+            province = component.long_name;
+          } else if (component.types.includes('administrative_area_level_2')) {
+            district = component.long_name;
+          }
+        }
+        
+        // Önce ili ekle
+        if (province) {
+          locations.push({
+            name: province,
+            hierarchy: 'il',
+            displayName: province
+          });
+        }
+        
+        // Sonra ilçeyi ekle (eğer farklıysa)
+        if (district && district !== province) {
+          locations.push({
+            name: district,
+            hierarchy: 'ilçe',
+            displayName: `${province} > ${district}`
+          });
+        }
+        
+        return locations;
       }
-    };
-
-    // Genel template sistemi
-    const placeTemplates = {
-      food: [
-        { prefix: 'Lezzetli', suffix: 'Restoran', desc: 'Geleneksel ve modern mutfağın buluştuğu nokta' },
-        { prefix: 'Meşhur', suffix: 'Lokantası', desc: 'Şehrin en sevilen lezzetleri' },
-        { prefix: 'Gurme', suffix: 'Bistro', desc: 'Özel tarifler ve benzersiz tatlar' },
-        { prefix: 'Tarihi', suffix: 'Meyhanesi', desc: 'Asırlık geleneksel lezzetler' },
-        { prefix: 'Modern', suffix: 'Kitchen', desc: 'Çağdaş gastronomi deneyimi' }
-      ],
-      history: [
-        { prefix: 'Tarihi', suffix: 'Müzesi', desc: 'Geçmişin izlerini keşfedin' },
-        { prefix: 'Antik', suffix: 'Kalıntıları', desc: 'Asırlık tarihi yapılar' },
-        { prefix: 'Osmanlı', suffix: 'Eserleri', desc: 'İmparatorluk mirasını görün' },
-        { prefix: 'Arkeolojik', suffix: 'Alanı', desc: 'Kazılarla ortaya çıkan tarih' },
-        { prefix: 'Kültür', suffix: 'Merkezi', desc: 'Yaşayan tarih ve kültür' }
-      ],
-      art: [
-        { prefix: 'Sanat', suffix: 'Galerisi', desc: 'Çağdaş sanat eserleri' },
-        { prefix: 'Kültür', suffix: 'Merkezi', desc: 'Sanat ve kültür buluşması' },
-        { prefix: 'Modern', suffix: 'Müzesi', desc: 'Çağdaş sanatın kalbi' },
-        { prefix: 'Sergi', suffix: 'Salonu', desc: 'Dönemsel sanat sergileri' },
-        { prefix: 'Atölye', suffix: 'Evi', desc: 'Sanatçıların yaratım alanı' }
-      ],
-      adventure: [
-        { prefix: 'Macera', suffix: 'Parkı', desc: 'Adrenalin dolu aktiviteler' },
-        { prefix: 'Spor', suffix: 'Kompleksi', desc: 'Her türlü spor imkanı' },
-        { prefix: 'Doğa', suffix: 'Sporları', desc: 'Açık havada heyecan' },
-        { prefix: 'Ekstrem', suffix: 'Merkezi', desc: 'Sınırlarınızı zorlayın' },
-        { prefix: 'Aktivite', suffix: 'Alanı', desc: 'Aktif yaşam deneyimi' }
-      ],
-      nature: [
-        { prefix: 'Doğa', suffix: 'Parkı', desc: 'Yeşilin ve havanın tadını çıkarın' },
-        { prefix: 'Botanik', suffix: 'Bahçesi', desc: 'Binlerce bitki türü' },
-        { prefix: 'Manzara', suffix: 'Tepesi', desc: 'Nefes kesen manzaralar' },
-        { prefix: 'Mesire', suffix: 'Alanı', desc: 'Piknik ve dinlence' },
-        { prefix: 'Orman', suffix: 'Yürüyüşü', desc: 'Doğayla iç içe yürüyüş' }
-      ],
-      nightlife: [
-        { prefix: 'Trendy', suffix: 'Bar', desc: 'Şehrin en popüler gece mekanı' },
-        { prefix: 'Rooftop', suffix: 'Lounge', desc: 'Manzaralı gece eğlencesi' },
-        { prefix: 'Jazz', suffix: 'Club', desc: 'Canlı müzik ve dans' },
-        { prefix: 'Cocktail', suffix: 'Bar', desc: 'Özel kokteyl tarifleri' },
-        { prefix: 'Live', suffix: 'Music', desc: 'Canlı müzik performansları' }
-      ]
-    };
-
-    // Önce gerçek yerlerden kontrol et
-    const cityPlaces = realPlacesByCity[location as keyof typeof realPlacesByCity];
-    const realPlaces = cityPlaces?.[interest as keyof typeof cityPlaces] as string[];
-    
-    let placeName: string;
-    let placeDesc: string;
-    
-    if (realPlaces && realPlaces.length > 0 && index <= realPlaces.length) {
-      // Gerçek yer kullan
-      placeName = realPlaces[(index - 1) % realPlaces.length];
-      placeDesc = `${location}'da gezilmesi gereken popüler ${getCategoryName(interest)} mekanı`;
-        } else {
-      // Template kullan
-      const templates = placeTemplates[interest as keyof typeof placeTemplates] || placeTemplates.food;
-      const template = templates[(index - 1) % templates.length];
-      placeName = `${location} ${template.prefix} ${template.suffix}`;
-      placeDesc = template.desc;
+      
+      return [];
+    } catch (error) {
+      console.error('Step location analysis error:', error);
+      return [];
     }
-    
-    const images = {
-      food: [
-        'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=400&h=300&fit=crop',
-        'https://images.unsplash.com/photo-1551218808-94e220e084d2?w=400&h=300&fit=crop',
-        'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400&h=300&fit=crop'
-      ],
-      history: [
-        'https://images.unsplash.com/photo-1580655653885-65763b2597d0?w=400&h=300&fit=crop',
-        'https://images.unsplash.com/photo-1571115764595-644a1f56a55c?w=400&h=300&fit=crop',
-        'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400&h=300&fit=crop'
-      ],
-      art: [
-        'https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=400&h=300&fit=crop',
-        'https://images.unsplash.com/photo-1536924940846-227afb31e2a5?w=400&h=300&fit=crop',
-        'https://images.unsplash.com/photo-1574270185629-9e1b9d8fd72f?w=400&h=300&fit=crop'
-      ],
-      adventure: [
-        'https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=400&h=300&fit=crop',
-        'https://images.unsplash.com/photo-1540979388789-6cee28a1cdc9?w=400&h=300&fit=crop',
-        'https://images.unsplash.com/photo-1571019613914-85e0c0e24465?w=400&h=300&fit=crop'
-      ],
-      nature: [
-        'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400&h=300&fit=crop',
-        'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=300&fit=crop',
-        'https://images.unsplash.com/photo-1506197603052-3cc9c3a201bd?w=400&h=300&fit=crop'
-      ],
-      nightlife: [
-        'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&h=300&fit=crop',
-        'https://images.unsplash.com/photo-1470337458703-46ad1756a187?w=400&h=300&fit=crop',
-        'https://images.unsplash.com/photo-1511593358241-7eea1f3c84e5?w=400&h=300&fit=crop'
-      ]
-    };
-
-    const imageSet = images[interest as keyof typeof images] || images.food;
-    
-    return {
-      id: `${interest}_${location}_${index}_${locationIndex}`,
-      name: placeName,
-      category: interest,
-      rating: 4.0 + Math.random() * 1.0, // 4.0 - 5.0 arası
-      reviewCount: Math.floor(Math.random() * 500) + 50, // 50-550 arası
-      description: placeDesc,
-      imageUri: imageSet[index % imageSet.length],
-      address: `${location} yakınları`,
-      priceLevel: Math.floor(Math.random() * 4) + 1, // 1-4 arası
-      selected: false
-    };
   };
+
+
+
+
 
   const togglePlaceSelection = (placeId: string) => {
     setPlaces(prev => 
@@ -557,34 +609,113 @@ export default function RecommendationsScreen() {
     router.push('/(app)/fullscreen-map');
   };
 
-  // Önerileri önce lokasyona, sonra kategoriye göre grupla
+  // Önerileri lokasyon hiyerarşisine ve kategoriye göre grupla
   const groupedByLocationAndCategory = () => {
-    const waypointsList = waypoints ? JSON.parse(waypoints as string) : [];
-    const routeOrder = [...waypointsList];
-    if (destination) routeOrder.push(destination);
-    
     const grouped: { [location: string]: { [category: string]: Place[] } } = {};
     
-    // Her lokasyon için grup oluştur
-    routeOrder.forEach(location => {
-      grouped[location as string] = {};
-    });
+    // Tüm yerleri önce place_id'ye göre benzersiz hale getir (tekrar önleme)
+    const uniquePlaces = places.filter((place, index, arr) => 
+      index === arr.findIndex(p => p.googlePlaceId === place.googlePlaceId)
+    );
     
-    // Yerleri lokasyon ve kategoriye göre grupla
-    places.forEach(place => {
-      const preferredLocation = (place.sourceLocation && grouped[place.sourceLocation])
-        ? place.sourceLocation
-        : extractLocationFromName(place.name || '');
-
-      if (preferredLocation && grouped[preferredLocation]) {
-        if (!grouped[preferredLocation][place.category]) {
-          grouped[preferredLocation][place.category] = [];
+    // Lokasyon hiyerarşisine göre akıllı gruplama
+    const locationGroups = new Map<string, Place[]>();
+    
+    uniquePlaces
+      .filter(place => {
+        const locationKey = place.locationDisplayName || place.sourceLocation;
+        const isUserCity = locationKey?.includes(userCurrentCity) || 
+                          place.address?.includes(userCurrentCity) ||
+                          place.vicinity?.includes(userCurrentCity);
+        
+        if (isUserCity) {
+          console.log(`🚫 Gruplama sırasında ${userCurrentCity} yeri filtrelendi:`, place.name);
+          return false;
         }
-        grouped[preferredLocation][place.category].push(place);
-      }
+        return true;
+      })
+      .forEach(place => {
+        const hierarchy = place.locationHierarchy;
+        const displayName = place.locationDisplayName || place.sourceLocation;
+        
+        if (!displayName) return;
+        
+        // Merkez ilçe kontrolü: eğer displayName sadece il adı içeriyorsa merkez ilçe
+        const isCenterDistrict = hierarchy === 'ilçe' && !displayName.includes(' > ');
+        
+        if (isCenterDistrict) {
+          // Merkez ilçe ise, il adı altında grupla
+          const provinceName = place.sourceLocation || displayName;
+          if (!locationGroups.has(provinceName)) {
+            locationGroups.set(provinceName, []);
+          }
+          locationGroups.get(provinceName)!.push({
+            ...place,
+            locationDisplayName: provinceName,
+            locationHierarchy: 'il'
+          });
+        } else {
+          // Normal ilçe/il ise kendi adı altında grupla
+          if (!locationGroups.has(displayName)) {
+            locationGroups.set(displayName, []);
+          }
+          locationGroups.get(displayName)!.push(place);
+        }
+      });
+    
+    // Map'ten grouped objesine dönüştür
+    locationGroups.forEach((places, locationName) => {
+      grouped[locationName] = {};
+      places.forEach(place => {
+        if (!grouped[locationName][place.category]) {
+          grouped[locationName][place.category] = [];
+        }
+        grouped[locationName][place.category].push(place);
+      });
     });
     
-    return { grouped, routeOrder };
+    // Benzersiz lokasyonları al
+    const uniqueLocations = Array.from(locationGroups.keys())
+      .filter(location => 
+        location !== userCurrentCity && 
+        location !== `${userCurrentCity} Province` && 
+        !location?.includes(userCurrentCity)
+      );
+    
+    // Lokasyonları rota sırasına göre sırala (güzergah boyunca)
+    const sortedLocations = uniqueLocations.sort((a, b) => {
+      const aPlace = places.find(p => p.locationDisplayName === a || p.sourceLocation === a);
+      const bPlace = places.find(p => p.locationDisplayName === b || p.sourceLocation === b);
+      
+      const aRouteOrder = aPlace?.routeOrder || 999;
+      const bRouteOrder = bPlace?.routeOrder || 999;
+      
+      console.log(`🔄 Sorting: ${a} (order: ${aRouteOrder}) vs ${b} (order: ${bRouteOrder})`);
+      
+      // Önce rota sırasına göre sırala
+      if (aRouteOrder !== bRouteOrder) {
+        return aRouteOrder - bRouteOrder;
+      }
+      
+      // Aynı rota sırasındaysa hiyerarşiye göre sırala
+      const aHierarchy = aPlace?.locationHierarchy || 'il';
+      const bHierarchy = bPlace?.locationHierarchy || 'il';
+      
+      const hierarchyOrder = { 'il': 1, 'ilçe': 2, 'mahalle': 3 };
+      const aHOrder = hierarchyOrder[aHierarchy as keyof typeof hierarchyOrder] || 4;
+      const bHOrder = hierarchyOrder[bHierarchy as keyof typeof hierarchyOrder] || 4;
+      
+      if (aHOrder !== bHOrder) {
+        return aHOrder - bHOrder;
+      }
+      
+      // Son olarak alfabetik sırala
+      return (a || '').localeCompare(b || '');
+    });
+    
+    console.log('✅ Final sorted order:', sortedLocations);
+    
+    return { grouped, routeOrder: sortedLocations };
   };
   
   const extractLocationFromName = (placeName: string): string | null => {
@@ -621,6 +752,62 @@ export default function RecommendationsScreen() {
       nightlife: 'moon-o'
     };
     return categoryIcons[category] || 'star';
+  };
+
+  const handleRadiusChange = (newRadius: number) => {
+    setSearchRadius(newRadius);
+    setIsLoading(true);
+    setLoadingText('Yeni mesafe ile öneriler yükleniyor...');
+  };
+
+  const formatLocationHierarchy = (address: string) => {
+    // Address'i parse ederek il/ilçe/köy hiyerarşisini belirle
+    const parts = address.split(',').map(part => part.trim());
+    
+    // Türkiye'deki il isimlerini kontrol et
+    const turkishProvinces = [
+      'Adana', 'Adıyaman', 'Afyonkarahisar', 'Ağrı', 'Amasya', 'Ankara', 'Antalya', 'Artvin',
+      'Aydın', 'Balıkesir', 'Bilecik', 'Bingöl', 'Bitlis', 'Bolu', 'Burdur', 'Bursa', 'Çanakkale',
+      'Çankırı', 'Çorum', 'Denizli', 'Diyarbakır', 'Edirne', 'Elazığ', 'Erzincan', 'Erzurum',
+      'Eskişehir', 'Gaziantep', 'Giresun', 'Gümüşhane', 'Hakkari', 'Hatay', 'Isparta', 'Mersin',
+      'İstanbul', 'İzmir', 'Kars', 'Kastamonu', 'Kayseri', 'Kırklareli', 'Kırşehir', 'Kocaeli',
+      'Konya', 'Kütahya', 'Malatya', 'Manisa', 'Kahramanmaraş', 'Mardin', 'Muğla', 'Muş',
+      'Nevşehir', 'Niğde', 'Ordu', 'Rize', 'Sakarya', 'Samsun', 'Siirt', 'Sinop', 'Sivas',
+      'Tekirdağ', 'Tokat', 'Trabzon', 'Tunceli', 'Şanlıurfa', 'Uşak', 'Van', 'Yozgat', 'Zonguldak',
+      'Aksaray', 'Bayburt', 'Karaman', 'Kırıkkale', 'Batman', 'Şırnak', 'Bartın', 'Ardahan',
+      'Iğdır', 'Yalova', 'Karabük', 'Kilis', 'Osmaniye', 'Düzce'
+    ];
+    
+    // İl merkezi mi kontrol et
+    const isProvincialCenter = parts.some(part => 
+      turkishProvinces.some(province => 
+        part.toLowerCase().includes(province.toLowerCase() + ' merkez') ||
+        part.toLowerCase() === province.toLowerCase()
+      )
+    );
+    
+    if (isProvincialCenter) {
+      // İl merkezi ise sadece il ismini döndür
+      const province = parts.find(part => 
+        turkishProvinces.some(prov => 
+          part.toLowerCase().includes(prov.toLowerCase())
+        )
+      );
+      return province || parts[parts.length - 2] || address;
+    } else {
+      // İlçe/köy ise "İl > İlçe/Köy" formatında döndür
+      const province = parts.find(part => 
+        turkishProvinces.some(prov => 
+          part.toLowerCase().includes(prov.toLowerCase())
+        )
+      );
+      const district = parts[0]; // İlk part genelde ilçe/mahalle
+      
+      if (province && district && province !== district) {
+        return `${province} > ${district}`;
+      }
+      return parts.slice(0, 2).join(' > ') || address;
+    }
   };
 
   const selectedCount = places.filter(p => p.selected).length;
@@ -704,27 +891,49 @@ export default function RecommendationsScreen() {
     return totalLocations * interests.length * placesPerLocation;
   };
 
-  const getLocationIcon = (index: number, total: number) => {
-    if (index === 0) return 'play'; // İlk durak
-    if (index === total - 1) return 'flag-checkered'; // Son durak
-    return 'map-marker'; // Ara duraklar
+  const getLocationIcon = (location: string) => {
+    const hierarchy = places.find(p => 
+      p.locationDisplayName === location || p.sourceLocation === location
+    )?.locationHierarchy || 'il';
+    
+    switch (hierarchy) {
+      case 'il':
+        return 'building'; // İl merkezi için bina ikonu
+      case 'ilçe':
+        return 'map-marker'; // İlçe için harita işareti
+      case 'mahalle':
+        return 'home'; // Mahalle için ev ikonu
+      default:
+        return 'map-marker';
+    }
   };
 
-  const getLocationDescription = (locationIndex: number, totalLocations: number) => {
-    const placesPerLocation = totalLocations === 1 ? 10 : 
-                             totalLocations <= 4 ? 5 : 4;
-    const interests = selectedInterests ? JSON.parse(selectedInterests as string) : [];
-    const totalPlacesForLocation = placesPerLocation * interests.length;
+  const getLocationDescription = (location: string, locationIndex: number, totalLocations: number) => {
+    // Bu lokasyondaki toplam öneri sayısını hesapla
+    const locationPlaces = places.filter(p => 
+      p.locationDisplayName === location || p.sourceLocation === location
+    );
+    const totalPlacesForLocation = locationPlaces.length;
     
-    if (locationIndex === 0 && totalLocations > 1) {
-      return `İlk durak - ${totalPlacesForLocation} öneri`;
-    } else if (locationIndex === totalLocations - 1 && totalLocations > 1) {
-      return `Son durak - ${totalPlacesForLocation} öneri`;
-    } else if (totalLocations === 1) {
-      return `Hedef nokta - ${totalPlacesForLocation} öneri`;
-    } else {
-      return `${locationIndex + 1}. durak - ${totalPlacesForLocation} öneri`;
+    // Lokasyonun hiyerarşi tipini belirle
+    const hierarchy = locationPlaces[0]?.locationHierarchy || 'il';
+    
+    let hierarchyText = '';
+    switch (hierarchy) {
+      case 'il':
+        hierarchyText = 'İl Merkezi';
+        break;
+      case 'ilçe':
+        hierarchyText = 'İlçe';
+        break;
+      case 'mahalle':
+        hierarchyText = 'Mahalle/Bölge';
+        break;
+      default:
+        hierarchyText = 'Bölge';
     }
+    
+    return `${hierarchyText} - ${totalPlacesForLocation} öneri`;
   };
 
   return (
@@ -762,14 +971,56 @@ export default function RecommendationsScreen() {
       >
             {/* Info Section */}
             <View style={styles.infoSection}>
-              <Text style={styles.title}>Rota Sırasına Göre Tavsiyeler</Text>
+              <Text style={styles.title}>Rota Güzergahı Boyunca Tavsiyeler</Text>
               <Text style={styles.subtitle}>
-                {routeOrder.length} durakta toplam {getTotalRecommendationCount()} özel öneri
+                {routeOrder.length} farklı şehirde toplam {places.length} özel öneri
               </Text>
-              <Text style={styles.routeInfo}>
-                {routeOrder.length === 1 ? 'Hedef başına 10 öneri' :
-                 routeOrder.length <= 4 ? 'Her durak için 5 öneri' : 'Her durak için 4 öneri'}
-              </Text>
+            </View>
+
+            {/* Distance Filter Slider */}
+            <View style={styles.distanceSliderSection}>
+              <View style={styles.sliderHeader}>
+                <FontAwesome name="search" size={16} color="#fff" />
+                <Text style={styles.sliderTitle}>Arama Mesafesi</Text>
+                <Text style={styles.sliderValue}>{searchRadius} km</Text>
+              </View>
+              
+              <View style={styles.sliderContainer}>
+                <View style={styles.sliderTrack}>
+                  <View style={styles.sliderBar} />
+                  <View
+                    style={[
+                      styles.sliderProgress,
+                      { width: `${searchRadius - 10}%` }
+                    ]}
+                  />
+                  <View style={styles.sliderMarks}>
+                    {[10, 20, 30, 40, 50, 60, 70, 80, 90, 100].map((value) => (
+                      <TouchableOpacity
+                        key={value}
+                        style={[
+                          styles.sliderMark,
+                          searchRadius === value && styles.sliderMarkActive
+                        ]}
+                        onPress={() => handleRadiusChange(value)}
+                      >
+                        <FontAwesome
+                          name="star"
+                          size={16}
+                          color={searchRadius >= value ? '#FFFFFF' : 'rgba(255, 255, 255, 0.4)'}
+                          style={styles.sliderIcon}
+                        />
+                        <Text style={[
+                          styles.sliderLabel,
+                          searchRadius === value && styles.sliderLabelActive
+                        ]}>
+                          {value}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </View>
+              </View>
             </View>
 
             {/* Route-based Locations */}
@@ -779,15 +1030,15 @@ export default function RecommendationsScreen() {
                 <View style={styles.locationHeader}>
                   <View style={styles.locationIconContainer}>
                     <FontAwesome 
-                      name={getLocationIcon(locationIndex, routeOrder.length) as any} 
+                      name={getLocationIcon(location || '') as any} 
                       size={16} 
                       color="#fff" 
                     />
                   </View>
                   <View style={styles.locationInfo}>
-                    <Text style={styles.locationTitle}>{location}</Text>
+                    <Text style={styles.locationTitle}>{location || ''}</Text>
                     <Text style={styles.locationSubtitle}>
-                      {getLocationDescription(locationIndex, routeOrder.length)}
+                      {getLocationDescription(location || '', locationIndex, routeOrder.length)}
                     </Text>
                   </View>
                   <View style={styles.locationRoute}>
@@ -839,7 +1090,9 @@ export default function RecommendationsScreen() {
                             
                   <View style={styles.placeInfo}>
                               <Text style={styles.placeName} numberOfLines={1}>{place.name}</Text>
-                              <Text style={styles.placeAddress} numberOfLines={1}>{place.address}</Text>
+                              <Text style={styles.placeAddress} numberOfLines={1}>
+                                {place.locationDisplayName || formatLocationHierarchy(place.address)}
+                              </Text>
                               <Text style={styles.placeDescription} numberOfLines={2}>{place.description}</Text>
                               
                   <View style={styles.placeStats}>
@@ -1035,6 +1288,117 @@ const styles = StyleSheet.create({
     color: 'rgba(255, 255, 255, 0.6)',
     textAlign: 'center',
     fontStyle: 'italic',
+  },
+  distanceSliderSection: {
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    marginHorizontal: 20,
+    marginBottom: 20,
+    borderRadius: 15,
+    padding: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+  },
+  sliderHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 20,
+  },
+  sliderTitle: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+    flex: 1,
+    marginLeft: 10,
+  },
+  sliderValue: {
+    color: '#E91E63',
+    fontSize: 18,
+    fontWeight: 'bold',
+    backgroundColor: 'rgba(233, 30, 99, 0.2)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
+  },
+  sliderContainer: {
+    paddingHorizontal: 5,
+  },
+  sliderTrack: {
+    height: 50,
+    position: 'relative',
+  },
+  sliderBar: {
+    position: 'absolute',
+    top: 13,
+    height: 4,
+    width: '90%',
+    left: '5%',
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: 2,
+  },
+  sliderProgress: {
+    position: 'absolute',
+    top: 13,
+    left: '5%',
+    height: 4,
+    backgroundColor: '#E91E63',
+    borderRadius: 2,
+    elevation: 2,
+    shadowColor: '#FFC107',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+  },
+  sliderMarks: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '100%',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+  },
+  sliderMark: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    flex: 1,
+    paddingVertical: 5,
+  },
+  sliderIcon: {
+    marginBottom: 4,
+  },
+  sliderDot: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: 'rgba(255, 255, 255, 0.4)',
+    marginBottom: 4,
+    borderWidth: 2,
+    borderColor: 'transparent',
+  },
+  sliderDotActive: {
+    backgroundColor: '#fff',
+    borderColor: '#E91E63',
+    transform: [{ scale: 1.2 }],
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+  },
+  sliderLabel: {
+    color: 'rgba(255, 255, 255, 0.6)',
+    fontSize: 11,
+    fontWeight: '500',
+  },
+  sliderLabelActive: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  sliderMarkActive: {
+    transform: [{ scale: 1.1 }],
   },
   categorySection: {
     marginBottom: 25,

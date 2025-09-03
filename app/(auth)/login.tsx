@@ -33,7 +33,7 @@ export default function LoginScreen() {
         >
           <ScrollView contentContainerStyle={styles.scrollContainer}>
             <View style={styles.header}>
-              <Image source={require('../../assets/images/icon.png')} style={styles.logo} />
+              <Image source={require('../../assets/images/Logo.png')} style={styles.logo} />
               <Text style={styles.brandName}>RoadBuddy</Text>
             </View>
 
