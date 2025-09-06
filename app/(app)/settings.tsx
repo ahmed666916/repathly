@@ -16,19 +16,9 @@ export default function SettingsScreen() {
 
   const settingsItems = [
     {
-      title: 'Profilim',
-      icon: 'user-circle',
-      onPress: () => router.push('/(app)/profile'),
-    },
-    {
       title: 'Kişi Bilgileri',
       icon: 'user',
       onPress: () => router.push('/(app)/settings/personal-info'),
-    },
-    {
-      title: 'Önceki Gittiği Yerler',
-      icon: 'map-marked-alt',
-      onPress: () => router.push('/(app)/settings/previous-places'),
     },
     {
       title: 'Takip Ettiklerim',
@@ -99,6 +89,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingVertical: 15,
+    paddingTop: 35,
     borderBottomWidth: 1,
     borderBottomColor: '#f0f0f0',
   },

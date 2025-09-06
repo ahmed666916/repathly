@@ -217,6 +217,13 @@ export default function WaypointsScreen() {
                 onChangeText={handleWaypointChange}
                 returnKeyType="done"
                 onSubmitEditing={addWaypoint}
+                autoCorrect={false}
+                autoCapitalize="words"
+                keyboardType="default"
+                textContentType="location"
+                multiline={false}
+                spellCheck={false}
+                importantForAutofill="no"
               />
               <TouchableOpacity
                 style={[styles.addButton, !currentWaypoint.trim() && styles.addButtonDisabled]}

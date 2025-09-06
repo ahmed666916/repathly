@@ -179,9 +179,10 @@ export default function RecommendationsScreen() {
     if (!coords) return [];
 
     // 1. ADIM: TextSearch ile popüler yerleri ara
-    const radiusMeters = searchRadius * 1000; // km to meters
+    // Google Places API maksimum 50km radius destekler, daha büyük değerler için farklı strateji
+    const apiRadiusMeters = Math.min(searchRadius * 1000, 50000); // Maksimum 50km
     for (const query of config.textQueries) {
-        const url = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(query)}&location=${coords.lat},${coords.lng}&radius=${radiusMeters}&key=${apiKey}&language=tr`;
+        const url = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(query)}&location=${coords.lat},${coords.lng}&radius=${apiRadiusMeters}&key=${apiKey}&language=tr`;
         try {
             const res = await fetch(url);
             const data = await res.json();
@@ -194,7 +195,7 @@ export default function RecommendationsScreen() {
     // 2. ADIM: Yeterli sonuç yoksa, NearbySearch ile destekle
     if (allPlaces.length < targetCount * 2) {
         for (const type of config.types) {
-             const url = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${coords.lat},${coords.lng}&radius=${radiusMeters}&type=${type}&key=${apiKey}&language=tr`;
+             const url = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${coords.lat},${coords.lng}&radius=${apiRadiusMeters}&type=${type}&key=${apiKey}&language=tr`;
             try {
                 const res = await fetch(url);
                 const data = await res.json();
@@ -224,15 +225,15 @@ export default function RecommendationsScreen() {
         return R * c;
     };
     
-    // Kullanıcı tarafından belirlenen mesafe eşiği kullan
-    const radiusKm = searchRadius;
+    // Kullanıcı tarafından belirlenen mesafe eşiği kullan (orijinal searchRadius)
+    const userRadiusKm = searchRadius;
 
-    // Coğrafi mesafe filtresi: şehir merkezi çevresinde kal
+    // Coğrafi mesafe filtresi: kullanıcının belirlediği mesafe içinde kal
     const distanceFilteredPlaces = uniquePlaces.filter((p: any) => {
         const loc = p.geometry?.location;
         if (!loc || typeof loc.lat !== 'number' || typeof loc.lng !== 'number') return false;
         const d = distanceKm(coords.lat, coords.lng, loc.lat, loc.lng);
-        return d <= radiusKm;
+        return d <= userRadiusKm;
     });
 
     const matchesInterest = (place: any): boolean => {
@@ -275,65 +276,30 @@ export default function RecommendationsScreen() {
     }
 
 
-    // Get detailed place information to ensure consistent ratings
-    const detailedPlaces = await Promise.all(
-        finalPlaces.slice(0, targetCount).map(async (place: any) => {
-            try {
-                const detailsUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${place.place_id}&fields=rating,user_ratings_total,name,formatted_address,photos&key=${apiKey}&language=tr`;
-                const response = await fetch(detailsUrl);
-                const data = await response.json();
-                
-                if (data.status === 'OK' && data.result) {
-                    const result = data.result;
-                    return {
-                        id: place.place_id,
-                        name: result.name || place.name,
-                        category: interest,
-                        rating: result.rating || place.rating || 0,
-                        reviewCount: result.user_ratings_total || place.user_ratings_total || 0,
-                        description: (place.types || []).join(', ').replace(/_/g, ' '),
-                        imageUri: result.photos?.[0]
-                            ? `https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=${result.photos[0].photo_reference}&key=${apiKey}`
-                            : place.photos?.[0]
-                            ? `https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=${place.photos[0].photo_reference}&key=${apiKey}`
-                            : getDefaultImageForCategory(interest),
-                        address: result.formatted_address || place.vicinity || 'Adres bilgisi yok',
-                        priceLevel: place.price_level || 1,
-                        selected: false,
-                        googlePlaceId: place.place_id,
-                        location: place.geometry?.location,
-                        vicinity: place.vicinity,
-                        sourceLocation: location
-                    };
-                }
-            } catch (error) {
-                console.error('Error fetching place details:', error);
-            }
-            
-            // Fallback to original data
-            return {
-                id: place.place_id,
-                name: place.name,
-                category: interest,
-                rating: place.rating || 0,
-                reviewCount: place.user_ratings_total || 0,
-                description: (place.types || []).join(', ').replace(/_/g, ' '),
-                imageUri: place.photos?.[0]
-                    ? `https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=${place.photos[0].photo_reference}&key=${apiKey}`
-                    : getDefaultImageForCategory(interest),
-                address: place.vicinity || 'Adres bilgisi yok',
-                priceLevel: place.price_level || 1,
-                selected: false,
-                googlePlaceId: place.place_id,
-                location: place.geometry?.location,
-                vicinity: place.vicinity,
-                sourceLocation: location
-            };
-        })
-    );
+    // Use basic place information without detailed API calls for better performance
+    const basicPlaces = finalPlaces.slice(0, targetCount).map((place: any) => {
+        return {
+            id: place.place_id,
+            name: place.name,
+            category: interest,
+            rating: place.rating || 0,
+            reviewCount: place.user_ratings_total || 0,
+            description: (place.types || []).join(', ').replace(/_/g, ' '),
+            imageUri: place.photos?.[0]
+                ? `https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=${place.photos[0].photo_reference}&key=${apiKey}`
+                : getDefaultImageForCategory(interest),
+            address: place.vicinity || 'Adres bilgisi yok',
+            priceLevel: place.price_level || 1,
+            selected: false,
+            googlePlaceId: place.place_id,
+            location: place.geometry?.location,
+            vicinity: place.vicinity,
+            sourceLocation: location
+        };
+    });
 
     // KULLANICININ ŞEHRİ FİLTRESİ - Son kontrol
-    const filteredPlaces = detailedPlaces.filter(place => {
+    const filteredPlaces = basicPlaces.filter(place => {
       const isUserCity = place.address?.includes(userCurrentCity) || 
                         place.vicinity?.includes(userCurrentCity) ||
                         place.sourceLocation?.includes(userCurrentCity);
@@ -576,10 +542,6 @@ export default function RecommendationsScreen() {
       return [];
     }
   };
-
-
-
-
 
   const togglePlaceSelection = (placeId: string) => {
     setPlaces(prev => 
@@ -1072,7 +1034,9 @@ export default function RecommendationsScreen() {
                               place.selected && styles.selectedPlaceCard
                             ]}
                             onPress={() => togglePlaceSelection(place.id)}
-                            activeOpacity={0.8}
+                            activeOpacity={0.6}
+                            delayPressIn={0}
+                            delayPressOut={0}
                           >
                             <ImageBackground
                               source={{ uri: place.imageUri }}
@@ -1099,7 +1063,6 @@ export default function RecommendationsScreen() {
                     <View style={styles.ratingContainer}>
                                   <FontAwesome name="star" size={14} color="#FFB800" />
                                   <Text style={styles.ratingText}>{place.rating.toFixed(1)}</Text>
-                                  <Text style={styles.reviewText}>({place.reviewCount})</Text>
                     </View>
                                 
                                 <TouchableOpacity 
@@ -1108,6 +1071,9 @@ export default function RecommendationsScreen() {
                                     pathname: '/(app)/place-detail',
                                     params: { placeData: JSON.stringify(place) }
                                   })}
+                                  activeOpacity={0.7}
+                                  delayPressIn={0}
+                                  delayPressOut={0}
                                 >
                                   <Text style={styles.detailButtonText}>Detaylı İncele</Text>
                                 </TouchableOpacity>

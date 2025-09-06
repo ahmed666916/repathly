@@ -236,13 +236,6 @@ export default function ProfileScreen() {
           <Text style={styles.profileUsername}>@{currentUser.username}</Text>
           <Text style={styles.profileBio}>{currentUser.bio}</Text>
           
-          <TouchableOpacity 
-            style={styles.editButton}
-            onPress={handleEditProfile}
-          >
-            <FontAwesome5 name="edit" size={16} color="white" />
-            <Text style={styles.editButtonText}>Profili Düzenle</Text>
-          </TouchableOpacity>
         </View>
 
         {/* Stats */}
@@ -385,7 +378,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 15,
     position: 'absolute',
-    top: 0,
+    top: 20,
     left: 0,
     right: 0,
     zIndex: 10,

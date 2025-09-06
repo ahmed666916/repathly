@@ -167,11 +167,18 @@ export default function RoutePlannerScreen() {
               // Her kelimenin ilk harfini büyük yap
               const capitalizedText = text
                 .split(' ')
-                .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+                .map(word => word.charAt(0).toLocaleUpperCase('tr-TR') + word.slice(1).toLocaleLowerCase('tr-TR'))
                 .join(' ');
               setCurrentWaypoint(capitalizedText);
             }}
                   onSubmitEditing={addWaypoint}
+                  autoCorrect={false}
+                  autoCapitalize="words"
+                  keyboardType="default"
+                  textContentType="location"
+                  multiline={false}
+                  spellCheck={false}
+                  importantForAutofill="no"
                   returnKeyType="done"
                 />
                 <TouchableOpacity style={styles.addButton} onPress={addWaypoint}>

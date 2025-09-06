@@ -487,26 +487,32 @@ export default function PlaceDetailScreen() {
               <Text style={styles.noReviewsText}>Henüz yorum bulunmuyor.</Text>
             ) : (
               <>
-                {displayedReviews.map((review, index) => (
-                  <View key={review.id} style={styles.reviewItem}>
-                    <View style={styles.reviewHeader}>
-                      <View style={styles.reviewUser}>
-                        <TouchableOpacity onPress={() => handleUserProfilePress(index === 0 ? 'Mehmet Demir' : review.userName)}>
-                          <Text style={styles.userNameClickable}>
-                            {index === 0 ? 'Mehmet Demir' : review.userName}
-                          </Text>
-                        </TouchableOpacity>
-                        <Text style={styles.reviewDate}>{review.date}</Text>
+                {displayedReviews.map((review, index) => {
+                  const isAppReview = index === 0; // First review is from our app
+                  return (
+                    <View key={review.id} style={[
+                      styles.reviewItem,
+                      isAppReview && styles.appReviewItem
+                    ]}>
+                      <View style={styles.reviewHeader}>
+                        <View style={styles.reviewUser}>
+                          <TouchableOpacity onPress={() => handleUserProfilePress(index === 0 ? 'Mehmet Demir' : review.userName)}>
+                            <Text style={styles.userNameClickable}>
+                              {index === 0 ? 'Mehmet Demir' : review.userName}
+                            </Text>
+                          </TouchableOpacity>
+                          <Text style={styles.reviewDate}>{review.date}</Text>
+                        </View>
+                        <View style={styles.reviewStars}>
+                          {renderStars(review.rating)}
+                        </View>
                       </View>
-                      <View style={styles.reviewStars}>
-                        {renderStars(review.rating)}
-                      </View>
+                      <Text style={styles.reviewComment}>
+                        {index === 0 ? 'Harika bir yer! RoadBuddy sayesinde keşfettim. Kahve çok lezzetli ve atmosfer mükemmel. Kesinlikle tekrar geleceğim.' : review.comment}
+                      </Text>
                     </View>
-                    <Text style={styles.reviewComment}>
-                      {index === 0 ? 'Harika bir yer! RoadBuddy sayesinde keşfettim. Kahve çok lezzetli ve atmosfer mükemmel. Kesinlikle tekrar geleceğim.' : review.comment}
-                    </Text>
-                  </View>
-                ))}
+                  );
+                })}
                 
                 {hasMoreReviews && (
                   <TouchableOpacity 
@@ -580,6 +586,26 @@ export default function PlaceDetailScreen() {
           </TouchableOpacity>
         ))}
       </View>
+
+      {/* Photos Section */}
+      {placeDetails?.photos && placeDetails.photos.length > 0 && (
+        <View style={styles.photosSection}>
+          <ScrollView 
+            horizontal 
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.photosScrollContent}
+          >
+            {placeDetails.photos.map((photo, index) => (
+              <Image
+                key={index}
+                source={{ uri: photo }}
+                style={styles.photoItem}
+                resizeMode="cover"
+              />
+            ))}
+          </ScrollView>
+        </View>
+      )}
 
       {/* Tab Content */}
       <ScrollView style={styles.contentContainer} showsVerticalScrollIndicator={false}>
@@ -795,6 +821,11 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 15,
     marginBottom: 15,
+  },
+  appReviewItem: {
+    backgroundColor: '#E8F5E8',
+    borderLeftWidth: 4,
+    borderLeftColor: '#E91E63',
   },
   reviewHeader: {
     flexDirection: 'row',
@@ -1139,5 +1170,21 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 20,
     fontStyle: 'italic',
+  },
+  photosSection: {
+    height: 200,
+    backgroundColor: '#f8f9fa',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e9ecef',
+  },
+  photosScrollContent: {
+    paddingHorizontal: 10,
+  },
+  photoItem: {
+    width: 180,
+    height: 180,
+    borderRadius: 12,
+    marginHorizontal: 5,
+    marginVertical: 10,
   },
 });

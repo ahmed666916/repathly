@@ -10,9 +10,12 @@ import {
   Image,
   Alert,
   FlatList,
+  Dimensions,
 } from 'react-native';
 import { FontAwesome5 } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
+
+const { width } = Dimensions.get('window');
 
 interface UserProfile {
   id: string;
@@ -386,24 +389,37 @@ export default function UserProfileScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+      <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
       
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={handleBack} style={styles.headerBackButton}>
-          <FontAwesome5 name="arrow-left" size={20} color="#333" />
+        <TouchableOpacity onPress={handleBack} style={styles.backButton}>
+          <FontAwesome5 name="arrow-left" size={20} color="white" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{userProfile.name}</Text>
-        <View style={styles.headerPlaceholder} />
+        <View style={styles.placeholder} />
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {/* Profile Header */}
-        <View style={styles.profileHeader}>
+        {/* Cover Photo */}
+        <View style={styles.coverContainer}>
           <Image 
-            source={{ uri: userProfile.profilePhoto }} 
-            style={styles.profilePhoto}
+            source={{ uri: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=400&fit=crop' }} 
+            style={styles.coverPhoto}
           />
+          <View style={styles.coverOverlay} />
+          
+          {/* Profile Photo Overlay */}
+          <View style={styles.profilePhotoContainer}>
+            <Image 
+              source={{ uri: userProfile.profilePhoto }} 
+              style={styles.profilePhoto}
+            />
+          </View>
+        </View>
+
+        {/* Profile Info */}
+        <View style={styles.profileInfo}>
           <Text style={styles.profileName}>{userProfile.name}</Text>
           <Text style={styles.profileUsername}>@{userProfile.username}</Text>
           <Text style={styles.profileBio}>{userProfile.bio}</Text>
@@ -419,44 +435,76 @@ export default function UserProfileScreen() {
             <Text style={styles.statNumber}>{userProfile.placesVisited}</Text>
             <Text style={styles.statLabel}>Ziyaret</Text>
           </View>
-        </View>
-
-        {/* Badges */}
-        <View style={styles.badgesSection}>
-          <Text style={styles.sectionTitle}>Rozetler</Text>
-          <View style={styles.badgesContainer}>
-            {userProfile.badges.map((badge, index) => (
-              <View key={index} style={styles.badge}>
-                <Text style={styles.badgeText}>{badge}</Text>
-              </View>
-            ))}
+          <View style={styles.statItem}>
+            <Text style={styles.statNumber}>{userProfile.followers}</Text>
+            <Text style={styles.statLabel}>Takipçi</Text>
+          </View>
+          <View style={styles.statItem}>
+            <Text style={styles.statNumber}>{userProfile.following}</Text>
+            <Text style={styles.statLabel}>Takip</Text>
           </View>
         </View>
 
-        {/* Tabs */}
-        <View style={styles.tabsContainer}>
+        {/* Tab Navigation */}
+        <View style={styles.tabContainer}>
           <TouchableOpacity 
-            style={[styles.tab, activeTab === 0 && styles.activeTab]}
+            style={[styles.tabButton, activeTab === 0 && styles.activeTabButton]}
             onPress={() => setActiveTab(0)}
           >
+            <FontAwesome5 name="map-marker-alt" size={20} color={activeTab === 0 ? '#E91E63' : '#666'} />
             <Text style={[styles.tabText, activeTab === 0 && styles.activeTabText]}>
               Gezdiği Yerler
             </Text>
           </TouchableOpacity>
+          
           <TouchableOpacity 
-            style={[styles.tab, activeTab === 1 && styles.activeTab]}
+            style={[styles.tabButton, activeTab === 1 && styles.activeTabButton]}
             onPress={() => setActiveTab(1)}
           >
+            <FontAwesome5 name="comment" size={20} color={activeTab === 1 ? '#E91E63' : '#666'} />
             <Text style={[styles.tabText, activeTab === 1 && styles.activeTabText]}>
-              Yorumlar
+              Son Yorumlar
             </Text>
           </TouchableOpacity>
         </View>
 
         {/* Tab Content */}
-        <View style={styles.tabContent}>
-          {renderTabContent()}
-        </View>
+        {activeTab === 0 ? (
+          <View style={styles.favoritesGrid}>
+            {userProfile.visitedPlaces.map((place) => (
+              <View key={place.id} style={styles.favoriteItem}>
+                <Image source={{ uri: place.image }} style={styles.favoriteImage} />
+                <View style={styles.favoriteOverlay}>
+                  <View style={styles.favoriteRating}>
+                    <FontAwesome5 name="star" size={12} color="#FFD700" />
+                    <Text style={styles.favoriteRatingText}>{place.rating}</Text>
+                  </View>
+                </View>
+                <Text style={styles.favoriteName}>{place.name}</Text>
+                <Text style={styles.favoriteCity}>{place.city}</Text>
+              </View>
+            ))}
+          </View>
+        ) : (
+          <View style={styles.reviewsList}>
+            {userProfile.recentReviews.map((review) => (
+              <View key={review.id} style={styles.reviewItem}>
+                <View style={styles.reviewContent}>
+                  <View style={styles.reviewHeader}>
+                    <Text style={styles.reviewPlaceName}>{review.placeName}</Text>
+                    <View style={styles.reviewRating}>
+                      <FontAwesome5 name="star" size={12} color="#FFD700" />
+                      <Text style={styles.reviewRatingText}>{review.rating}</Text>
+                    </View>
+                  </View>
+                  <Text style={styles.reviewCity}>{review.placeCity}</Text>
+                  <Text style={styles.reviewText}>{review.comment}</Text>
+                  <Text style={styles.reviewDate}>{review.date}</Text>
+                </View>
+              </View>
+            ))}
+          </View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -473,36 +521,61 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingVertical: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 10,
   },
-  headerBackButton: {
+  backButton: {
     padding: 8,
+    backgroundColor: 'rgba(0,0,0,0.3)',
+    borderRadius: 20,
   },
   headerTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#333',
+    color: 'white',
   },
-  headerPlaceholder: {
-    width: 36,
+  placeholder: {
+    width: 40,
   },
   content: {
     flex: 1,
   },
-  scrollContent: {
-    paddingBottom: 20,
+  coverContainer: {
+    height: 200,
+    position: 'relative',
   },
-  profileHeader: {
-    alignItems: 'center',
-    paddingVertical: 30,
-    paddingHorizontal: 20,
+  coverPhoto: {
+    width: '100%',
+    height: '100%',
+  },
+  coverOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.2)',
+  },
+  profilePhotoContainer: {
+    position: 'absolute',
+    bottom: -50,
+    left: 20,
   },
   profilePhoto: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    marginBottom: 15,
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    borderWidth: 4,
+    borderColor: 'white',
+  },
+  profileInfo: {
+    paddingTop: 60,
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+    alignItems: 'center',
   },
   profileName: {
     fontSize: 24,
@@ -521,37 +594,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 20,
     marginBottom: 20,
-  },
-  actionButtons: {
-    flexDirection: 'row',
-    gap: 10,
-  },
-  followButton: {
-    backgroundColor: '#E91E63',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 20,
-  },
-  followButtonText: {
-    color: 'white',
-    fontWeight: '600',
-    fontSize: 14,
-  },
-  messageButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'white',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: '#E91E63',
-    gap: 8,
-  },
-  messageButtonText: {
-    color: '#E91E63',
-    fontWeight: '600',
-    fontSize: 14,
   },
   statsContainer: {
     flexDirection: 'row',
@@ -575,50 +617,27 @@ const styles = StyleSheet.create({
     color: '#666',
     marginTop: 5,
   },
-  badgesSection: {
-    paddingHorizontal: 20,
-    marginBottom: 25,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 15,
-  },
-  badgesContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-  },
-  badge: {
-    backgroundColor: '#E91E63',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 15,
-    marginRight: 10,
-    marginBottom: 10,
-  },
-  badgeText: {
-    fontSize: 12,
-    color: 'white',
-    fontWeight: '500',
-  },
-  tabsContainer: {
+  tabContainer: {
     flexDirection: 'row',
     paddingHorizontal: 20,
     marginBottom: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
   },
-  tab: {
+  tabButton: {
     flex: 1,
-    paddingVertical: 12,
+    flexDirection: 'row',
     alignItems: 'center',
-    borderBottomWidth: 2,
-    borderBottomColor: 'transparent',
+    justifyContent: 'center',
+    paddingVertical: 15,
+    gap: 8,
   },
-  activeTab: {
+  activeTabButton: {
+    borderBottomWidth: 2,
     borderBottomColor: '#E91E63',
   },
   tabText: {
-    fontSize: 16,
+    fontSize: 14,
     color: '#666',
     fontWeight: '500',
   },
@@ -626,115 +645,100 @@ const styles = StyleSheet.create({
     color: '#E91E63',
     fontWeight: '600',
   },
-  tabContent: {
-    flex: 1,
-    paddingHorizontal: 20,
-    paddingBottom: 30,
+  favoritesGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    paddingHorizontal: 10,
+    gap: 8,
   },
-  placesScrollView: {
-    paddingBottom: 20,
+  favoriteItem: {
+    width: (width - 36) / 2,
+    marginBottom: 15,
   },
-  placesScrollContainer: {
-    paddingHorizontal: 20,
-    paddingRight: 40,
-  },
-  placeCard: {
-    width: 200,
-    marginRight: 15,
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.15,
-    shadowRadius: 6,
-    elevation: 5,
-    overflow: 'hidden',
-  },
-  placeImage: {
+  favoriteImage: {
     width: '100%',
-    height: 140,
-  },
-  placeInfo: {
-    padding: 15,
-    flex: 1,
-  },
-  placeName: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 5,
-  },
-  placeCity: {
-    fontSize: 14,
-    color: '#666',
+    height: (width - 36) / 2,
+    borderRadius: 12,
     marginBottom: 8,
   },
-  placeRating: {
+  favoriteOverlay: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+  },
+  favoriteRating: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 4,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 10,
+    gap: 4,
   },
-  ratingText: {
+  favoriteRatingText: {
+    fontSize: 10,
+    color: 'white',
+    fontWeight: '600',
+  },
+  favoriteName: {
     fontSize: 12,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 2,
+  },
+  favoriteCity: {
+    fontSize: 10,
     color: '#666',
-    marginLeft: 5,
-  },
-  visitDate: {
-    fontSize: 12,
-    color: '#999',
   },
   reviewsList: {
-    paddingBottom: 20,
+    paddingHorizontal: 20,
   },
-  reviewCard: {
+  reviewItem: {
+    flexDirection: 'row',
+    marginBottom: 20,
     backgroundColor: '#f8f9fa',
+    borderRadius: 15,
     padding: 15,
-    borderRadius: 10,
-    marginBottom: 15,
+  },
+  reviewContent: {
+    flex: 1,
   },
   reviewHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 10,
+    alignItems: 'center',
+    marginBottom: 4,
   },
   reviewPlaceName: {
     fontSize: 16,
     fontWeight: '600',
     color: '#333',
   },
-  reviewPlaceCity: {
-    fontSize: 12,
-    color: '#666',
-    marginTop: 2,
-  },
   reviewRating: {
-    flexDirection: 'row',
-  },
-  reviewComment: {
-    fontSize: 14,
-    color: '#555',
-    lineHeight: 20,
-    marginBottom: 10,
-  },
-  reviewFooter: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  reviewDate: {
-    fontSize: 12,
-    color: '#999',
-  },
-  reviewLikes: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
   },
-  likesCount: {
+  reviewRatingText: {
     fontSize: 12,
-    color: '#E91E63',
+    color: '#666',
     fontWeight: '500',
+  },
+  reviewCity: {
+    fontSize: 12,
+    color: '#666',
+    marginBottom: 6,
+  },
+  reviewText: {
+    fontSize: 14,
+    color: '#333',
+    lineHeight: 18,
+    marginBottom: 8,
+  },
+  reviewDate: {
+    fontSize: 11,
+    color: '#999',
+    fontStyle: 'italic',
   },
   errorContainer: {
     flex: 1,
@@ -759,3 +763,4 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 });
+

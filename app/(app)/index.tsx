@@ -158,6 +158,13 @@ export default function HomeScreen() {
                 onChangeText={handleDestinationChange}
                 returnKeyType="done"
                 onSubmitEditing={handleContinue}
+                autoCorrect={false}
+                autoCapitalize="words"
+                keyboardType="default"
+                textContentType="location"
+                multiline={false}
+                spellCheck={false}
+                importantForAutofill="no"
               />
             </View>
             
