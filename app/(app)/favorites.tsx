@@ -35,7 +35,15 @@ export default function FavoritesScreen() {
       renderScene={renderScene}
       onIndexChange={setIndex}
       initialLayout={initialLayout}
-      renderTabBar={props => <TabBar {...props} style={{backgroundColor: 'white'}} labelStyle={{color: 'black'}} indicatorStyle={{backgroundColor: 'black'}} />}
+      renderTabBar={props => (
+        <TabBar
+          {...props}
+          style={{ backgroundColor: 'white' }}
+          indicatorStyle={{ backgroundColor: 'black' }}
+          activeColor="black"
+          inactiveColor="black"
+        />
+      )}
     />
   );
 }

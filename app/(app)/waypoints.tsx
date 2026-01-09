@@ -14,6 +14,7 @@ import {
 } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router';
+import GOOGLE_MAPS_KEY from '../../constants/googleMapsKey';
 
 interface PlaceSuggestion {
   place_id: string;
@@ -28,7 +29,7 @@ export default function WaypointsScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const destination = params.destination as string;
-  
+
   const [waypoints, setWaypoints] = useState<string[]>([]);
   const [currentWaypoint, setCurrentWaypoint] = useState('');
   const [suggestions, setSuggestions] = useState<PlaceSuggestion[]>([]);
@@ -40,12 +41,12 @@ export default function WaypointsScreen() {
     console.log('shouldResetInputs değeri:', (global as any).shouldResetInputs);
     console.log('forceReset değeri:', (global as any).forceReset);
     console.log('routeWaypoints değeri:', (global as any).routeWaypoints);
-    
+
     // HER DURUMDA ÖNCE TEMİZLE
     console.log(' ÖNCE HER DURUMDA TEMİZLENİYOR...');
     setWaypoints([]);
     setCurrentWaypoint('');
-    
+
     // EĞER RESET FLAG'İ VARSA GLOBAL'İ DE TEMİZLE
     if ((global as any).shouldResetInputs || (global as any).forceReset) {
       console.log(' GLOBAL STATE TEMİZLENİYOR...');
@@ -60,12 +61,12 @@ export default function WaypointsScreen() {
   useFocusEffect(
     useCallback(() => {
       console.log(' Waypoints sayfası focus oldu, ZORLA kontrol ediliyor...');
-      
+
       // HER FOCUS'TA ÖNCE TEMİZLE
       console.log(' FOCUS TE TEMİZLENİYOR...');
       setWaypoints([]);
       setCurrentWaypoint('');
-      
+
       if ((global as any).shouldResetInputs || (global as any).forceReset) {
         console.log(' FOCUS GLOBAL STATE TEMİZLENİYOR...');
         (global as any).routeWaypoints = '';
@@ -91,16 +92,16 @@ export default function WaypointsScreen() {
     }
 
     try {
-      const apiKey = 'AIzaSyD20dEgYCXYcs-C4uGDMUTSvSbdxYDuk5o';
+      const apiKey = GOOGLE_MAPS_KEY;
       console.log('Fetching waypoint suggestions for:', input);
-      
+
       const response = await fetch(
         `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(input)}&key=${apiKey}&language=tr&components=country:tr`
       );
       const data = await response.json();
-      
+
       console.log('Waypoint API Response:', data);
-      
+
       if (data.status === 'OK' && data.predictions) {
         console.log('Setting waypoint suggestions:', data.predictions.slice(0, 5));
         setSuggestions(data.predictions.slice(0, 5));
@@ -144,7 +145,7 @@ export default function WaypointsScreen() {
   const handleContinue = () => {
     // Global'e kaydet
     (global as any).routeWaypoints = JSON.stringify(waypoints);
-    
+
     // Rota önizleme sayfasına git
     router.push({
       pathname: '/(app)/route-preview',
@@ -174,7 +175,7 @@ export default function WaypointsScreen() {
     >
       <SafeAreaView style={styles.safeArea}>
         <StatusBar barStyle="light-content" />
-        
+
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity
@@ -233,11 +234,11 @@ export default function WaypointsScreen() {
                 <FontAwesome name="check" size={16} color="#fff" />
               </TouchableOpacity>
             </View>
-            
+
             {/* Suggestions List */}
             {showSuggestions && suggestions.length > 0 && (
               <View style={styles.suggestionsContainer}>
-                <ScrollView 
+                <ScrollView
                   style={styles.suggestionsScrollView}
                   showsVerticalScrollIndicator={false}
                   nestedScrollEnabled={true}

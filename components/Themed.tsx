@@ -43,3 +43,8 @@ export function View(props: ViewProps) {
 
   return <DefaultView style={[{ backgroundColor }, style]} {...otherProps} />;
 }
+
+// Default export added to satisfy Expo Router requirements
+export default function Themed() {
+  return null;
+}

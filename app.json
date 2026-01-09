@@ -29,6 +29,11 @@
         "ACCESS_FINE_LOCATION",
         "ACCESS_COARSE_LOCATION"
       ],
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyA9uQ353RDpMVjaRS6oZN6WS_jPMIv1YCQ"
+        }
+      },
       "edgeToEdgeEnabled": true,
       "package": "com.roadbuddy.app"
     },

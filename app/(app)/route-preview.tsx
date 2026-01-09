@@ -1,283 +1,134 @@
-import React, { useState, useRef, useCallback, useEffect } from 'react';
-import {
-  StyleSheet,
-  View,
-  Text,
-  TouchableOpacity,
-  ImageBackground,
-  SafeAreaView,
-  StatusBar,
-  ActivityIndicator,
-} from 'react-native';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { StyleSheet, View, Text, TouchableOpacity, Alert, SafeAreaView, StatusBar, ImageBackground, ActivityIndicator } from 'react-native';
+import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import MapViewDirections from 'react-native-maps-directions';
+import GOOGLE_MAPS_KEY from '../../constants/googleMapsKey';
 import { FontAwesome } from '@expo/vector-icons';
-import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router';
-import { WebView } from 'react-native-webview';
+import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
+
+// Do not hard-code API keys. Prefer injecting at runtime (global) or via secure storage.
+// Use the utils key as a reliable fallback if global is missing
+const GOOGLE_MAPS_API_KEY = (global as any).googleMapsApiKey || GOOGLE_MAPS_KEY;
 
 export default function RoutePreviewScreen() {
-  const router = useRouter();
   const params = useLocalSearchParams();
-  const webViewRef = useRef<WebView>(null);
-  
-  const destination = params.destination as string;
-  const waypoints = params.waypoints ? JSON.parse(params.waypoints as string) : [];
-  
+  const router = useRouter();
+  const [destination, setDestination] = useState('');
+  const [waypoints, setWaypoints] = useState([]);
+  const mapRef = useRef<MapView>(null);
   const [isMapReady, setIsMapReady] = useState(false);
-  const [userAddress, setUserAddress] = useState('');
-  const userLocation = (global as any).userLocation;
-  const startLocationName = userAddress || (userLocation ? "Mevcut Konumunuz" : "İstanbul");
+  const [routeCoordinates, setRouteCoordinates] = useState<any>(null);
+  const [destinationCoords, setDestinationCoords] = useState<{ latitude: number, longitude: number } | null>(null);
+  const [waypointCoords, setWaypointCoords] = useState<Array<{ latitude: number, longitude: number }>>([]);
 
-  // Reset kontrolü
+  // Global'den alınmış gerçek kullanıcı konumunu kullan
+  const globalUserLocation = (global as any).userLocation;
+  const startLocationName = globalUserLocation ? "Mevcut Konumunuz" : "İstanbul";
+
+  const startLocation = globalUserLocation
+    ? { latitude: globalUserLocation.latitude, longitude: globalUserLocation.longitude }
+    : { latitude: 41.0082, longitude: 28.9784 }; // Istanbul default
+
+  // Geocode bir adresi koordinatlara çevir
+  const geocodeAddress = async (address: string): Promise<{ latitude: number, longitude: number } | null> => {
+    try {
+      const response = await fetch(
+        `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${GOOGLE_MAPS_API_KEY}&region=tr&language=tr`
+      );
+      const data = await response.json();
+
+      if (data.status === 'OK' && data.results[0]) {
+        const location = data.results[0].geometry.location;
+        return { latitude: location.lat, longitude: location.lng };
+      }
+      console.error('Geocoding failed:', data.status);
+      return null;
+    } catch (error) {
+      console.error('Geocoding error:', error);
+      return null;
+    }
+  };
+
+  // Parametrelerden hedef ve ara durakları al
+  useEffect(() => {
+    if (params.destination) {
+      setDestination(params.destination as string);
+    }
+    if (params.waypoints) {
+      try {
+        const waypointsArray = JSON.parse(params.waypoints as string);
+        setWaypoints(waypointsArray);
+      } catch (error) {
+        console.error('Waypoints parse hatası:', error);
+      }
+    }
+  }, [params.destination, params.waypoints]);
+
+  // Hedef ve ara durakları geocode et
+  useEffect(() => {
+    const geocodeLocations = async () => {
+      if (destination) {
+        console.log('Geocoding destination:', destination);
+        const coords = await geocodeAddress(destination);
+        if (coords) {
+          console.log('Destination coords:', coords);
+          setDestinationCoords(coords);
+        }
+      }
+
+      if (waypoints.length > 0) {
+        console.log('Geocoding waypoints:', waypoints);
+        const coords = await Promise.all(
+          waypoints.map(wp => geocodeAddress(wp))
+        );
+        const validCoords = coords.filter(c => c !== null) as Array<{ latitude: number, longitude: number }>;
+        console.log('Waypoint coords:', validCoords);
+        setWaypointCoords(validCoords);
+      }
+    };
+
+    geocodeLocations();
+  }, [destination, waypoints]);
+
+  // Sayfa focus olduğunda reset kontrolü
   useFocusEffect(
     useCallback(() => {
-      if ((global as any).shouldResetInputs) {
-        console.log('Route preview sayfası temizleniyor...');
-        setIsMapReady(false);
-        setUserAddress('');
+      const shouldReset = (global as any).shouldResetInputs;
+      if (shouldReset) {
+        console.log('Map sayfası temizleniyor...');
+        setDestination('');
+        setWaypoints([]);
         (global as any).shouldResetInputs = false;
       }
     }, [])
   );
 
-  // Ek olarak, sayfa her açıldığında da kontrol et
-  useEffect(() => {
-    if ((global as any).shouldResetInputs) {
-      console.log('Route preview sayfası useEffect ile temizleniyor...');
-      setIsMapReady(false);
-      setUserAddress('');
-      (global as any).shouldResetInputs = false;
-    }
-  }, []);
-
-  const handleMessage = (event: any) => {
-    try {
-      const data = JSON.parse(event.nativeEvent.data);
-      if (data.type === 'MAP_READY') {
-        setIsMapReady(true);
-      } else if (data.type === 'USER_ADDRESS') {
-        setUserAddress(data.address);
-      }
-    } catch (e) {
-      console.error('WebView message error:', e);
-    }
-  };
-
-  const handleContinue = () => {
+  const handleCompleteRoute = () => {
     router.push({
       pathname: '/(app)/interests',
       params: {
-        destination,
+        destination: destination,
         waypoints: JSON.stringify(waypoints)
       }
     });
   };
 
-  // Başlangıç konumu için koordinatlar
-  const startLocationJS = userLocation 
-    ? JSON.stringify({ lat: userLocation.latitude, lng: userLocation.longitude }) 
-    : JSON.stringify({ lat: 41.0082, lng: 28.9784 });
+  // Harita hazır olduğunda rotayı göster
+  const onMapReady = () => {
+    setIsMapReady(true);
+  };
 
-  const mapHTML = `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-      <style>
-        body, html { height: 100%; margin: 0; padding: 0; }
-        #map { width: 100%; height: 100%; }
-      </style>
-    </head>
-    <body>
-      <div id="map"></div>
-      <script>
-        let map, directionsService, directionsRenderer;
-        const startLocation = ${startLocationJS};
-
-        function initMap() {
-          map = new google.maps.Map(document.getElementById('map'), {
-            center: startLocation,
-            zoom: 10,
-            disableDefaultUI: true,
-            styles: [
-              { "featureType": "poi", "elementType": "labels", "stylers": [{ "visibility": "off" }] },
-              { "featureType": "transit", "elementType": "labels", "stylers": [{ "visibility": "off" }] }
-            ]
-          });
-
-          directionsService = new google.maps.DirectionsService();
-          directionsRenderer = new google.maps.DirectionsRenderer({
-            suppressMarkers: true,
-            polylineOptions: { strokeColor: '#E91E63', strokeWeight: 4, strokeOpacity: 0.8 }
-          });
-          directionsRenderer.setMap(map);
-
-          // Kullanıcının gerçek adresini al (reverse geocoding)
-          getUserAddress();
-
-          createRoute();
-        }
-
-        function getUserAddress() {
-          if (!startLocation || (startLocation.lat === 41.0082 && startLocation.lng === 28.9784)) {
-            // İstanbul varsayılan konumu ise, statik marker ekle
-            new google.maps.Marker({
-              position: startLocation,
-              map: map,
-              icon: { path: google.maps.SymbolPath.CIRCLE, scale: 8, fillColor: '#4285F4', fillOpacity: 1, strokeWeight: 2, strokeColor: 'white' },
-              title: 'Başlangıç: İstanbul'
-            });
-            window.ReactNativeWebView.postMessage(JSON.stringify({ 
-              type: 'USER_ADDRESS', 
-              address: 'İstanbul' 
-            }));
-            return;
-          }
-
-          // Gerçek kullanıcı konumu için reverse geocoding yap
-          const geocoder = new google.maps.Geocoder();
-          geocoder.geocode({ location: startLocation }, (results, status) => {
-            if (status === 'OK' && results[0]) {
-              // En detaylı adresi al (street_address, route, neighborhood öncelikli)
-              let userAddress = '';
-              
-              for (let i = 0; i < results.length; i++) {
-                const result = results[i];
-                const types = result.types;
-                
-                // Cadde/sokak seviyesinde adres arayalım
-                if (types.includes('street_address') || 
-                    types.includes('route') || 
-                    types.includes('neighborhood') ||
-                    types.includes('sublocality')) {
-                  userAddress = result.formatted_address;
-                  break;
-                }
-              }
-
-              // Eğer detaylı adres bulunamazsa, en kısa adresi al
-              if (!userAddress && results[0]) {
-                userAddress = results[0].formatted_address;
-              }
-
-              // Eğer hala adres yoksa, koordinatları göster
-              if (!userAddress) {
-                userAddress = \`\${startLocation.lat.toFixed(6)}, \${startLocation.lng.toFixed(6)}\`;
-              }
-
-              // React Native'e adresi gönder
-              window.ReactNativeWebView.postMessage(JSON.stringify({ 
-                type: 'USER_ADDRESS', 
-                address: userAddress 
-              }));
-
-              // Başlangıç marker'ı ekle
-              new google.maps.Marker({
-                position: startLocation,
-                map: map,
-                icon: { path: google.maps.SymbolPath.CIRCLE, scale: 8, fillColor: '#4285F4', fillOpacity: 1, strokeWeight: 2, strokeColor: 'white' },
-                title: 'Başlangıç: ' + userAddress
-              });
-            } else {
-              // Reverse geocoding başarısızsa, koordinatları kullan
-              const fallbackAddress = \`\${startLocation.lat.toFixed(6)}, \${startLocation.lng.toFixed(6)}\`;
-              window.ReactNativeWebView.postMessage(JSON.stringify({ 
-                type: 'USER_ADDRESS', 
-                address: fallbackAddress 
-              }));
-
-              new google.maps.Marker({
-                position: startLocation,
-                map: map,
-                icon: { path: google.maps.SymbolPath.CIRCLE, scale: 8, fillColor: '#4285F4', fillOpacity: 1, strokeWeight: 2, strokeColor: 'white' },
-                title: 'Başlangıç: ' + fallbackAddress
-              });
-            }
-          });
-        }
-
-        function createRoute() {
-          const destination = "${destination}";
-          const waypoints = ${JSON.stringify(waypoints)};
-          
-          if (!destination) return;
-
-          const geocoder = new google.maps.Geocoder();
-          geocoder.geocode({ address: destination }, (results, status) => {
-            if (status === 'OK' && results[0]) {
-              const destinationLocation = results[0].geometry.location;
-              
-              // Hedef marker'ı
-              new google.maps.Marker({
-                position: destinationLocation,
-                map: map,
-                icon: { path: google.maps.SymbolPath.CIRCLE, scale: 8, fillColor: '#E91E63', fillOpacity: 1, strokeWeight: 2, strokeColor: 'white' },
-                title: 'Hedef'
-              });
-
-              if (waypoints && waypoints.length > 0) {
-                calculateRouteWithWaypoints(startLocation, destinationLocation, waypoints);
-              } else {
-                calculateSimpleRoute(startLocation, destinationLocation);
-              }
-              
-              window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'MAP_READY' }));
-            }
-          });
-        }
-
-        function calculateRouteWithWaypoints(origin, destination, waypoints) {
-          const waypointPromises = waypoints.map(waypoint => 
-            new Promise((resolve) => {
-              new google.maps.Geocoder().geocode({ address: waypoint }, (results, status) => {
-                if (status === 'OK' && results[0]) {
-                  new google.maps.Marker({
-                    position: results[0].geometry.location,
-                    map: map,
-                    icon: { path: google.maps.SymbolPath.CIRCLE, scale: 6, fillColor: '#FF9800', fillOpacity: 1, strokeWeight: 2, strokeColor: 'white' },
-                    title: waypoint
-                  });
-                  resolve({ location: results[0].geometry.location, stopover: true });
-                } else {
-                  resolve(null);
-                }
-              });
-            })
-          );
-
-          Promise.all(waypointPromises).then(waypointsData => {
-            const validWaypoints = waypointsData.filter(wp => wp !== null);
-            directionsService.route({
-              origin: origin,
-              destination: destination,
-              waypoints: validWaypoints,
-              travelMode: google.maps.TravelMode.DRIVING
-            }, (result, status) => {
-              if (status === 'OK') {
-                directionsRenderer.setDirections(result);
-                map.fitBounds(result.routes[0].bounds);
-              }
-            });
-          });
-        }
-
-        function calculateSimpleRoute(origin, destination) {
-          directionsService.route({
-            origin: origin,
-            destination: destination,
-            travelMode: google.maps.TravelMode.DRIVING
-          }, (result, status) => {
-            if (status === 'OK') {
-              directionsRenderer.setDirections(result);
-              map.fitBounds(result.routes[0].bounds);
-            }
-          });
-        }
-      </script>
-      <script async defer
-        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD20dEgYCXYcs-C4uGDMUTSvSbdxYDuk5o&libraries=places&callback=initMap">
-      </script>
-    </body>
-    </html>
-  `;
+  // Rota hesaplandığında haritayı sığdır
+  const onDirectionsReady = (result: any) => {
+    if (mapRef.current && result.coordinates) {
+      setRouteCoordinates(result);
+      // Haritayı rotaya sığdır
+      mapRef.current.fitToCoordinates(result.coordinates, {
+        edgePadding: { top: 50, right: 50, bottom: 50, left: 50 },
+        animated: true,
+      });
+    }
+  };
 
   return (
     <ImageBackground
@@ -285,77 +136,122 @@ export default function RoutePreviewScreen() {
       style={styles.container}
       resizeMode="cover"
     >
-      <SafeAreaView style={styles.safeArea}>
+      <View style={styles.overlay}>
         <StatusBar barStyle="light-content" />
-        
-        {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity style={styles.backButton} onPress={() => {
-            const r: any = router as any;
-            if (r?.canGoBack?.()) {
-              r.back();
-            } else {
-              r.replace('/(app)');
-            }
-          }}>
-            <FontAwesome name="arrow-left" size={20} color="#fff" />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Rota Önizleme</Text>
-          <View style={styles.placeholder} />
-        </View>
-
-        {/* Map */}
-        <View style={styles.mapContainer}>
-          <WebView
-            ref={webViewRef}
-            source={{ html: mapHTML }}
-            style={styles.webView}
-            javaScriptEnabled={true}
-            domStorageEnabled={true}
-            onMessage={handleMessage}
-          />
-          {!isMapReady && (
-            <View style={styles.loadingOverlay}>
-              <ActivityIndicator size="large" color="#E91E63" />
-              <Text style={styles.loadingText}>Harita yükleniyor...</Text>
-            </View>
-          )}
-        </View>
-
-        {/* Route Info */}
-        <View style={styles.routeInfo}>
-          <Text style={styles.routeTitle}>Rota Bilgileri</Text>
-          <View style={styles.routeStep}>
-            <FontAwesome name="circle" size={12} color="#4285F4" />
-            <Text style={styles.routeStepText} numberOfLines={2}>
-              {userAddress ? userAddress : startLocationName} (Başlangıç)
-            </Text>
+        <SafeAreaView style={styles.safeArea}>
+          <View style={styles.header}>
+            <TouchableOpacity style={styles.backButton} onPress={() => {
+              const r: any = router as any;
+              if (r?.canGoBack?.()) {
+                r.back();
+              } else {
+                r.replace('/(app)');
+              }
+            }}>
+              <FontAwesome name="arrow-left" size={20} color="#fff" />
+            </TouchableOpacity>
+            <Text style={styles.headerTitle}>Rota Önizleme</Text>
+            <View style={styles.placeholder} />
           </View>
-          {waypoints.map((waypoint: string, index: number) => (
-            <View key={index} style={styles.routeStep}>
-              <FontAwesome name="circle" size={12} color="#FF9800" />
-              <Text style={styles.routeStepText}>{waypoint}</Text>
-            </View>
-          ))}
-          <View style={styles.routeStep}>
-            <FontAwesome name="circle" size={12} color="#E91E63" />
-            <Text style={styles.routeStepText}>{destination} (Hedef)</Text>
-          </View>
-        </View>
 
-        {/* Continue Button */}
-        <View style={styles.bottomSection}>
-          <TouchableOpacity 
-            style={[styles.continueButton, !isMapReady && styles.continueButtonDisabled]}
-            onPress={handleContinue}
-            disabled={!isMapReady}
-          >
-            <FontAwesome name="star" size={20} color="#fff" style={styles.buttonIcon} />
-            <Text style={styles.continueButtonText}>İlgi Alanlarını Seç</Text>
-            <FontAwesome name="chevron-right" size={18} color="#fff" />
-          </TouchableOpacity>
-        </View>
-      </SafeAreaView>
+          <View style={styles.contentContainer}>
+            {destination && (
+              <View style={styles.miniMapContainer}>
+                <Text style={styles.miniMapTitle}>Rota Önizleme</Text>
+                <View style={styles.miniMapPreview}>
+                  <MapView
+                    ref={mapRef}
+                    provider={PROVIDER_GOOGLE}
+                    style={styles.map}
+                    initialRegion={{
+                      latitude: startLocation.latitude,
+                      longitude: startLocation.longitude,
+                      latitudeDelta: 0.5,
+                      longitudeDelta: 0.5,
+                    }}
+                    onMapReady={onMapReady}
+                  >
+                    {/* Başlangıç marker */}
+                    <Marker
+                      coordinate={startLocation}
+                      title="Başlangıç"
+                      pinColor="#4285F4"
+                    />
+
+                    {/* Hedef için directions - koordinat veya string kullan */}
+                    {isMapReady && (destinationCoords || destination) && (
+                      <MapViewDirections
+                        origin={startLocation}
+                        destination={destinationCoords || destination}
+                        waypoints={waypointCoords.length > 0 ? waypointCoords : waypoints}
+                        apikey={GOOGLE_MAPS_API_KEY}
+                        strokeWidth={4}
+                        strokeColor="#E91E63"
+                        optimizeWaypoints={true}
+                        onReady={onDirectionsReady}
+                        onError={(errorMessage) => {
+                          console.error('Directions error:', errorMessage);
+                          Alert.alert('Rota Hatası', 'Rota hesaplanamadı. Lütfen hedef ve ara durakları kontrol edin.');
+                        }}
+                        language="tr"
+                        region="tr"
+                      />
+                    )}
+                  </MapView>
+
+                  {!isMapReady && (
+                    <View style={styles.mapLoadingOverlay}>
+                      <ActivityIndicator size="large" color="#E91E63" />
+                      <Text style={styles.loadingText}>Harita yükleniyor...</Text>
+                    </View>
+                  )}
+                </View>
+                <View style={styles.routeInfoCompact}>
+                  <View style={styles.routeInfoSection}>
+                    <Text style={styles.routeInfoLabel}>Rota Sırası:</Text>
+                    <View style={styles.routeSequence}>
+                      <View style={styles.routeStep}>
+                        <View style={styles.stepNumber}>
+                          <Text style={styles.stepNumberText}>1</Text>
+                        </View>
+                        <Text style={styles.stepText}>{startLocationName} (Başlangıç)</Text>
+                      </View>
+
+                      {waypoints.slice(0, 3).map((waypoint, index) => (
+                        <View key={index} style={styles.routeStep}>
+                          <View style={styles.stepNumber}>
+                            <Text style={styles.stepNumberText}>{index + 2}</Text>
+                          </View>
+                          <Text style={styles.stepText} numberOfLines={1}>{waypoint}</Text>
+                        </View>
+                      ))}
+
+                      <View style={styles.routeStep}>
+                        <View style={[styles.stepNumber, styles.finalStep]}>
+                          <Text style={styles.stepNumberText}>{waypoints.length + 2}</Text>
+                        </View>
+                        <Text style={styles.stepText} numberOfLines={1}>{destination} (Hedef)</Text>
+                      </View>
+
+                      {waypoints.length > 3 && (
+                        <Text style={styles.moreWaypointsText}>+{waypoints.length - 3} durak daha...</Text>
+                      )}
+                    </View>
+                  </View>
+                </View>
+              </View>
+            )}
+          </View>
+
+          <View style={styles.bottomButtonContainer}>
+            <TouchableOpacity style={styles.completeRouteButton} onPress={handleCompleteRoute}>
+              <FontAwesome name="star" size={20} color="#fff" style={styles.buttonIcon} />
+              <Text style={styles.completeRouteButtonText}>İlgi Alanlarını Seç</Text>
+              <FontAwesome name="chevron-right" size={18} color="#fff" />
+            </TouchableOpacity>
+          </View>
+        </SafeAreaView>
+      </View>
     </ImageBackground>
   );
 }
@@ -364,9 +260,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+  },
   safeArea: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
   },
   header: {
     flexDirection: 'row',
@@ -374,6 +273,11 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingVertical: 15,
+  },
+  contentContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    paddingHorizontal: 20,
   },
   backButton: {
     padding: 5,
@@ -386,85 +290,130 @@ const styles = StyleSheet.create({
   placeholder: {
     width: 40,
   },
-  mapContainer: {
+  bottomButtonContainer: {
+    paddingHorizontal: 20,
+    paddingBottom: 30,
+    paddingTop: 20,
+  },
+  completeRouteButton: {
+    backgroundColor: '#E91E63',
+    borderRadius: 30,
+    paddingVertical: 15,
+    paddingHorizontal: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+  },
+  buttonIcon: {
+    marginRight: 12,
+  },
+  completeRouteButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: 'bold',
     flex: 1,
-    margin: 20,
-    borderRadius: 15,
-    overflow: 'hidden',
+    textAlign: 'center',
+  },
+  miniMapContainer: {
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    borderRadius: 20,
+    padding: 20,
     elevation: 8,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.15,
     shadowRadius: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
   },
-  webView: {
-    flex: 1,
-  },
-  loadingOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loadingText: {
-    color: '#fff',
-    marginTop: 10,
-    fontSize: 16,
-  },
-  routeInfo: {
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-    margin: 20,
-    marginTop: 0,
-    borderRadius: 15,
-    padding: 20,
-    elevation: 5,
-  },
-  routeTitle: {
+  miniMapTitle: {
     fontSize: 18,
     fontWeight: 'bold',
     color: '#333',
     marginBottom: 15,
+    textAlign: 'center',
+  },
+  miniMapPreview: {
+    height: 250,
+    borderRadius: 15,
+    overflow: 'hidden',
+    backgroundColor: '#f0f0f0',
+    marginBottom: 20,
+    elevation: 3,
+  },
+  map: {
+    flex: 1,
+  },
+  mapLoadingOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    fontSize: 16,
+    color: '#333',
+    fontWeight: '600',
+    marginTop: 10,
+  },
+  routeInfoCompact: {
+    gap: 15,
+  },
+  routeInfoSection: {
+    gap: 8,
+  },
+  routeInfoLabel: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 5,
+  },
+  routeSequence: {
+    marginTop: 5,
   },
   routeStep: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 8,
+    paddingVertical: 2,
   },
-  routeStepText: {
-    marginLeft: 10,
+  stepNumber: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: '#4CAF50',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  finalStep: {
+    backgroundColor: '#E91E63',
+  },
+  stepNumberText: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: '#fff',
+  },
+  stepText: {
     fontSize: 14,
     color: '#666',
     flex: 1,
+    lineHeight: 18,
   },
-  bottomSection: {
-    paddingHorizontal: 20,
-    paddingBottom: 30,
-  },
-  continueButton: {
-    backgroundColor: '#E91E63',
-    borderRadius: 15,
-    paddingVertical: 18,
-    paddingHorizontal: 30,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    elevation: 5,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-  },
-  continueButtonDisabled: {
-    backgroundColor: 'rgba(233, 30, 99, 0.5)',
-  },
-  buttonIcon: {
-    marginRight: 12,
-  },
-  continueButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-    flex: 1,
+  moreWaypointsText: {
+    fontSize: 12,
+    color: '#999',
+    fontStyle: 'italic',
+    marginTop: 5,
     textAlign: 'center',
   },
-}); 
+});

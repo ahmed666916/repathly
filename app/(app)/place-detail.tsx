@@ -15,6 +15,7 @@ import {
 } from 'react-native';
 import { FontAwesome5 } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
+import GOOGLE_MAPS_KEY from '../../constants/googleMapsKey';
 
 const { width } = Dimensions.get('window');
 
@@ -86,7 +87,7 @@ export default function PlaceDetailScreen() {
     setIsLoading(true);
     setDisplayedReviewCount(15);
     setAllReviews([]);
-    
+
     if (place?.googlePlaceId) {
       fetchPlaceDetails(place.googlePlaceId);
     } else {
@@ -95,27 +96,27 @@ export default function PlaceDetailScreen() {
   }, [place?.googlePlaceId]);
 
   const fetchPlaceDetails = async (placeId: string) => {
-    const apiKey = 'AIzaSyD20dEgYCXYcs-C4uGDMUTSvSbdxYDuk5o';
-    
+    const apiKey = GOOGLE_MAPS_KEY;
+
     try {
       // Fetch multiple pages of reviews to get more than 5
       let allReviewsData: any[] = [];
       let nextPageToken = '';
-      
+
       // First request - get basic details and first set of reviews
       const detailsUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=photos,reviews,opening_hours,formatted_phone_number,website,editorial_summary&key=${apiKey}&language=tr`;
-      
+
       const response = await fetch(detailsUrl);
       const data = await response.json();
-      
+
       if (data.status === 'OK' && data.result) {
         const result = data.result;
-        
+
         // Process photos
-        const photos = result.photos ? result.photos.slice(0, 6).map((photo: any) => 
+        const photos = result.photos ? result.photos.slice(0, 6).map((photo: any) =>
           `https://maps.googleapis.com/maps/api/place/photo?maxwidth=800&photoreference=${photo.photo_reference}&key=${apiKey}`
         ) : [place.imageUri];
-        
+
         // Process reviews and sort by newest first
         const reviews = result.reviews ? result.reviews
           .map((review: any, index: number) => ({
@@ -128,22 +129,22 @@ export default function PlaceDetailScreen() {
             timestamp: review.time
           }))
           .sort((a: any, b: any) => b.timestamp - a.timestamp) : [];
-        
+
         console.log('Fetched reviews count:', reviews.length);
         console.log('Google Places API Limitation: Maximum 5 reviews per request - this is a Google API restriction, not our code limitation');
-        
+
         // Store all reviews for pagination
         setAllReviews(reviews);
-        
+
         // Calculate rating breakdown from reviews
         const ratingBreakdown: { [key: number]: number } = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
         let actualReviewCount = 0;
-        
+
         // Always use the total review count from the place data for rating bars
         // Google API only returns max 5 reviews in details, but we want to show distribution for all reviews
         actualReviewCount = place.reviewCount;
         const avgRating = place.rating;
-        
+
         // Generate realistic distribution based on overall rating and total review count
         if (avgRating >= 4.5) {
           ratingBreakdown[5] = Math.floor(actualReviewCount * 0.7);
@@ -170,7 +171,7 @@ export default function PlaceDetailScreen() {
           ratingBreakdown[2] = Math.floor(actualReviewCount * 0.15);
           ratingBreakdown[1] = actualReviewCount - (ratingBreakdown[5] + ratingBreakdown[4] + ratingBreakdown[3] + ratingBreakdown[2]);
         }
-        
+
         // Process opening hours
         const openingHours = result.opening_hours ? {
           weekdayText: result.opening_hours.weekday_text || [],
@@ -179,16 +180,16 @@ export default function PlaceDetailScreen() {
           weekdayText: [],
           isOpen: undefined
         };
-        
+
         // Process contact info
         const contact = {
           phone: result.formatted_phone_number,
           website: result.website,
           email: generateEmail(place.name)
         };
-        
+
         const description = result.editorial_summary?.overview || place.description;
-        
+
         setPlaceDetails({
           photos,
           reviews: [], // Don't store reviews in placeDetails anymore, use allReviews state
@@ -210,7 +211,7 @@ export default function PlaceDetailScreen() {
     const now = Date.now() / 1000;
     const diff = now - timestamp;
     const days = Math.floor(diff / 86400);
-    
+
     if (days === 0) return 'Bugün';
     if (days === 1) return 'Dün';
     if (days < 7) return `${days} gün önce`;
@@ -254,8 +255,8 @@ export default function PlaceDetailScreen() {
               {selectedUserProfile && (
                 <>
                   <View style={styles.profileHeader}>
-                    <Image 
-                      source={{ uri: selectedUserProfile.profilePhoto }} 
+                    <Image
+                      source={{ uri: selectedUserProfile.profilePhoto }}
                       style={styles.profilePhoto}
                     />
                     <Text style={styles.profileName}>{selectedUserProfile.name}</Text>
@@ -294,7 +295,7 @@ export default function PlaceDetailScreen() {
                   </View>
 
 
-                  <TouchableOpacity 
+                  <TouchableOpacity
                     style={styles.closeButton}
                     onPress={() => setShowProfileModal(false)}
                   >
@@ -454,16 +455,16 @@ export default function PlaceDetailScreen() {
                     const count = placeDetails?.ratingBreakdown?.[star] || 0;
                     const total = place.reviewCount || 1;
                     const percentage = (count / total) * 100;
-                    
+
                     return (
                       <View key={star} style={styles.ratingBar}>
                         <Text style={styles.starLabel}>{star}</Text>
                         <View style={styles.barContainer}>
-                          <View 
+                          <View
                             style={[
-                              styles.barFill, 
+                              styles.barFill,
                               { width: `${percentage}%` }
-                            ]} 
+                            ]}
                           />
                         </View>
                         <Text style={styles.ratingCount}>{count}</Text>
@@ -479,7 +480,7 @@ export default function PlaceDetailScreen() {
       case 1: // Yorumlar
         const displayedReviews = allReviews.slice(0, displayedReviewCount);
         const hasMoreReviews = allReviews.length > displayedReviewCount;
-        
+
         return (
           <View style={styles.tabContent}>
             <Text style={styles.sectionTitle}>Kullanıcı Yorumları</Text>
@@ -513,9 +514,9 @@ export default function PlaceDetailScreen() {
                     </View>
                   );
                 })}
-                
+
                 {hasMoreReviews && (
-                  <TouchableOpacity 
+                  <TouchableOpacity
                     style={styles.loadMoreButton}
                     onPress={() => setDisplayedReviewCount(prev => prev + 30)}
                   >
@@ -554,7 +555,7 @@ export default function PlaceDetailScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#fff" />
-      
+
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={handleBack} style={styles.backButton}>
@@ -590,8 +591,8 @@ export default function PlaceDetailScreen() {
       {/* Photos Section */}
       {placeDetails?.photos && placeDetails.photos.length > 0 && (
         <View style={styles.photosSection}>
-          <ScrollView 
-            horizontal 
+          <ScrollView
+            horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.photosScrollContent}
           >
@@ -624,8 +625,8 @@ export default function PlaceDetailScreen() {
             {selectedUserProfile && (
               <>
                 <View style={styles.profileHeader}>
-                  <Image 
-                    source={{ uri: selectedUserProfile.profilePhoto }} 
+                  <Image
+                    source={{ uri: selectedUserProfile.profilePhoto }}
                     style={styles.profilePhoto}
                   />
                   <Text style={styles.profileName}>{selectedUserProfile.name}</Text>
@@ -663,7 +664,7 @@ export default function PlaceDetailScreen() {
                   </View>
                 </View>
 
-                <TouchableOpacity 
+                <TouchableOpacity
                   style={styles.closeButton}
                   onPress={() => setShowProfileModal(false)}
                 >

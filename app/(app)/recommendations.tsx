@@ -15,6 +15,7 @@ import { Text, View } from '@/components/Themed';
 import { FontAwesome } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router';
 import { useCallback } from 'react';
+import GOOGLE_MAPS_KEY from '../../constants/googleMapsKey';
 
 const { width } = Dimensions.get('window');
 
@@ -68,20 +69,20 @@ export default function RecommendationsScreen() {
     try {
       // Global'den kullanıcının konumunu al
       const globalUserLocation = (global as any).userLocation;
-      
+
       if (globalUserLocation) {
         console.log('🌍 Kullanıcının GPS konumu:', globalUserLocation);
-        
+
         // Reverse geocoding ile şehir adını al
-        const apiKey = 'AIzaSyD20dEgYCXYcs-C4uGDMUTSvSbdxYDuk5o';
+        const apiKey = GOOGLE_MAPS_KEY;
         const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${globalUserLocation.latitude},${globalUserLocation.longitude}&key=${apiKey}&language=tr&result_type=administrative_area_level_1`;
-        
+
         const response = await fetch(geocodeUrl);
         const data = await response.json();
-        
+
         if (data.status === 'OK' && data.results[0]) {
           const result = data.results[0];
-          
+
           for (const component of result.address_components) {
             if (component.types.includes('administrative_area_level_1')) {
               const cityName = component.long_name;
@@ -92,11 +93,11 @@ export default function RecommendationsScreen() {
           }
         }
       }
-      
+
       // Fallback: GPS yoksa İstanbul varsayılan
       console.log('⚠️ GPS konumu bulunamadı, İstanbul varsayılan olarak kullanılıyor');
       setUserCurrentCity('İstanbul');
-      
+
     } catch (error) {
       console.error('Kullanıcı konumu tespit hatası:', error);
       setUserCurrentCity('İstanbul');
@@ -124,55 +125,55 @@ export default function RecommendationsScreen() {
       console.log('🚫 Kullanıcının bulunduğu şehir için öneri alınmıyor:', location);
       return [];
     }
-    
-    const apiKey = 'AIzaSyD20dEgYCXYcs-C4uGDMUTSvSbdxYDuk5o';
+
+    const apiKey = GOOGLE_MAPS_KEY;
     const targetCount = 10;
     let allPlaces: any[] = [];
 
     const interestConfig: Record<string, { textQueries: string[]; types: string[]; keywords: string[] }> = {
-        history: {
-            textQueries: ['tarihi yerler', 'antik kentler', 'müzeler', 'kaleler', 'arkeolojik alanlar'],
-            types: ['museum', 'tourist_attraction', 'mosque', 'church', 'synagogue', 'castle', 'ruins'],
-            keywords: ['tarihi', 'antik', 'müze', 'kale', 'arkeoloji', 'eski şehir', 'kalıntı']
-        },
-        nature: {
-            textQueries: ['doğal güzellikler', 'şelaleler', 'milli parklar', 'kanyonlar', 'plajlar', 'göller'],
-            types: ['park', 'national_park', 'beach', 'lake', 'mountain', 'tourist_attraction'],
-            keywords: ['doğa', 'şelale', 'kanyon', 'orman', 'plaj', 'göl', 'dağ', 'tabiat']
-        },
-        food: {
-            textQueries: ['en iyi restoranlar', 'yöresel yemekler', 'meşhur lokantalar', 'kahvaltı mekanları'],
-            types: ['restaurant', 'cafe', 'bakery', 'bar'],
-            keywords: ['restoran', 'kafe', 'yemek', 'lezzet', 'mutfak', 'lokanta']
-        },
-        art: {
-            textQueries: ['sanat galerileri', 'kültür merkezleri', 'sergiler', 'tiyatrolar'],
-            types: ['art_gallery', 'museum', 'theater', 'library'],
-            keywords: ['sanat', 'kültür', 'galeri', 'sergi', 'tiyatro', 'müze']
-        },
-        adventure: {
-            textQueries: ['macera parkları', 'aktiviteler', 'yamaç paraşütü', 'rafting'],
-            types: ['amusement_park', 'zoo', 'aquarium', 'tourist_attraction'],
-            keywords: ['macera', 'eğlence', 'aktivite', 'safari', 'rafting', 'dalış']
-        },
-        nightlife: {
-            textQueries: ['gece kulüpleri', 'canlı müzik', 'rooftop barlar'],
-            types: ['night_club', 'bar'],
-            keywords: ['gece', 'bar', 'club', 'canlı müzik', 'eğlence']
-        }
+      history: {
+        textQueries: ['tarihi yerler', 'antik kentler', 'müzeler', 'kaleler', 'arkeolojik alanlar'],
+        types: ['museum', 'tourist_attraction', 'mosque', 'church', 'synagogue', 'castle', 'ruins'],
+        keywords: ['tarihi', 'antik', 'müze', 'kale', 'arkeoloji', 'eski şehir', 'kalıntı']
+      },
+      nature: {
+        textQueries: ['doğal güzellikler', 'şelaleler', 'milli parklar', 'kanyonlar', 'plajlar', 'göller'],
+        types: ['park', 'national_park', 'beach', 'lake', 'mountain', 'tourist_attraction'],
+        keywords: ['doğa', 'şelale', 'kanyon', 'orman', 'plaj', 'göl', 'dağ', 'tabiat']
+      },
+      food: {
+        textQueries: ['en iyi restoranlar', 'yöresel yemekler', 'meşhur lokantalar', 'kahvaltı mekanları'],
+        types: ['restaurant', 'cafe', 'bakery', 'bar'],
+        keywords: ['restoran', 'kafe', 'yemek', 'lezzet', 'mutfak', 'lokanta']
+      },
+      art: {
+        textQueries: ['sanat galerileri', 'kültür merkezleri', 'sergiler', 'tiyatrolar'],
+        types: ['art_gallery', 'museum', 'theater', 'library'],
+        keywords: ['sanat', 'kültür', 'galeri', 'sergi', 'tiyatro', 'müze']
+      },
+      adventure: {
+        textQueries: ['macera parkları', 'aktiviteler', 'yamaç paraşütü', 'rafting'],
+        types: ['amusement_park', 'zoo', 'aquarium', 'tourist_attraction'],
+        keywords: ['macera', 'eğlence', 'aktivite', 'safari', 'rafting', 'dalış']
+      },
+      nightlife: {
+        textQueries: ['gece kulüpleri', 'canlı müzik', 'rooftop barlar'],
+        types: ['night_club', 'bar'],
+        keywords: ['gece', 'bar', 'club', 'canlı müzik', 'eğlence']
+      }
     };
-    
+
     const config = interestConfig[interest];
     if (!config) return [];
 
     const geocodeLocation = async (loc: string): Promise<{ lat: number; lng: number } | null> => {
-        const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(loc)}&key=${apiKey}&language=tr`;
-        try {
-            const res = await fetch(url);
-            const data = await res.json();
-            if (data.status === 'OK') return data.results[0].geometry.location;
-        } catch (e) { console.error("Geocode Error:", e); }
-        return null;
+      const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(loc)}&key=${apiKey}&language=tr`;
+      try {
+        const res = await fetch(url);
+        const data = await res.json();
+        if (data.status === 'OK') return data.results[0].geometry.location;
+      } catch (e) { console.error("Geocode Error:", e); }
+      return null;
     };
 
     const coords = await geocodeLocation(location);
@@ -182,128 +183,128 @@ export default function RecommendationsScreen() {
     // Google Places API maksimum 50km radius destekler, daha büyük değerler için farklı strateji
     const apiRadiusMeters = Math.min(searchRadius * 1000, 50000); // Maksimum 50km
     for (const query of config.textQueries) {
-        const url = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(query)}&location=${coords.lat},${coords.lng}&radius=${apiRadiusMeters}&key=${apiKey}&language=tr`;
-        try {
-            const res = await fetch(url);
-            const data = await res.json();
-            if (data.status === 'OK') {
-                allPlaces.push(...data.results);
-            }
-        } catch (e) { console.error("TextSearch Error:", e); }
+      const url = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(query)}&location=${coords.lat},${coords.lng}&radius=${apiRadiusMeters}&key=${apiKey}&language=tr`;
+      try {
+        const res = await fetch(url);
+        const data = await res.json();
+        if (data.status === 'OK') {
+          allPlaces.push(...data.results);
+        }
+      } catch (e) { console.error("TextSearch Error:", e); }
     }
 
     // 2. ADIM: Yeterli sonuç yoksa, NearbySearch ile destekle
     if (allPlaces.length < targetCount * 2) {
-        for (const type of config.types) {
-             const url = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${coords.lat},${coords.lng}&radius=${apiRadiusMeters}&type=${type}&key=${apiKey}&language=tr`;
-            try {
-                const res = await fetch(url);
-                const data = await res.json();
-                if (data.status === 'OK') {
-                    allPlaces.push(...data.results);
-                }
-            } catch (e) { console.error("NearbySearch Error:", e); }
-        }
+      for (const type of config.types) {
+        const url = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${coords.lat},${coords.lng}&radius=${apiRadiusMeters}&type=${type}&key=${apiKey}&language=tr`;
+        try {
+          const res = await fetch(url);
+          const data = await res.json();
+          if (data.status === 'OK') {
+            allPlaces.push(...data.results);
+          }
+        } catch (e) { console.error("NearbySearch Error:", e); }
+      }
     }
 
     // 3. ADIM: Sonuçları filtrele ve sırala
     const uniquePlaces = allPlaces.filter((place, index, self) =>
-        place.place_id && index === self.findIndex(p => p.place_id === place.place_id)
+      place.place_id && index === self.findIndex(p => p.place_id === place.place_id)
     );
 
     // Mesafe hesabı (Haversine)
     const toRad = (v: number) => (v * Math.PI) / 180;
     const distanceKm = (lat1: number, lon1: number, lat2: number, lon2: number) => {
-        const R = 6371; // km
-        const dLat = toRad(lat2 - lat1);
-        const dLon = toRad(lon2 - lon1);
-        const a =
-            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-            Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
-            Math.sin(dLon / 2) * Math.sin(dLon / 2);
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        return R * c;
+      const R = 6371; // km
+      const dLat = toRad(lat2 - lat1);
+      const dLon = toRad(lon2 - lon1);
+      const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      return R * c;
     };
-    
+
     // Kullanıcı tarafından belirlenen mesafe eşiği kullan (orijinal searchRadius)
     const userRadiusKm = searchRadius;
 
     // Coğrafi mesafe filtresi: kullanıcının belirlediği mesafe içinde kal
     const distanceFilteredPlaces = uniquePlaces.filter((p: any) => {
-        const loc = p.geometry?.location;
-        if (!loc || typeof loc.lat !== 'number' || typeof loc.lng !== 'number') return false;
-        const d = distanceKm(coords.lat, coords.lng, loc.lat, loc.lng);
-        return d <= userRadiusKm;
+      const loc = p.geometry?.location;
+      if (!loc || typeof loc.lat !== 'number' || typeof loc.lng !== 'number') return false;
+      const d = distanceKm(coords.lat, coords.lng, loc.lat, loc.lng);
+      return d <= userRadiusKm;
     });
 
     const matchesInterest = (place: any): boolean => {
-        const placeTypes = new Set((place.types || []).map((t: string) => t.toLowerCase()));
-        const interestTypes = new Set(config.types);
-        for (const type of interestTypes) {
-            if (placeTypes.has(type)) return true;
-        }
-        const placeText = `${(place.name || '').toLowerCase()} ${(place.vicinity || '').toLowerCase()}`;
-        for (const keyword of config.keywords) {
-            if (placeText.includes(keyword)) return true;
-        }
-        return false;
+      const placeTypes = new Set((place.types || []).map((t: string) => t.toLowerCase()));
+      const interestTypes = new Set(config.types);
+      for (const type of interestTypes) {
+        if (placeTypes.has(type)) return true;
+      }
+      const placeText = `${(place.name || '').toLowerCase()} ${(place.vicinity || '').toLowerCase()}`;
+      for (const keyword of config.keywords) {
+        if (placeText.includes(keyword)) return true;
+      }
+      return false;
     };
-    
+
     // Önce coğrafi filtre, sonra kategori eşleşmesi
     const categoryFilteredPlaces = distanceFilteredPlaces.filter(matchesInterest);
 
     const sortPlaces = (a: any, b: any) => {
-        const aReviews = a.user_ratings_total || 0;
-        const bReviews = b.user_ratings_total || 0;
-        if (aReviews !== bReviews) return bReviews - aReviews;
-        return (b.rating || 0) - (a.rating || 0);
+      const aReviews = a.user_ratings_total || 0;
+      const bReviews = b.user_ratings_total || 0;
+      if (aReviews !== bReviews) return bReviews - aReviews;
+      return (b.rating || 0) - (a.rating || 0);
     };
 
     let finalPlaces = categoryFilteredPlaces
-        .filter(p => (p.rating || 0) >= 4.0 && (p.user_ratings_total || 0) >= 50)
-        .sort(sortPlaces);
+      .filter(p => (p.rating || 0) >= 4.0 && (p.user_ratings_total || 0) >= 50)
+      .sort(sortPlaces);
 
     if (finalPlaces.length < targetCount) {
-        const morePlaces = categoryFilteredPlaces
-            .filter(p => (p.rating || 0) >= 3.0 && (p.user_ratings_total || 0) >= 10)
-            .sort(sortPlaces);
-        finalPlaces = [...new Set([...finalPlaces, ...morePlaces])].slice(0, targetCount);
+      const morePlaces = categoryFilteredPlaces
+        .filter(p => (p.rating || 0) >= 3.0 && (p.user_ratings_total || 0) >= 10)
+        .sort(sortPlaces);
+      finalPlaces = [...new Set([...finalPlaces, ...morePlaces])].slice(0, targetCount);
     }
-    
+
     if (finalPlaces.length < targetCount) {
-         const evenMorePlaces = categoryFilteredPlaces.sort(sortPlaces);
-         finalPlaces = [...new Set([...finalPlaces, ...evenMorePlaces])].slice(0, targetCount);
+      const evenMorePlaces = categoryFilteredPlaces.sort(sortPlaces);
+      finalPlaces = [...new Set([...finalPlaces, ...evenMorePlaces])].slice(0, targetCount);
     }
 
 
     // Use basic place information without detailed API calls for better performance
     const basicPlaces = finalPlaces.slice(0, targetCount).map((place: any) => {
-        return {
-            id: place.place_id,
-            name: place.name,
-            category: interest,
-            rating: place.rating || 0,
-            reviewCount: place.user_ratings_total || 0,
-            description: (place.types || []).join(', ').replace(/_/g, ' '),
-            imageUri: place.photos?.[0]
-                ? `https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=${place.photos[0].photo_reference}&key=${apiKey}`
-                : getDefaultImageForCategory(interest),
-            address: place.vicinity || 'Adres bilgisi yok',
-            priceLevel: place.price_level || 1,
-            selected: false,
-            googlePlaceId: place.place_id,
-            location: place.geometry?.location,
-            vicinity: place.vicinity,
-            sourceLocation: location
-        };
+      return {
+        id: place.place_id,
+        name: place.name,
+        category: interest,
+        rating: place.rating || 0,
+        reviewCount: place.user_ratings_total || 0,
+        description: (place.types || []).join(', ').replace(/_/g, ' '),
+        imageUri: place.photos?.[0]
+          ? `https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=${place.photos[0].photo_reference}&key=${apiKey}`
+          : getDefaultImageForCategory(interest),
+        address: place.vicinity || 'Adres bilgisi yok',
+        priceLevel: place.price_level || 1,
+        selected: false,
+        googlePlaceId: place.place_id,
+        location: place.geometry?.location,
+        vicinity: place.vicinity,
+        sourceLocation: location
+      };
     });
 
     // KULLANICININ ŞEHRİ FİLTRESİ - Son kontrol
     const filteredPlaces = basicPlaces.filter(place => {
-      const isUserCity = place.address?.includes(userCurrentCity) || 
-                        place.vicinity?.includes(userCurrentCity) ||
-                        place.sourceLocation?.includes(userCurrentCity);
-      
+      const isUserCity = place.address?.includes(userCurrentCity) ||
+        place.vicinity?.includes(userCurrentCity) ||
+        place.sourceLocation?.includes(userCurrentCity);
+
       if (isUserCity) {
         console.log('🚫 Kullanıcının şehri filtrelendi:', place.name, `(${userCurrentCity})`);
         return false;
@@ -330,40 +331,40 @@ export default function RecommendationsScreen() {
   const generateLocationBasedRecommendations = async () => {
     setIsLoading(true);
     setLoadingText('Rota güzergahı analiz ediliyor...');
-    
+
     const interests = selectedInterests ? JSON.parse(selectedInterests as string) : [];
     const waypointsList = waypoints ? JSON.parse(waypoints as string) : [];
-    
+
     try {
       // 1. ADIM: Rota güzergahını analiz et ve geçilen tüm il/ilçeleri bul
       const routeLocations = await analyzeRouteAndGetLocations(waypointsList, destination as string);
       console.log('🗺️ Rota boyunca bulunan lokasyonlar (sıralı):', routeLocations.map(l => ({ name: l.name, order: l.routeOrder })));
       console.log('📍 Waypoints:', waypointsList);
       console.log('🎯 Destination:', destination);
-      
+
       // Kullanıcının bulunduğu şehri filtrele - öneri alma
-      const filteredLocations = routeLocations.filter(location => 
-        location.name !== userCurrentCity && 
+      const filteredLocations = routeLocations.filter(location =>
+        location.name !== userCurrentCity &&
         location.name !== `${userCurrentCity} Province` &&
         location.displayName !== userCurrentCity &&
         !location.displayName.includes(userCurrentCity)
       );
-      
+
       setLoadingText(`${filteredLocations.length} şehir için öneriler hazırlanıyor...`);
-      
+
       // 2. ADIM: Her lokasyon için öneriler al (İstanbul hariç)
       const realPlaces: Place[] = [];
-      
+
       console.log(`🚫 ${userCurrentCity} filtrelendi. Öneri alınacak şehirler:`, filteredLocations.map(l => l.name));
-      
+
       let totalExpected = filteredLocations.length * interests.length;
       let currentProgress = 0;
-      
+
       for (const location of filteredLocations) {
         for (const interest of interests) {
           currentProgress++;
           setLoadingText(`${location.displayName} için ${getCategoryName(interest)} yerleri aranıyor... (${currentProgress}/${totalExpected})`);
-          
+
           try {
             const placesForLocation = await fetchGooglePlaces(location.name, interest, searchRadius);
             // Lokasyon bilgilerini ekle
@@ -378,27 +379,27 @@ export default function RecommendationsScreen() {
           } catch (error) {
             console.error(`Error fetching places for ${location.name}, ${interest}:`, error);
           }
-          
+
           // API rate limiting için kısa bekleme
           await new Promise(resolve => setTimeout(resolve, 150));
         }
       }
-      
+
       // Final kullanıcı şehri filtresi - places state'ine eklemeden önce
       const finalFilteredPlaces = realPlaces.filter(place => {
         const isUserCity = place.sourceLocation?.includes(userCurrentCity) ||
-                          place.locationDisplayName?.includes(userCurrentCity) ||
-                          place.address?.includes(userCurrentCity) ||
-                          place.vicinity?.includes(userCurrentCity) ||
-                          place.name?.includes(userCurrentCity);
-        
+          place.locationDisplayName?.includes(userCurrentCity) ||
+          place.address?.includes(userCurrentCity) ||
+          place.vicinity?.includes(userCurrentCity) ||
+          place.name?.includes(userCurrentCity);
+
         if (isUserCity) {
           console.log(`🚫 Final filtrede ${userCurrentCity} yeri kaldırıldı:`, place.name);
           return false;
         }
         return true;
       });
-      
+
       console.log(`✅ Final: ${realPlaces.length} -> ${finalFilteredPlaces.length} yer (${userCurrentCity} filtrelendi)`);
       setPlaces(finalFilteredPlaces);
       if (finalFilteredPlaces.length === 0) {
@@ -407,7 +408,7 @@ export default function RecommendationsScreen() {
       } else {
         setIsLoading(false);
       }
-      
+
     } catch (error) {
       console.error('Rota analizi hatası:', error);
       setLoadingText('Rota analizi başarısız oldu.');
@@ -416,68 +417,68 @@ export default function RecommendationsScreen() {
   };
 
   // GERÇEK ROTA GÜZERGAHINDAKİ İLLERİ SIRASIYLA BULAN FONKSİYON
-  const analyzeRouteAndGetLocations = async (waypoints: string[], destination: string): Promise<Array<{name: string, hierarchy: string, displayName: string, routeOrder: number}>> => {
-    const apiKey = 'AIzaSyD20dEgYCXYcs-C4uGDMUTSvSbdxYDuk5o';
-    const orderedCities: Array<{name: string, hierarchy: string, displayName: string, routeOrder: number}> = [];
-    
+  const analyzeRouteAndGetLocations = async (waypoints: string[], destination: string): Promise<Array<{ name: string, hierarchy: string, displayName: string, routeOrder: number }>> => {
+    const apiKey = GOOGLE_MAPS_KEY;
+    const orderedCities: Array<{ name: string, hierarchy: string, displayName: string, routeOrder: number }> = [];
+
     try {
       console.log(`🛣️ ${userCurrentCity} -> ${destination} rotası analiz ediliyor...`);
-      
+
       // TEK BİR DIRECTIONS ÇAĞRISI: Kullanıcının şehrinden hedefe direkt rota
       const directionsUrl = `https://maps.googleapis.com/maps/api/directions/json?origin=${encodeURIComponent(userCurrentCity)}&destination=${encodeURIComponent(destination)}&key=${apiKey}&language=tr&region=tr`;
-      
+
       const response = await fetch(directionsUrl);
       const data = await response.json();
-      
+
       if (data.status === 'OK' && data.routes[0]) {
         const route = data.routes[0];
         console.log('✅ Rota bulundu, adımlar analiz ediliyor...');
-        
+
         let stepOrder = 0;
         const seenProvinces = new Set<string>();
-        
+
         // Her leg ve step'i sırayla işle
         for (const leg of route.legs) {
           for (let stepIndex = 0; stepIndex < leg.steps.length; stepIndex++) {
             const step = leg.steps[stepIndex];
             stepOrder++;
-            
+
             // Her adımın koordinatlarını analiz et
             const stepLocations = await analyzeStepLocation(step, apiKey, stepOrder);
-            
+
             // Yeni illeri ekle (kullanıcının şehri hariç - kesin filtre)
             for (const location of stepLocations) {
-              if (location.name !== userCurrentCity && 
-                  location.name !== `${userCurrentCity} Province` && 
-                  !location.name.includes(userCurrentCity) &&
-                  !location.displayName.includes(userCurrentCity) &&
-                  !seenProvinces.has(location.name)) {
-                
+              if (location.name !== userCurrentCity &&
+                location.name !== `${userCurrentCity} Province` &&
+                !location.name.includes(userCurrentCity) &&
+                !location.displayName.includes(userCurrentCity) &&
+                !seenProvinces.has(location.name)) {
+
                 seenProvinces.add(location.name);
                 orderedCities.push({
                   ...location,
                   routeOrder: stepOrder
                 });
-                
+
                 console.log(`📍 ${stepOrder}. sırada: ${location.name} (${location.hierarchy})`);
               }
             }
-            
+
             // Her 10 step'te bir kısa bekleme
             if (stepIndex % 10 === 0) {
               await new Promise(resolve => setTimeout(resolve, 100));
             }
           }
         }
-        
+
         console.log('🎯 Final route cities:', orderedCities.map(c => c.name));
         return orderedCities;
-        
+
       } else {
         console.error('❌ Directions API hatası:', data.status);
         throw new Error(`Directions API Error: ${data.status}`);
       }
-      
+
     } catch (error) {
       console.error('🚨 Rota analizi hatası:', error);
       // Hata durumunda en azından hedef şehri döndür
@@ -488,24 +489,24 @@ export default function RecommendationsScreen() {
   };
 
   // Tek bir step'in lokasyonunu analiz eden yardımcı fonksiyon
-  const analyzeStepLocation = async (step: any, apiKey: string, stepOrder: number): Promise<Array<{name: string, hierarchy: string, displayName: string}>> => {
+  const analyzeStepLocation = async (step: any, apiKey: string, stepOrder: number): Promise<Array<{ name: string, hierarchy: string, displayName: string }>> => {
     try {
       const lat = step.start_location.lat;
       const lng = step.start_location.lng;
-      
+
       // Reverse geocoding
       const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${apiKey}&language=tr&result_type=administrative_area_level_1|administrative_area_level_2`;
-      
+
       const response = await fetch(geocodeUrl);
       const data = await response.json();
-      
+
       if (data.status === 'OK' && data.results[0]) {
         const result = data.results[0];
-        const locations: Array<{name: string, hierarchy: string, displayName: string}> = [];
-        
+        const locations: Array<{ name: string, hierarchy: string, displayName: string }> = [];
+
         let province = '';
         let district = '';
-        
+
         // Adres bileşenlerini parse et
         for (const component of result.address_components) {
           if (component.types.includes('administrative_area_level_1')) {
@@ -514,7 +515,7 @@ export default function RecommendationsScreen() {
             district = component.long_name;
           }
         }
-        
+
         // Önce ili ekle
         if (province) {
           locations.push({
@@ -523,7 +524,7 @@ export default function RecommendationsScreen() {
             displayName: province
           });
         }
-        
+
         // Sonra ilçeyi ekle (eğer farklıysa)
         if (district && district !== province) {
           locations.push({
@@ -532,10 +533,10 @@ export default function RecommendationsScreen() {
             displayName: `${province} > ${district}`
           });
         }
-        
+
         return locations;
       }
-      
+
       return [];
     } catch (error) {
       console.error('Step location analysis error:', error);
@@ -544,9 +545,9 @@ export default function RecommendationsScreen() {
   };
 
   const togglePlaceSelection = (placeId: string) => {
-    setPlaces(prev => 
-      prev.map(place => 
-        place.id === placeId 
+    setPlaces(prev =>
+      prev.map(place =>
+        place.id === placeId
           ? { ...place, selected: !place.selected }
           : place
       )
@@ -559,14 +560,14 @@ export default function RecommendationsScreen() {
       Alert.alert('Uyarı', 'Lütfen en az bir yer seçin.');
       return;
     }
-    
+
     // Seçilen yerleri global'e kaydet
     const selectedPlaces = places.filter(p => p.selected);
     (global as any).selectedPlaces = selectedPlaces;
     (global as any).selectedInterests = selectedInterests ? JSON.parse(selectedInterests as string) : [];
     (global as any).routeDestination = destination;
     (global as any).routeWaypoints = waypoints;
-    
+
     // Full-screen map'e yönlendir
     router.push('/(app)/fullscreen-map');
   };
@@ -574,22 +575,22 @@ export default function RecommendationsScreen() {
   // Önerileri lokasyon hiyerarşisine ve kategoriye göre grupla
   const groupedByLocationAndCategory = () => {
     const grouped: { [location: string]: { [category: string]: Place[] } } = {};
-    
+
     // Tüm yerleri önce place_id'ye göre benzersiz hale getir (tekrar önleme)
-    const uniquePlaces = places.filter((place, index, arr) => 
+    const uniquePlaces = places.filter((place, index, arr) =>
       index === arr.findIndex(p => p.googlePlaceId === place.googlePlaceId)
     );
-    
+
     // Lokasyon hiyerarşisine göre akıllı gruplama
     const locationGroups = new Map<string, Place[]>();
-    
+
     uniquePlaces
       .filter(place => {
         const locationKey = place.locationDisplayName || place.sourceLocation;
-        const isUserCity = locationKey?.includes(userCurrentCity) || 
-                          place.address?.includes(userCurrentCity) ||
-                          place.vicinity?.includes(userCurrentCity);
-        
+        const isUserCity = locationKey?.includes(userCurrentCity) ||
+          place.address?.includes(userCurrentCity) ||
+          place.vicinity?.includes(userCurrentCity);
+
         if (isUserCity) {
           console.log(`🚫 Gruplama sırasında ${userCurrentCity} yeri filtrelendi:`, place.name);
           return false;
@@ -599,12 +600,12 @@ export default function RecommendationsScreen() {
       .forEach(place => {
         const hierarchy = place.locationHierarchy;
         const displayName = place.locationDisplayName || place.sourceLocation;
-        
+
         if (!displayName) return;
-        
+
         // Merkez ilçe kontrolü: eğer displayName sadece il adı içeriyorsa merkez ilçe
         const isCenterDistrict = hierarchy === 'ilçe' && !displayName.includes(' > ');
-        
+
         if (isCenterDistrict) {
           // Merkez ilçe ise, il adı altında grupla
           const provinceName = place.sourceLocation || displayName;
@@ -624,7 +625,7 @@ export default function RecommendationsScreen() {
           locationGroups.get(displayName)!.push(place);
         }
       });
-    
+
     // Map'ten grouped objesine dönüştür
     locationGroups.forEach((places, locationName) => {
       grouped[locationName] = {};
@@ -635,55 +636,55 @@ export default function RecommendationsScreen() {
         grouped[locationName][place.category].push(place);
       });
     });
-    
+
     // Benzersiz lokasyonları al
     const uniqueLocations = Array.from(locationGroups.keys())
-      .filter(location => 
-        location !== userCurrentCity && 
-        location !== `${userCurrentCity} Province` && 
+      .filter(location =>
+        location !== userCurrentCity &&
+        location !== `${userCurrentCity} Province` &&
         !location?.includes(userCurrentCity)
       );
-    
+
     // Lokasyonları rota sırasına göre sırala (güzergah boyunca)
     const sortedLocations = uniqueLocations.sort((a, b) => {
       const aPlace = places.find(p => p.locationDisplayName === a || p.sourceLocation === a);
       const bPlace = places.find(p => p.locationDisplayName === b || p.sourceLocation === b);
-      
+
       const aRouteOrder = aPlace?.routeOrder || 999;
       const bRouteOrder = bPlace?.routeOrder || 999;
-      
+
       console.log(`🔄 Sorting: ${a} (order: ${aRouteOrder}) vs ${b} (order: ${bRouteOrder})`);
-      
+
       // Önce rota sırasına göre sırala
       if (aRouteOrder !== bRouteOrder) {
         return aRouteOrder - bRouteOrder;
       }
-      
+
       // Aynı rota sırasındaysa hiyerarşiye göre sırala
       const aHierarchy = aPlace?.locationHierarchy || 'il';
       const bHierarchy = bPlace?.locationHierarchy || 'il';
-      
+
       const hierarchyOrder = { 'il': 1, 'ilçe': 2, 'mahalle': 3 };
       const aHOrder = hierarchyOrder[aHierarchy as keyof typeof hierarchyOrder] || 4;
       const bHOrder = hierarchyOrder[bHierarchy as keyof typeof hierarchyOrder] || 4;
-      
+
       if (aHOrder !== bHOrder) {
         return aHOrder - bHOrder;
       }
-      
+
       // Son olarak alfabetik sırala
       return (a || '').localeCompare(b || '');
     });
-    
+
     console.log('✅ Final sorted order:', sortedLocations);
-    
+
     return { grouped, routeOrder: sortedLocations };
   };
-  
+
   const extractLocationFromName = (placeName: string): string | null => {
     const waypointsList = waypoints ? JSON.parse(waypoints as string) : [];
     const allLocations = [...waypointsList, destination].filter(Boolean);
-    
+
     for (const location of allLocations) {
       if (placeName.includes(location as string)) {
         return location as string;
@@ -725,7 +726,7 @@ export default function RecommendationsScreen() {
   const formatLocationHierarchy = (address: string) => {
     // Address'i parse ederek il/ilçe/köy hiyerarşisini belirle
     const parts = address.split(',').map(part => part.trim());
-    
+
     // Türkiye'deki il isimlerini kontrol et
     const turkishProvinces = [
       'Adana', 'Adıyaman', 'Afyonkarahisar', 'Ağrı', 'Amasya', 'Ankara', 'Antalya', 'Artvin',
@@ -739,32 +740,32 @@ export default function RecommendationsScreen() {
       'Aksaray', 'Bayburt', 'Karaman', 'Kırıkkale', 'Batman', 'Şırnak', 'Bartın', 'Ardahan',
       'Iğdır', 'Yalova', 'Karabük', 'Kilis', 'Osmaniye', 'Düzce'
     ];
-    
+
     // İl merkezi mi kontrol et
-    const isProvincialCenter = parts.some(part => 
-      turkishProvinces.some(province => 
+    const isProvincialCenter = parts.some(part =>
+      turkishProvinces.some(province =>
         part.toLowerCase().includes(province.toLowerCase() + ' merkez') ||
         part.toLowerCase() === province.toLowerCase()
       )
     );
-    
+
     if (isProvincialCenter) {
       // İl merkezi ise sadece il ismini döndür
-      const province = parts.find(part => 
-        turkishProvinces.some(prov => 
+      const province = parts.find(part =>
+        turkishProvinces.some(prov =>
           part.toLowerCase().includes(prov.toLowerCase())
         )
       );
       return province || parts[parts.length - 2] || address;
     } else {
       // İlçe/köy ise "İl > İlçe/Köy" formatında döndür
-      const province = parts.find(part => 
-        turkishProvinces.some(prov => 
+      const province = parts.find(part =>
+        turkishProvinces.some(prov =>
           part.toLowerCase().includes(prov.toLowerCase())
         )
       );
       const district = parts[0]; // İlk part genelde ilçe/mahalle
-      
+
       if (province && district && province !== district) {
         return `${province} > ${district}`;
       }
@@ -801,63 +802,63 @@ export default function RecommendationsScreen() {
 
   // Öneri bulunamadıysa mesaj göster
   if (places.length === 0 && !isLoading) {
-       return (
-            <ImageBackground
-                source={require('../../assets/images/loginbackground.png')}
-                style={styles.container}
-                resizeMode="cover"
-            >
-                <View style={styles.overlay}>
-                    <SafeAreaView style={styles.safeArea}>
-                        <View style={styles.header}>
-                             <TouchableOpacity style={styles.backButton} onPress={() => {
-                               const r: any = router as any;
-                               if (r?.canGoBack?.()) {
-                                 r.back();
-                               } else {
-                                 r.replace('/(app)');
-                               }
-                             }}>
-                                 <FontAwesome name="arrow-left" size={20} color="#fff" />
-                             </TouchableOpacity>
-                             <Text style={styles.headerTitle}>Öneri Bulunamadı</Text>
-                             <View style={styles.placeholder} />
-                        </View>
-                        <View style={styles.loadingContainer}>
-                            <View style={styles.loadingContent}>
-                                <FontAwesome name="frown-o" size={60} color="#FFB800" style={styles.loadingIcon} />
-                                <Text style={styles.loadingTitle}>Sonuç Bulunamadı</Text>
-                                <Text style={styles.loadingSubtitle}>
-                                    Seçtiğiniz konum ve ilgi alanına uygun popüler bir yer bulamadık. Lütfen farklı bir seçim yapın.
-                                </Text>
-                            </View>
-                        </View>
-                    </SafeAreaView>
-                </View>
-            </ImageBackground>
-       );
+    return (
+      <ImageBackground
+        source={require('../../assets/images/loginbackground.png')}
+        style={styles.container}
+        resizeMode="cover"
+      >
+        <View style={styles.overlay}>
+          <SafeAreaView style={styles.safeArea}>
+            <View style={styles.header}>
+              <TouchableOpacity style={styles.backButton} onPress={() => {
+                const r: any = router as any;
+                if (r?.canGoBack?.()) {
+                  r.back();
+                } else {
+                  r.replace('/(app)');
+                }
+              }}>
+                <FontAwesome name="arrow-left" size={20} color="#fff" />
+              </TouchableOpacity>
+              <Text style={styles.headerTitle}>Öneri Bulunamadı</Text>
+              <View style={styles.placeholder} />
+            </View>
+            <View style={styles.loadingContainer}>
+              <View style={styles.loadingContent}>
+                <FontAwesome name="frown-o" size={60} color="#FFB800" style={styles.loadingIcon} />
+                <Text style={styles.loadingTitle}>Sonuç Bulunamadı</Text>
+                <Text style={styles.loadingSubtitle}>
+                  Seçtiğiniz konum ve ilgi alanına uygun popüler bir yer bulamadık. Lütfen farklı bir seçim yapın.
+                </Text>
+              </View>
+            </View>
+          </SafeAreaView>
+        </View>
+      </ImageBackground>
+    );
   }
 
   // Toplam öneri sayısını hesapla
   const getTotalRecommendationCount = () => {
     const interests = selectedInterests ? JSON.parse(selectedInterests as string) : [];
     const totalLocations = routeOrder.length;
-    
+
     let placesPerLocation: number;
     if (totalLocations === 1) placesPerLocation = 10;
     else if (totalLocations === 2) placesPerLocation = 5;
     else if (totalLocations === 3) placesPerLocation = 5;
     else if (totalLocations === 4) placesPerLocation = 5;
     else placesPerLocation = 4;
-    
+
     return totalLocations * interests.length * placesPerLocation;
   };
 
   const getLocationIcon = (location: string) => {
-    const hierarchy = places.find(p => 
+    const hierarchy = places.find(p =>
       p.locationDisplayName === location || p.sourceLocation === location
     )?.locationHierarchy || 'il';
-    
+
     switch (hierarchy) {
       case 'il':
         return 'building'; // İl merkezi için bina ikonu
@@ -872,14 +873,14 @@ export default function RecommendationsScreen() {
 
   const getLocationDescription = (location: string, locationIndex: number, totalLocations: number) => {
     // Bu lokasyondaki toplam öneri sayısını hesapla
-    const locationPlaces = places.filter(p => 
+    const locationPlaces = places.filter(p =>
       p.locationDisplayName === location || p.sourceLocation === location
     );
     const totalPlacesForLocation = locationPlaces.length;
-    
+
     // Lokasyonun hiyerarşi tipini belirle
     const hierarchy = locationPlaces[0]?.locationHierarchy || 'il';
-    
+
     let hierarchyText = '';
     switch (hierarchy) {
       case 'il':
@@ -894,7 +895,7 @@ export default function RecommendationsScreen() {
       default:
         hierarchyText = 'Bölge';
     }
-    
+
     return `${hierarchyText} - ${totalPlacesForLocation} öneri`;
   };
 
@@ -908,7 +909,7 @@ export default function RecommendationsScreen() {
         <StatusBar barStyle="light-content" />
         <SafeAreaView style={styles.safeArea}>
           {/* Header */}
-      <View style={styles.header}>
+          <View style={styles.header}>
             <TouchableOpacity
               style={styles.backButton}
               onPress={() => {
@@ -924,13 +925,13 @@ export default function RecommendationsScreen() {
             </TouchableOpacity>
             <Text style={styles.headerTitle}>Rota Önerileri</Text>
             <View style={styles.placeholder} />
-      </View>
+          </View>
 
-      <ScrollView 
-        style={styles.scrollView}
+          <ScrollView
+            style={styles.scrollView}
             contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
+            showsVerticalScrollIndicator={false}
+          >
             {/* Info Section */}
             <View style={styles.infoSection}>
               <Text style={styles.title}>Rota Güzergahı Boyunca Tavsiyeler</Text>
@@ -946,7 +947,7 @@ export default function RecommendationsScreen() {
                 <Text style={styles.sliderTitle}>Arama Mesafesi</Text>
                 <Text style={styles.sliderValue}>{searchRadius} km</Text>
               </View>
-              
+
               <View style={styles.sliderContainer}>
                 <View style={styles.sliderTrack}>
                   <View style={styles.sliderBar} />
@@ -991,10 +992,10 @@ export default function RecommendationsScreen() {
                 {/* Location Header */}
                 <View style={styles.locationHeader}>
                   <View style={styles.locationIconContainer}>
-                    <FontAwesome 
-                      name={getLocationIcon(location || '') as any} 
-                      size={16} 
-                      color="#fff" 
+                    <FontAwesome
+                      name={getLocationIcon(location || '') as any}
+                      size={16}
+                      color="#fff"
                     />
                   </View>
                   <View style={styles.locationInfo}>
@@ -1012,25 +1013,25 @@ export default function RecommendationsScreen() {
                 {Object.entries(grouped[location as string] || {}).map(([category, categoryPlaces]) => {
                   // Puanlarına göre yüksekten alçağa sırala
                   const sortedPlaces = [...categoryPlaces].sort((a, b) => b.rating - a.rating);
-                  
+
                   return (
                     <View key={`${location}_${category}`} style={styles.categorySection}>
-            <View style={styles.categoryHeader}>
+                      <View style={styles.categoryHeader}>
                         <FontAwesome name={getCategoryIcon(category) as any} size={18} color="#E91E63" />
                         <Text style={styles.categoryTitle}>{getCategoryName(category)}</Text>
                         <Text style={styles.categoryCount}>({sortedPlaces.length})</Text>
-            </View>
+                      </View>
 
-                      <ScrollView 
-                        horizontal 
+                      <ScrollView
+                        horizontal
                         showsHorizontalScrollIndicator={false}
                         contentContainerStyle={styles.horizontalScroll}
                       >
                         {sortedPlaces.map((place, index) => (
-              <TouchableOpacity
-                key={`${place.id}_${index}`}
-                style={[
-                  styles.placeCard,
+                          <TouchableOpacity
+                            key={`${place.id}_${index}`}
+                            style={[
+                              styles.placeCard,
                               place.selected && styles.selectedPlaceCard
                             ]}
                             onPress={() => togglePlaceSelection(place.id)}
@@ -1047,25 +1048,25 @@ export default function RecommendationsScreen() {
                                 {place.selected && (
                                   <View style={styles.checkContainer}>
                                     <FontAwesome name="check" size={16} color="#fff" />
-                  </View>
+                                  </View>
                                 )}
                               </View>
                             </ImageBackground>
-                            
-                  <View style={styles.placeInfo}>
+
+                            <View style={styles.placeInfo}>
                               <Text style={styles.placeName} numberOfLines={1}>{place.name}</Text>
                               <Text style={styles.placeAddress} numberOfLines={1}>
                                 {place.locationDisplayName || formatLocationHierarchy(place.address)}
                               </Text>
                               <Text style={styles.placeDescription} numberOfLines={2}>{place.description}</Text>
-                              
-                  <View style={styles.placeStats}>
-                    <View style={styles.ratingContainer}>
+
+                              <View style={styles.placeStats}>
+                                <View style={styles.ratingContainer}>
                                   <FontAwesome name="star" size={14} color="#FFB800" />
                                   <Text style={styles.ratingText}>{place.rating.toFixed(1)}</Text>
-                    </View>
-                                
-                                <TouchableOpacity 
+                                </View>
+
+                                <TouchableOpacity
                                   style={styles.detailButton}
                                   onPress={() => router.push({
                                     pathname: '/(app)/place-detail',
@@ -1077,15 +1078,15 @@ export default function RecommendationsScreen() {
                                 >
                                   <Text style={styles.detailButtonText}>Detaylı İncele</Text>
                                 </TouchableOpacity>
-                </View>
-                </View>
-              </TouchableOpacity>
-            ))}
+                              </View>
+                            </View>
+                          </TouchableOpacity>
+                        ))}
                       </ScrollView>
                     </View>
                   );
                 })}
-                
+
                 {/* Divider */}
                 {locationIndex < routeOrder.length - 1 && (
                   <View style={styles.routeDivider}>
@@ -1094,9 +1095,9 @@ export default function RecommendationsScreen() {
                     <View style={styles.dividerLine} />
                   </View>
                 )}
-          </View>
-        ))}
-      </ScrollView>
+              </View>
+            ))}
+          </ScrollView>
 
           {/* Complete Route Button */}
           <View style={styles.bottomButtonContainer}>
@@ -1108,27 +1109,27 @@ export default function RecommendationsScreen() {
               onPress={handleCompleteRoute}
               disabled={selectedCount === 0}
             >
-              <FontAwesome 
-                name="check-circle" 
-                size={20} 
-                color={selectedCount > 0 ? "#fff" : "#999"} 
-                style={styles.buttonIcon} 
+              <FontAwesome
+                name="check-circle"
+                size={20}
+                color={selectedCount > 0 ? "#fff" : "#999"}
+                style={styles.buttonIcon}
               />
               <Text style={[
                 styles.completeButtonText,
                 selectedCount === 0 && styles.disabledButtonText
               ]}>
                 Rotayı Tamamla ({selectedCount})
-            </Text>
-              <FontAwesome 
-                name="chevron-right" 
-                size={18} 
-                color={selectedCount > 0 ? "#fff" : "#999"} 
+              </Text>
+              <FontAwesome
+                name="chevron-right"
+                size={18}
+                color={selectedCount > 0 ? "#fff" : "#999"}
               />
-          </TouchableOpacity>
-        </View>
+            </TouchableOpacity>
+          </View>
         </SafeAreaView>
-    </View>
+      </View>
     </ImageBackground>
   );
 }

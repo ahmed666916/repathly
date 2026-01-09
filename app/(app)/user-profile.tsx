@@ -14,6 +14,7 @@ import {
 } from 'react-native';
 import { FontAwesome5 } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
+import GOOGLE_MAPS_KEY from '../../constants/googleMapsKey';
 
 const { width } = Dimensions.get('window');
 
@@ -82,7 +83,7 @@ export default function UserProfileScreen() {
 
   const fetchUserProfile = (identifier: string) => {
     if (!identifier) return;
-    
+
     // Mock user data - in real app this would be an API call
     const mockUsers: UserProfile[] = [
       {
@@ -230,17 +231,17 @@ export default function UserProfileScreen() {
       }
     ];
 
-    const user = mockUsers.find(u => 
-      u.id === identifier || 
-      u.name === identifier || 
+    const user = mockUsers.find(u =>
+      u.id === identifier ||
+      u.name === identifier ||
       u.username === identifier
     );
-    
+
     setUserProfile(user || null);
   };
 
   const fetchGooglePlaceDetails = async (places: VisitedPlace[]) => {
-    const apiKey = 'AIzaSyBiwWqbt9wGMbsTDEJW8pChcqfrBjti6jE';
+    const apiKey = GOOGLE_MAPS_KEY;
     const updatedPlaces: VisitedPlace[] = [];
 
     for (const place of places) {
@@ -320,7 +321,7 @@ export default function UserProfileScreen() {
       <View style={styles.reviewHeader}>
         <View>
           <Text style={styles.reviewPlaceName}>{item.placeName}</Text>
-          <Text style={styles.reviewPlaceCity}>{item.placeCity}</Text>
+          <Text style={styles.reviewCity}>{item.placeCity}</Text>
         </View>
         <View style={styles.reviewRating}>
           {renderStars(item.rating)}
@@ -344,8 +345,8 @@ export default function UserProfileScreen() {
       case 0: // Gezdiği Yerler
         const placesToShow = placesWithGoogleData.length > 0 ? placesWithGoogleData : userProfile.visitedPlaces;
         return (
-          <ScrollView 
-            horizontal 
+          <ScrollView
+            horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.placesScrollContainer}
             style={styles.placesScrollView}
@@ -390,10 +391,10 @@ export default function UserProfileScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
-      
+
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={handleBack} style={styles.backButton}>
+        <TouchableOpacity onPress={handleBack} style={styles.headerBackButton}>
           <FontAwesome5 name="arrow-left" size={20} color="white" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{userProfile.name}</Text>
@@ -403,16 +404,16 @@ export default function UserProfileScreen() {
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* Cover Photo */}
         <View style={styles.coverContainer}>
-          <Image 
-            source={{ uri: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=400&fit=crop' }} 
+          <Image
+            source={{ uri: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=400&fit=crop' }}
             style={styles.coverPhoto}
           />
           <View style={styles.coverOverlay} />
-          
+
           {/* Profile Photo Overlay */}
           <View style={styles.profilePhotoContainer}>
-            <Image 
-              source={{ uri: userProfile.profilePhoto }} 
+            <Image
+              source={{ uri: userProfile.profilePhoto }}
               style={styles.profilePhoto}
             />
           </View>
@@ -447,7 +448,7 @@ export default function UserProfileScreen() {
 
         {/* Tab Navigation */}
         <View style={styles.tabContainer}>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={[styles.tabButton, activeTab === 0 && styles.activeTabButton]}
             onPress={() => setActiveTab(0)}
           >
@@ -456,8 +457,8 @@ export default function UserProfileScreen() {
               Gezdiği Yerler
             </Text>
           </TouchableOpacity>
-          
-          <TouchableOpacity 
+
+          <TouchableOpacity
             style={[styles.tabButton, activeTab === 1 && styles.activeTabButton]}
             onPress={() => setActiveTab(1)}
           >
@@ -526,11 +527,6 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     zIndex: 10,
-  },
-  backButton: {
-    padding: 8,
-    backgroundColor: 'rgba(0,0,0,0.3)',
-    borderRadius: 20,
   },
   headerTitle: {
     fontSize: 18,
@@ -630,7 +626,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 15,
-    gap: 8,
+    // use margins on children instead of gap
   },
   activeTabButton: {
     borderBottomWidth: 2,
@@ -649,7 +645,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     paddingHorizontal: 10,
-    gap: 8,
+    // spacing handled via item margins
   },
   favoriteItem: {
     width: (width - 36) / 2,
@@ -673,7 +669,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 10,
-    gap: 4,
+    // spacing handled by child margins
   },
   favoriteRatingText: {
     fontSize: 10,
@@ -717,7 +713,7 @@ const styles = StyleSheet.create({
   reviewRating: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    // spacing handled by child margins
   },
   reviewRatingText: {
     fontSize: 12,
@@ -761,6 +757,87 @@ const styles = StyleSheet.create({
   backButtonText: {
     color: 'white',
     fontWeight: '600',
+  },
+  /* Added missing styles referenced in render functions */
+  headerBackButton: {
+    padding: 8,
+    backgroundColor: 'rgba(0,0,0,0.3)',
+    borderRadius: 20,
+  },
+  placeCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 8,
+    marginRight: 12,
+  },
+  placeImage: {
+    width: 100,
+    height: 70,
+    borderRadius: 8,
+    marginRight: 10,
+  },
+  placeInfo: {
+    flex: 1,
+  },
+  placeName: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#333',
+  },
+  placeCity: {
+    fontSize: 12,
+    color: '#666',
+  },
+  placeRating: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 6,
+  },
+  ratingText: {
+    marginLeft: 6,
+    fontSize: 12,
+    color: '#666',
+  },
+  visitDate: {
+    fontSize: 11,
+    color: '#999',
+    marginTop: 4,
+  },
+  reviewCard: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 12,
+  },
+  reviewComment: {
+    fontSize: 14,
+    color: '#333',
+    marginTop: 8,
+  },
+  reviewFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  reviewLikes: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    // spacing handled by child margins
+  },
+  likesCount: {
+    marginLeft: 6,
+    fontSize: 12,
+    color: '#666',
+  },
+  placesScrollContainer: {
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+  },
+  placesScrollView: {
+    height: 120,
   },
 });
 

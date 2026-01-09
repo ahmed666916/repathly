@@ -15,6 +15,7 @@ import {
 import { FontAwesome } from '@expo/vector-icons';
 import { useRouter, useFocusEffect } from 'expo-router';
 import ProfileButton from '../../components/ProfileButton';
+import GOOGLE_MAPS_KEY from '../../constants/googleMapsKey';
 
 interface PlaceSuggestion {
   place_id: string;
@@ -49,7 +50,7 @@ export default function HomeScreen() {
 
     // Global'e kaydet
     (global as any).routeDestination = destination.trim();
-    
+
     // Ara nokta sayfasına git
     router.push({
       pathname: '/(app)/waypoints',
@@ -76,16 +77,16 @@ export default function HomeScreen() {
     }
 
     try {
-      const apiKey = 'AIzaSyD20dEgYCXYcs-C4uGDMUTSvSbdxYDuk5o';
+      const apiKey = (global as any).googleMapsApiKey || GOOGLE_MAPS_KEY;
       console.log('Fetching suggestions for:', input);
-      
+
       const response = await fetch(
         `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(input)}&key=${apiKey}&language=tr&components=country:tr`
       );
       const data = await response.json();
-      
+
       console.log('API Response:', data);
-      
+
       if (data.status === 'OK' && data.predictions) {
         console.log('Setting suggestions:', data.predictions.slice(0, 5));
         setSuggestions(data.predictions.slice(0, 5));
@@ -110,7 +111,7 @@ export default function HomeScreen() {
 
   const handleDestinationChange = (text: string) => {
     setDestination(text);
-    
+
     // Fetch suggestions immediately for better UX
     if (text.length >= 1) {
       fetchPlaceSuggestions(text);
@@ -128,16 +129,16 @@ export default function HomeScreen() {
     >
       <SafeAreaView style={styles.safeArea}>
         <StatusBar barStyle="light-content" />
-        
+
         {/* Profile Button */}
         <View style={styles.profileButtonContainer}>
-          <ProfileButton 
+          <ProfileButton
             onPress={handleProfilePress}
             userName="Kullanıcı"
             authProvider="google"
           />
         </View>
-        
+
         <View style={styles.content}>
           <View style={styles.welcomeSection}>
             <Text style={styles.welcomeTitle}>Hoş Geldiniz!</Text>
@@ -167,11 +168,11 @@ export default function HomeScreen() {
                 importantForAutofill="no"
               />
             </View>
-            
+
             {/* Suggestions List */}
             {showSuggestions && suggestions.length > 0 && (
               <View style={styles.suggestionsContainer}>
-                <ScrollView 
+                <ScrollView
                   style={styles.suggestionsScrollView}
                   showsVerticalScrollIndicator={false}
                   nestedScrollEnabled={true}
@@ -198,7 +199,7 @@ export default function HomeScreen() {
             )}
           </View>
 
-          <TouchableOpacity 
+          <TouchableOpacity
             style={[styles.continueButton, !destination.trim() && styles.continueButtonDisabled]}
             onPress={handleContinue}
             disabled={!destination.trim()}

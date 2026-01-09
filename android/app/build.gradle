@@ -94,6 +94,13 @@ android {
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
         versionName "1.0.0"
+        // Inject Google Maps API key from a Gradle project property or environment variable.
+        // Usage:
+        // - Set in ORG gradle.properties: GOOGLE_MAPS_API_KEY=your_key_here
+        // - Or export environment variable ANDROID_GOOGLE_MAPS_KEY on the machine/CI.
+        def mapsKey = project.hasProperty('GOOGLE_MAPS_API_KEY') ? project.property('GOOGLE_MAPS_API_KEY') : System.getenv('ANDROID_GOOGLE_MAPS_KEY')
+        if (mapsKey == null) mapsKey = ""
+        resValue "string", "google_maps_key", mapsKey
     }
     signingConfigs {
         debug {

@@ -6,6 +6,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, useState } from 'react';
 import 'react-native-reanimated';
 import * as Location from 'expo-location';
+import Constants from 'expo-constants';
 import { Alert } from 'react-native';
 
 import { useColorScheme } from '@/components/useColorScheme';
@@ -31,6 +32,21 @@ export default function RootLayout() {
 
   const [locationReady, setLocationReady] = useState(false);
 
+  // Set global Google Maps API key from expo config immediately (do not wait for location)
+  useEffect(() => {
+    try {
+      const expoApiKey = (Constants as any).expoConfig?.android?.config?.googleMaps?.apiKey || (Constants as any).manifest?.android?.config?.googleMaps?.apiKey;
+      if (expoApiKey) {
+        (global as any).googleMapsApiKey = expoApiKey;
+        console.log('Global googleMapsApiKey set from expo config (early)');
+      } else {
+        console.warn('No googleMapsApiKey found in expo config');
+      }
+    } catch (e) {
+      console.warn('Unable to set global googleMapsApiKey from expo config', e);
+    }
+  }, []);
+
   // Konum izni ve konum alma
   useEffect(() => {
     const requestLocation = async () => {
@@ -53,6 +69,8 @@ export default function RootLayout() {
           accuracy: location.coords.accuracy,
         };
         console.log('Kullanıcı konumu global olarak ayarlandı:', (global as any).userLocation);
+
+        
 
       } catch (err) {
         console.warn('Konum alınamadı:', err);

@@ -1,19 +1,56 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, Alert, SafeAreaView, StatusBar, ImageBackground } from 'react-native';
-import { WebView } from 'react-native-webview';
+import GOOGLE_MAPS_KEY from '../../constants/googleMapsKey';
+import { StyleSheet, View, Text, TouchableOpacity, Alert, SafeAreaView, StatusBar, ImageBackground, ActivityIndicator } from 'react-native';
+import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import MapViewDirections from 'react-native-maps-directions';
 import { FontAwesome } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
+
+const GOOGLE_MAPS_API_KEY = GOOGLE_MAPS_KEY;
 
 export default function MainMapScreen() {
   const params = useLocalSearchParams();
   const router = useRouter();
   const [destination, setDestination] = useState('');
   const [waypoints, setWaypoints] = useState([]);
-  const webViewRef = useRef(null);
+  const mapRef = useRef<MapView>(null);
+  const [isMapReady, setIsMapReady] = useState(false);
+  const [routeCoordinates, setRouteCoordinates] = useState<any>(null);
+  const [destinationCoords, setDestinationCoords] = useState<{ latitude: number, longitude: number } | null>(null);
+  const [waypointCoords, setWaypointCoords] = useState<Array<{ latitude: number, longitude: number }>>([]);
+
+  // Use global key if set, otherwise fall back to the hard-coded (legacy) key
+  const mapsApiKey = (global as any).googleMapsApiKey || GOOGLE_MAPS_API_KEY;
+  // Log the key source for debugging (remove in production)
+  console.log('Using mapsApiKey:', mapsApiKey ? '[REDACTED]' : '<<missing>>');
 
   // Global'den alınmış gerçek kullanıcı konumunu kullan
   const globalUserLocation = (global as any).userLocation;
   const startLocationName = globalUserLocation ? "Mevcut Konumunuz" : "İstanbul";
+
+  const startLocation = globalUserLocation
+    ? { latitude: globalUserLocation.latitude, longitude: globalUserLocation.longitude }
+    : { latitude: 41.0082, longitude: 28.9784 }; // Istanbul default
+
+  // Geocode bir adresi koordinatlara çevir
+  const geocodeAddress = async (address: string): Promise<{ latitude: number, longitude: number } | null> => {
+    try {
+      const response = await fetch(
+        `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${mapsApiKey}&region=tr&language=tr`
+      );
+      const data = await response.json();
+
+      if (data.status === 'OK' && data.results && data.results[0]) {
+        const location = data.results[0].geometry.location as { lat: number; lng: number };
+        return { latitude: location.lat, longitude: location.lng };
+      }
+      console.error('Geocoding failed:', data.status);
+      return null;
+    } catch (error) {
+      console.error('Geocoding error:', error);
+      return null;
+    }
+  };
 
   // Parametrelerden hedef ve ara durakları al
   useEffect(() => {
@@ -29,6 +66,32 @@ export default function MainMapScreen() {
       }
     }
   }, [params.destination, params.waypoints]);
+
+  // Hedef ve ara durakları geocode et
+  useEffect(() => {
+    const geocodeLocations = async () => {
+      if (destination) {
+        console.log('Geocoding destination:', destination);
+        const coords = await geocodeAddress(destination);
+        if (coords) {
+          console.log('Destination coords:', coords);
+          setDestinationCoords(coords);
+        }
+      }
+
+      if (waypoints.length > 0) {
+        console.log('Geocoding waypoints:', waypoints);
+        const coords = await Promise.all(
+          waypoints.map(wp => geocodeAddress(wp))
+        );
+        const validCoords = coords.filter(c => c !== null) as Array<{ latitude: number, longitude: number }>;
+        console.log('Waypoint coords:', validCoords);
+        setWaypointCoords(validCoords);
+      }
+    };
+
+    geocodeLocations();
+  }, [destination, waypoints]);
 
   // Sayfa focus olduğunda reset kontrolü
   useFocusEffect(
@@ -52,142 +115,24 @@ export default function MainMapScreen() {
       }
     });
   };
-  
-  // Başlangıç konumu için JS nesnesi oluştur (Gerçek konum veya İstanbul)
-  const startLocationJS = globalUserLocation 
-    ? JSON.stringify({ lat: globalUserLocation.latitude, lng: globalUserLocation.longitude }) 
-    : JSON.stringify({ lat: 41.0082, lng: 28.9784 });
 
-  const miniMapHTML = `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-      <style>
-        body, html { height: 100%; margin: 0; padding: 0; background-color: transparent; }
-        #miniMap { width: 100%; height: 100%; }
-      </style>
-    </head>
-    <body>
-      <div id="miniMap"></div>
-      <script>
-        let miniMap, miniDirectionsService, miniDirectionsRenderer;
-        const startLocation = ${startLocationJS};
+  // Harita hazır olduğunda rotayı göster
+  const onMapReady = () => {
+    setIsMapReady(true);
+  };
 
-        function initMiniMap() {
-          miniMap = new google.maps.Map(document.getElementById('miniMap'), {
-            center: startLocation,
-            zoom: 10,
-            disableDefaultUI: true,
-            gestureHandling: 'none',
-            styles: [
-              { "featureType": "all", "elementType": "geometry.fill", "stylers": [ { "weight": "1.00" } ] },
-              { "featureType": "landscape", "elementType": "all", "stylers": [ { "color": "#f8f8f8" } ] },
-              { "featureType": "poi", "elementType": "all", "stylers": [ { "visibility": "off" } ] },
-              { "featureType": "road", "elementType": "all", "stylers": [ { "saturation": -100 }, { "lightness": 60 } ] },
-              { "featureType": "transit", "elementType": "all", "stylers": [ { "visibility": "off" } ] },
-              { "featureType": "water", "elementType": "all", "stylers": [ { "color": "#c8d7d4" }, { "visibility": "on" } ] }
-            ]
-          });
+  // Rota hesaplandığında haritayı sığdır
+  const onDirectionsReady = (result: any) => {
+    if (mapRef.current && result.coordinates) {
+      setRouteCoordinates(result);
+      // Haritayı rotaya sığdır
+      mapRef.current.fitToCoordinates(result.coordinates, {
+        edgePadding: { top: 50, right: 50, bottom: 50, left: 50 },
+        animated: true,
+      });
+    }
+  };
 
-          miniDirectionsService = new google.maps.DirectionsService();
-          miniDirectionsRenderer = new google.maps.DirectionsRenderer({
-            suppressMarkers: true,
-            polylineOptions: { strokeColor: '#E91E63', strokeWeight: 4, strokeOpacity: 0.8 }
-          });
-          miniDirectionsRenderer.setMap(miniMap);
-
-          new google.maps.Marker({
-            position: startLocation,
-            map: miniMap,
-            icon: { path: google.maps.SymbolPath.CIRCLE, scale: 8, fillColor: '#4285F4', fillOpacity: 1, strokeWeight: 2, strokeColor: 'white' },
-            title: 'Başlangıç'
-          });
-
-          createMiniRoute();
-        }
-
-        function createMiniRoute() {
-          const destination = "${destination}";
-          const waypoints = ${JSON.stringify(waypoints)};
-          if (!destination) return;
-
-          const geocoder = new google.maps.Geocoder();
-          geocoder.geocode({ address: destination }, (results, status) => {
-            if (status === 'OK' && results[0]) {
-              const destinationLocation = results[0].geometry.location;
-              
-              new google.maps.Marker({
-                position: destinationLocation,
-                map: miniMap,
-                icon: { path: google.maps.SymbolPath.CIRCLE, scale: 8, fillColor: '#E91E63', fillOpacity: 1, strokeWeight: 2, strokeColor: 'white' },
-                title: 'Hedef'
-              });
-
-              if (waypoints && waypoints.length > 0) {
-                calculateMiniRouteWithWaypoints(startLocation, destinationLocation, waypoints);
-              } else {
-                calculateSimpleMiniRoute(startLocation, destinationLocation);
-              }
-            }
-          });
-        }
-
-        function calculateMiniRouteWithWaypoints(origin, destination, waypoints) {
-          const waypointPromises = waypoints.map(waypoint => 
-            new Promise((resolve) => {
-              new google.maps.Geocoder().geocode({ address: waypoint }, (results, status) => {
-                if (status === 'OK' && results[0]) {
-                  new google.maps.Marker({
-                    position: results[0].geometry.location,
-                    map: miniMap,
-                    icon: { path: google.maps.SymbolPath.CIRCLE, scale: 6, fillColor: '#FF9800', fillOpacity: 1, strokeWeight: 2, strokeColor: 'white' },
-                    title: waypoint
-                  });
-                  resolve({ location: results[0].geometry.location, stopover: true });
-                } else {
-                  resolve(null);
-                }
-              });
-            })
-          );
-
-          Promise.all(waypointPromises).then(waypointsData => {
-            const validWaypoints = waypointsData.filter(wp => wp !== null);
-            miniDirectionsService.route({
-              origin: origin,
-              destination: destination,
-              waypoints: validWaypoints,
-              travelMode: google.maps.TravelMode.DRIVING
-            }, (result, status) => {
-              if (status === 'OK') {
-                miniDirectionsRenderer.setDirections(result);
-                if (result.routes[0]) miniMap.fitBounds(result.routes[0].bounds);
-              }
-            });
-          });
-        }
-
-        function calculateSimpleMiniRoute(origin, destination) {
-          miniDirectionsService.route({
-            origin: origin,
-            destination: destination,
-            travelMode: google.maps.TravelMode.DRIVING
-          }, (result, status) => {
-            if (status === 'OK') {
-              miniDirectionsRenderer.setDirections(result);
-               if (result.routes[0]) miniMap.fitBounds(result.routes[0].bounds);
-            }
-          });
-        }
-      </script>
-      <script async defer
-        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD20dEgYCXYcs-C4uGDMUTSvSbdxYDuk5o&libraries=places&callback=initMiniMap">
-      </script>
-    </body>
-    </html>
-  `;
-  
   return (
     <ImageBackground
       source={require('../../assets/images/loginbackground.png')}
@@ -217,14 +162,52 @@ export default function MainMapScreen() {
               <View style={styles.miniMapContainer}>
                 <Text style={styles.miniMapTitle}>Rota Önizleme</Text>
                 <View style={styles.miniMapPreview}>
-                  <WebView
-                    ref={webViewRef}
-                    source={{ html: miniMapHTML }}
-                    style={styles.miniMapWebView}
-                    javaScriptEnabled={true}
-                    domStorageEnabled={true}
-                    scrollEnabled={false}
-                  />
+                  <MapView
+                    ref={mapRef}
+                    provider={PROVIDER_GOOGLE}
+                    style={styles.map}
+                    initialRegion={{
+                      latitude: startLocation.latitude,
+                      longitude: startLocation.longitude,
+                      latitudeDelta: 0.5,
+                      longitudeDelta: 0.5,
+                    }}
+                    onMapReady={onMapReady}
+                  >
+                    {/* Başlangıç marker */}
+                    <Marker
+                      coordinate={startLocation}
+                      title="Başlangıç"
+                      pinColor="#4285F4"
+                    />
+
+                    {/* Hedef için directions - koordinat veya string kullan */}
+                    {isMapReady && (destinationCoords || destination) && (
+                      <MapViewDirections
+                        origin={startLocation}
+                        destination={destinationCoords || destination}
+                        waypoints={waypointCoords.length > 0 ? waypointCoords : waypoints}
+                        apikey={mapsApiKey}
+                        strokeWidth={4}
+                        strokeColor="#E91E63"
+                        optimizeWaypoints={true}
+                        onReady={onDirectionsReady}
+                        onError={(errorMessage) => {
+                          console.error('Directions error:', errorMessage);
+                          Alert.alert('Rota Hatası', 'Rota hesaplanamadı. Lütfen hedef ve ara durakları kontrol edin.');
+                        }}
+                        language="tr"
+                        region="tr"
+                      />
+                    )}
+                  </MapView>
+
+                  {!isMapReady && (
+                    <View style={styles.mapLoadingOverlay}>
+                      <ActivityIndicator size="large" color="#E91E63" />
+                      <Text style={styles.loadingText}>Harita yükleniyor...</Text>
+                    </View>
+                  )}
                 </View>
                 <View style={styles.routeInfoCompact}>
                   <View style={styles.routeInfoSection}>
@@ -236,7 +219,7 @@ export default function MainMapScreen() {
                         </View>
                         <Text style={styles.stepText}>{startLocationName} (Başlangıç)</Text>
                       </View>
-                      
+
                       {waypoints.slice(0, 3).map((waypoint, index) => (
                         <View key={index} style={styles.routeStep}>
                           <View style={styles.stepNumber}>
@@ -245,14 +228,14 @@ export default function MainMapScreen() {
                           <Text style={styles.stepText} numberOfLines={1}>{waypoint}</Text>
                         </View>
                       ))}
-                      
+
                       <View style={styles.routeStep}>
                         <View style={[styles.stepNumber, styles.finalStep]}>
                           <Text style={styles.stepNumberText}>{waypoints.length + 2}</Text>
                         </View>
                         <Text style={styles.stepText} numberOfLines={1}>{destination} (Hedef)</Text>
                       </View>
-                      
+
                       {waypoints.length > 3 && (
                         <Text style={styles.moreWaypointsText}>+{waypoints.length - 3} durak daha...</Text>
                       )}
@@ -366,9 +349,24 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     elevation: 3,
   },
-  miniMapWebView: {
+  map: {
     flex: 1,
-    backgroundColor: 'transparent',
+  },
+  mapLoadingOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    fontSize: 16,
+    color: '#333',
+    fontWeight: '600',
+    marginTop: 10,
   },
   routeInfoCompact: {
     gap: 15,
