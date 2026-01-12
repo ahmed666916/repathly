@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "RoadBuddy",
-    "slug": "roadbuddy",
+    "name": "Repathly",
+    "slug": "Repathly",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "roadbuddy",
+    "scheme": "repathly",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
@@ -15,7 +15,7 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.roadbuddy.app",
+      "bundleIdentifier": "com.repathly.app",
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "Bu uygulama, rotalarınızı planlamak ve yakındaki yerleri önermek için konumunuzu kullanır."
       }
@@ -35,7 +35,7 @@
         }
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.roadbuddy.app"
+      "package": "com.repathly.app"
     },
     "web": {
       "bundler": "metro",

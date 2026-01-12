@@ -34,7 +34,7 @@ export default function LoginScreen() {
           <ScrollView contentContainerStyle={styles.scrollContainer}>
             <View style={styles.header}>
               <Image source={require('../../assets/images/Logo.png')} style={styles.logo} />
-              <Text style={styles.brandName}>RoadBuddy</Text>
+              <Text style={styles.brandName}>Repathly</Text>
             </View>
 
             <Text style={styles.title}>Create an Account</Text>

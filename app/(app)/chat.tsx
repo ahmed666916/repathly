@@ -36,12 +36,12 @@ export default function ChatScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const flatListRef = useRef<FlatList>(null);
-  
+
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
-      text: 'Merhaba! RoadBuddy\'de tanıştığımız için çok mutluyum 😊',
+      text: 'Merhaba! Repathly\'de tanıştığımız için çok mutluyum 😊',
       timestamp: new Date(Date.now() - 3600000),
       isOwn: false,
       status: 'read'
@@ -55,7 +55,7 @@ export default function ChatScreen() {
     },
     {
       id: '3',
-      text: 'Aslında tesadüfen keşfettim. RoadBuddy\'deki yorumları okuyunca gitmeye karar verdim.',
+      text: 'Aslında tesadüfen keşfettim. Repathly\'deki yorumları okuyunca gitmeye karar verdim.',
       timestamp: new Date(Date.now() - 3400000),
       isOwn: false,
       status: 'read'
@@ -104,9 +104,9 @@ export default function ChatScreen() {
 
     // Simulate message delivery
     setTimeout(() => {
-      setMessages(prev => 
-        prev.map(msg => 
-          msg.id === newMessage.id 
+      setMessages(prev =>
+        prev.map(msg =>
+          msg.id === newMessage.id
             ? { ...msg, status: 'delivered' }
             : msg
         )
@@ -115,9 +115,9 @@ export default function ChatScreen() {
   };
 
   const formatTime = (date: Date) => {
-    return date.toLocaleTimeString('tr-TR', { 
-      hour: '2-digit', 
-      minute: '2-digit' 
+    return date.toLocaleTimeString('tr-TR', {
+      hour: '2-digit',
+      minute: '2-digit'
     });
   };
 
@@ -144,9 +144,9 @@ export default function ChatScreen() {
             {formatTime(item.timestamp)}
           </Text>
           {item.isOwn && (
-            <FontAwesome5 
+            <FontAwesome5
               name={item.status === 'read' ? 'check-double' : 'check'}
-              size={12} 
+              size={12}
               color={item.status === 'read' ? '#E91E63' : '#999'}
               style={styles.messageStatus}
             />
@@ -159,13 +159,13 @@ export default function ChatScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#fff" />
-      
+
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={handleBack} style={styles.backButton}>
           <FontAwesome5 name="arrow-left" size={20} color="#333" />
         </TouchableOpacity>
-        
+
         <TouchableOpacity style={styles.userInfo}>
           <Image source={{ uri: chatUser.profilePhoto }} style={styles.userPhoto} />
           <View style={styles.userDetails}>
@@ -194,7 +194,7 @@ export default function ChatScreen() {
       />
 
       {/* Input */}
-      <KeyboardAvoidingView 
+      <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.inputContainer}
       >
@@ -208,7 +208,7 @@ export default function ChatScreen() {
             multiline
             maxLength={500}
           />
-          <TouchableOpacity 
+          <TouchableOpacity
             style={[
               styles.sendButton,
               { opacity: message.trim() ? 1 : 0.5 }

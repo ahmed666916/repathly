@@ -324,8 +324,8 @@ export default function PlaceDetailScreen() {
         params: { userName: userName }
       });
     } else {
-      // User is not a RoadBuddy user, show alert
-      alert('Bu kullanıcı Google yorumcusu olup RoadBuddy kullanıcısı değildir. Sadece RoadBuddy kullanıcılarının profillerini görüntüleyebilirsiniz.');
+      // User is not a Repathly user, show alert
+      alert('Bu kullanıcı Google yorumcusu olup Repathly kullanıcısı değildir. Sadece Repathly kullanıcılarının profillerini görüntüleyebilirsiniz.');
     }
   };
 
@@ -368,7 +368,7 @@ export default function PlaceDetailScreen() {
         name: 'Mehmet Demir',
         username: 'mehmet_demir',
         profilePhoto: 'https://randomuser.me/api/portraits/men/3.jpg',
-        bio: 'RoadBuddy kullanıcısı. Kahve dükkanları ve kitap kafeler uzmanı. Her şehirde en iyi mekanları buluyor.',
+        bio: 'Repathly kullanıcısı. Kahve dükkanları ve kitap kafeler uzmanı. Her şehirde en iyi mekanları buluyor.',
         reviewCount: 78,
         placesVisited: 145,
         followers: 312,
@@ -509,7 +509,7 @@ export default function PlaceDetailScreen() {
                         </View>
                       </View>
                       <Text style={styles.reviewComment}>
-                        {index === 0 ? 'Harika bir yer! RoadBuddy sayesinde keşfettim. Kahve çok lezzetli ve atmosfer mükemmel. Kesinlikle tekrar geleceğim.' : review.comment}
+                        {index === 0 ? 'Harika bir yer! Repathly sayesinde keşfettim. Kahve çok lezzetli ve atmosfer mükemmel. Kesinlikle tekrar geleceğim.' : review.comment}
                       </Text>
                     </View>
                   );
