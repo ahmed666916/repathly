@@ -26,7 +26,7 @@ interface User {
 
 export default function FollowingScreen() {
   const router = useRouter();
-  
+
   const [followingUsers, setFollowingUsers] = useState<User[]>([
     {
       id: '1',
@@ -84,9 +84,9 @@ export default function FollowingScreen() {
           text: 'Takibi Bırak',
           style: 'destructive',
           onPress: () => {
-            setFollowingUsers(prev => 
-              prev.map(user => 
-                user.id === userId 
+            setFollowingUsers(prev =>
+              prev.map(user =>
+                user.id === userId
                   ? { ...user, isFollowing: false }
                   : user
               ).filter(user => user.isFollowing)
@@ -107,7 +107,7 @@ export default function FollowingScreen() {
 
   const renderUserItem = ({ item }: { item: User }) => (
     <View style={styles.userItem}>
-      <TouchableOpacity 
+      <TouchableOpacity
         style={styles.userInfo}
         onPress={() => handleViewProfile(item.id)}
       >
@@ -123,16 +123,16 @@ export default function FollowingScreen() {
           </View>
         </View>
       </TouchableOpacity>
-      
+
       <View style={styles.userActions}>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.messageButton}
           onPress={() => handleMessage(item.id, item.name)}
         >
           <FontAwesome5 name="comment" size={16} color="#E91E63" />
         </TouchableOpacity>
-        
-        <TouchableOpacity 
+
+        <TouchableOpacity
           style={styles.unfollowButton}
           onPress={() => handleUnfollow(item.id, item.name)}
         >
@@ -145,7 +145,7 @@ export default function FollowingScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#fff" />
-      
+
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={handleBack} style={styles.backButton}>
@@ -196,11 +196,17 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingVertical: 15,
+    paddingTop: 35,
     borderBottomWidth: 1,
     borderBottomColor: '#f0f0f0',
   },
   backButton: {
-    padding: 8,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#f0f0f0',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   headerTitle: {
     fontSize: 18,

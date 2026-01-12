@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, memo } from 'react';
 import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  Pressable,
   ImageBackground,
   StatusBar,
   SafeAreaView,
@@ -14,7 +15,7 @@ import {
 import { Text, View } from '@/components/Themed';
 import { FontAwesome } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router';
-import { useCallback } from 'react';
+
 import GOOGLE_MAPS_KEY from '../../constants/googleMapsKey';
 
 const { width } = Dimensions.get('window');
@@ -544,7 +545,7 @@ export default function RecommendationsScreen() {
     }
   };
 
-  const togglePlaceSelection = (placeId: string) => {
+  const togglePlaceSelection = useCallback((placeId: string) => {
     setPlaces(prev =>
       prev.map(place =>
         place.id === placeId
@@ -552,7 +553,11 @@ export default function RecommendationsScreen() {
           : place
       )
     );
-  };
+  }, []);
+
+  const clearAllSelections = useCallback(() => {
+    setPlaces(prev => prev.map(place => ({ ...place, selected: false })));
+  }, []);
 
   const handleCompleteRoute = () => {
     const selectedCount = places.filter(p => p.selected).length;
@@ -774,7 +779,7 @@ export default function RecommendationsScreen() {
   };
 
   const selectedCount = places.filter(p => p.selected).length;
-  const { grouped, routeOrder } = groupedByLocationAndCategory();
+  const { grouped, routeOrder } = useMemo(() => groupedByLocationAndCategory(), [places, userCurrentCity]);
 
   // Loading ekranı göster
   if (isLoading) {
@@ -1028,16 +1033,15 @@ export default function RecommendationsScreen() {
                         contentContainerStyle={styles.horizontalScroll}
                       >
                         {sortedPlaces.map((place, index) => (
-                          <TouchableOpacity
+                          <Pressable
                             key={`${place.id}_${index}`}
-                            style={[
+                            style={({ pressed }) => [
                               styles.placeCard,
-                              place.selected && styles.selectedPlaceCard
+                              place.selected && styles.selectedPlaceCard,
+                              pressed && styles.placeCardPressed
                             ]}
                             onPress={() => togglePlaceSelection(place.id)}
-                            activeOpacity={0.6}
-                            delayPressIn={0}
-                            delayPressOut={0}
+                            unstable_pressDelay={0}
                           >
                             <ImageBackground
                               source={{ uri: place.imageUri }}
@@ -1066,21 +1070,25 @@ export default function RecommendationsScreen() {
                                   <Text style={styles.ratingText}>{place.rating.toFixed(1)}</Text>
                                 </View>
 
-                                <TouchableOpacity
-                                  style={styles.detailButton}
-                                  onPress={() => router.push({
-                                    pathname: '/(app)/place-detail',
-                                    params: { placeData: JSON.stringify(place) }
-                                  })}
-                                  activeOpacity={0.7}
-                                  delayPressIn={0}
-                                  delayPressOut={0}
+                                <Pressable
+                                  style={({ pressed }) => [
+                                    styles.detailButton,
+                                    pressed && styles.detailButtonPressed
+                                  ]}
+                                  onPress={(e) => {
+                                    e.stopPropagation();
+                                    router.push({
+                                      pathname: '/(app)/place-detail',
+                                      params: { placeData: JSON.stringify(place) }
+                                    });
+                                  }}
+                                  hitSlop={8}
                                 >
                                   <Text style={styles.detailButtonText}>Detaylı İncele</Text>
-                                </TouchableOpacity>
+                                </Pressable>
                               </View>
                             </View>
-                          </TouchableOpacity>
+                          </Pressable>
                         ))}
                       </ScrollView>
                     </View>
@@ -1099,34 +1107,54 @@ export default function RecommendationsScreen() {
             ))}
           </ScrollView>
 
-          {/* Complete Route Button */}
+          {/* Bottom Buttons */}
           <View style={styles.bottomButtonContainer}>
-            <TouchableOpacity
-              style={[
-                styles.completeButton,
-                selectedCount === 0 && styles.disabledButton
-              ]}
-              onPress={handleCompleteRoute}
-              disabled={selectedCount === 0}
-            >
-              <FontAwesome
-                name="check-circle"
-                size={20}
-                color={selectedCount > 0 ? "#fff" : "#999"}
-                style={styles.buttonIcon}
-              />
-              <Text style={[
-                styles.completeButtonText,
-                selectedCount === 0 && styles.disabledButtonText
-              ]}>
-                Rotayı Tamamla ({selectedCount})
-              </Text>
-              <FontAwesome
-                name="chevron-right"
-                size={18}
-                color={selectedCount > 0 ? "#fff" : "#999"}
-              />
-            </TouchableOpacity>
+            <View style={styles.buttonRow}>
+              {/* Temizle Button */}
+              <TouchableOpacity
+                style={[
+                  styles.clearButton,
+                  selectedCount === 0 && styles.clearButtonDisabled
+                ]}
+                onPress={clearAllSelections}
+                disabled={selectedCount === 0}
+              >
+                <FontAwesome
+                  name="trash-o"
+                  size={18}
+                  color={selectedCount > 0 ? "#E91E63" : "#666"}
+                  style={styles.buttonIcon}
+                />
+                <Text style={[
+                  styles.clearButtonText,
+                  selectedCount === 0 && styles.clearButtonTextDisabled
+                ]}>
+                  Temizle
+                </Text>
+              </TouchableOpacity>
+
+              {/* Rotayı Tamamla Button */}
+              <TouchableOpacity
+                style={[
+                  styles.completeButton,
+                  selectedCount === 0 && styles.disabledButton
+                ]}
+                onPress={handleCompleteRoute}
+                disabled={selectedCount === 0}
+              >
+                <Text style={[
+                  styles.completeButtonText,
+                  selectedCount === 0 && styles.disabledButtonText
+                ]}>
+                  Tamamla ({selectedCount})
+                </Text>
+                <FontAwesome
+                  name="chevron-right"
+                  size={16}
+                  color={selectedCount > 0 ? "#fff" : "#999"}
+                />
+              </TouchableOpacity>
+            </View>
           </View>
         </SafeAreaView>
       </View>
@@ -1150,7 +1178,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 20,
-    paddingVertical: 15,
+    paddingTop: 35,
+    paddingBottom: 15,
   },
   backButton: {
     width: 40,
@@ -1408,6 +1437,9 @@ const styles = StyleSheet.create({
   selectedPlaceCard: {
     borderColor: '#E91E63',
   },
+  placeCardPressed: {
+    opacity: 0.7,
+  },
   placeImage: {
     height: 140,
     justifyContent: 'flex-end',
@@ -1485,6 +1517,10 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
   },
+  detailButtonPressed: {
+    opacity: 0.7,
+    backgroundColor: '#C2185B',
+  },
   bottomButtonContainer: {
     position: 'absolute',
     bottom: 0,
@@ -1495,11 +1531,39 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     paddingBottom: 35,
   },
+  buttonRow: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  clearButton: {
+    flex: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    borderRadius: 25,
+    paddingVertical: 15,
+    paddingHorizontal: 15,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#E91E63',
+  },
+  clearButtonDisabled: {
+    borderColor: '#666',
+  },
+  clearButtonText: {
+    color: '#E91E63',
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  clearButtonTextDisabled: {
+    color: '#666',
+  },
   completeButton: {
+    flex: 1,
     backgroundColor: '#E91E63',
     borderRadius: 25,
     paddingVertical: 15,
-    paddingHorizontal: 25,
+    paddingHorizontal: 15,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',

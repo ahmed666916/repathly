@@ -89,13 +89,13 @@ export default function InterestSelectionScreen() {
     console.log('shouldResetInputs değeri:', (global as any).shouldResetInputs);
     console.log('forceReset değeri:', (global as any).forceReset);
     console.log('selectedInterests değeri:', (global as any).selectedInterests);
-    
+
     // HER DURUMDA ÖNCE TEMİZLE - koşulsuz temizlik
     console.log('🧹 ÖNCE HER DURUMDA TEMİZLENİYOR...');
-    setCategories(prev => 
+    setCategories(prev =>
       prev.map(cat => ({ ...cat, selected: false }))
     );
-    
+
     // EĞER RESET FLAG'İ VARSA GLOBAL'İ DE TEMİZLE
     if ((global as any).shouldResetInputs || (global as any).forceReset) {
       console.log('🔥 GLOBAL STATE TEMİZLENİYOR...');
@@ -110,13 +110,13 @@ export default function InterestSelectionScreen() {
   useFocusEffect(
     useCallback(() => {
       console.log('🎯 İlgi alanları sayfası focus oldu, ZORLA kontrol ediliyor...');
-      
+
       // HER FOCUS'TA ÖNCE TEMİZLE
       console.log('🧹 FOCUS TE TEMİZLENİYOR...');
-      setCategories(prev => 
+      setCategories(prev =>
         prev.map(cat => ({ ...cat, selected: false }))
       );
-      
+
       if ((global as any).shouldResetInputs || (global as any).forceReset) {
         console.log('🔥 FOCUS GLOBAL STATE TEMİZLENİYOR...');
         (global as any).selectedInterests = [];
@@ -128,9 +128,9 @@ export default function InterestSelectionScreen() {
   );
 
   const toggleCategory = (categoryId: string) => {
-    setCategories(prev => 
-      prev.map(cat => 
-        cat.id === categoryId 
+    setCategories(prev =>
+      prev.map(cat =>
+        cat.id === categoryId
           ? { ...cat, selected: !cat.selected }
           : cat
       )
@@ -145,7 +145,7 @@ export default function InterestSelectionScreen() {
       Alert.alert('Uyarı', 'Lütfen en az bir ilgi alanı seçin.');
       return;
     }
-    
+
     const selectedCategories = categories.filter(cat => cat.selected);
     router.push({
       pathname: '/(app)/recommendations',
@@ -216,7 +216,7 @@ export default function InterestSelectionScreen() {
                       )}
                     </View>
                   </ImageBackground>
-                  
+
                   <View style={styles.categoryInfo}>
                     <FontAwesome name={category.icon as any} size={20} color="#E91E63" style={styles.categoryIcon} />
                     <Text style={styles.categoryName}>{category.name}</Text>
@@ -237,11 +237,11 @@ export default function InterestSelectionScreen() {
               onPress={handleContinue}
               disabled={!hasSelectedCategories}
             >
-              <FontAwesome 
-                name="star" 
-                size={20} 
-                color={hasSelectedCategories ? "#fff" : "#999"} 
-                style={styles.buttonIcon} 
+              <FontAwesome
+                name="star"
+                size={20}
+                color={hasSelectedCategories ? "#fff" : "#999"}
+                style={styles.buttonIcon}
               />
               <Text style={[
                 styles.continueButtonText,
@@ -249,10 +249,10 @@ export default function InterestSelectionScreen() {
               ]}>
                 Önerileri Gör ({categories.filter(c => c.selected).length})
               </Text>
-              <FontAwesome 
-                name="chevron-right" 
-                size={18} 
-                color={hasSelectedCategories ? "#fff" : "#999"} 
+              <FontAwesome
+                name="chevron-right"
+                size={18}
+                color={hasSelectedCategories ? "#fff" : "#999"}
               />
             </TouchableOpacity>
           </View>
@@ -278,7 +278,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 20,
-    paddingVertical: 15,
+    paddingTop: 45,
+    paddingBottom: 15,
   },
   backButton: {
     width: 40,
