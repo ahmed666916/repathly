@@ -10,6 +10,7 @@ import Constants from 'expo-constants';
 import { Alert } from 'react-native';
 
 import { useColorScheme } from '@/components/useColorScheme';
+import { AuthProvider } from './contexts/AuthContext';
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -70,8 +71,6 @@ export default function RootLayout() {
         };
         console.log('Kullanıcı konumu global olarak ayarlandı:', (global as any).userLocation);
 
-        
-
       } catch (err) {
         console.warn('Konum alınamadı:', err);
         Alert.alert('Konum Hatası', 'Konumunuz alınırken bir hata oluştu.');
@@ -99,7 +98,11 @@ export default function RootLayout() {
     return null;
   }
 
-  return <RootLayoutNav />;
+  return (
+    <AuthProvider>
+      <RootLayoutNav />
+    </AuthProvider>
+  );
 }
 
 function RootLayoutNav() {
@@ -115,3 +118,4 @@ function RootLayoutNav() {
     </ThemeProvider>
   );
 }
+
