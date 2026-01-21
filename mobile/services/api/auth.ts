@@ -1,10 +1,10 @@
 import { User } from '../../app/utils/secureStorage';
 
 // TODO: Replace with your actual API base URL when backend is ready
-const API_BASE_URL = 'https://api.yourbackend.com';
+const API_BASE_URL = 'http://192.168.100.23:8000/api';
 
 // For development/testing - set to true to use mock responses
-const USE_MOCK = true;
+const USE_MOCK = false;
 
 interface AuthResponse {
     success: boolean;
