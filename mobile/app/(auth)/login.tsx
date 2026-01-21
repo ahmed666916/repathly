@@ -82,9 +82,10 @@ export default function LoginScreen() {
       );
     } catch (error) {
       console.error('❌ Connection error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Bilinmeyen bir hata oluştu';
       Alert.alert(
         'Bağlantı Hatası ❌',
-        `Hata: ${error.message}\n\nKontrol edin:\n• Laravel çalışıyor mu?\n• Aynı Wi-Fi'de misiniz?\n• IP doğru mu?`,
+        `Hata: ${errorMessage}\n\nKontrol edin:\n• Laravel çalışıyor mu?\n• Aynı Wi-Fi'de misiniz?\n• IP doğru mu?`,
         [{ text: 'Tamam' }]
       );
     }
