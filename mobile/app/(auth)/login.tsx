@@ -58,6 +58,40 @@ export default function LoginScreen() {
 
   const handleSocialSignIn = () => router.replace('/(app)');
 
+  // TEST BACKEND CONNECTION - ADD THIS
+  const testBackendConnection = async () => {
+    try {
+      console.log('🔧 Testing connection to: http://192.168.100.23:8000/api/test');
+
+      const response = await fetch('http://192.168.100.23:8000/api/test', {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+      });
+
+      console.log('✅ Response status:', response.status);
+      const data = await response.json();
+      console.log('✅ Response data:', data);
+
+      Alert.alert(
+        'Backend Çalışıyor! ✅',
+        `${data.message}\n\nZaman: ${data.timestamp}`,
+        [{ text: 'Tamam' }]
+      );
+    } catch (error) {
+      console.error('❌ Connection error:', error);
+      Alert.alert(
+        'Bağlantı Hatası ❌',
+        `Hata: ${error.message}\n\nKontrol edin:\n• Laravel çalışıyor mu?\n• Aynı Wi-Fi'de misiniz?\n• IP doğru mu?`,
+        [{ text: 'Tamam' }]
+      );
+    }
+  };
+
+
+
   return (
     <ImageBackground
       source={require('../../assets/images/loginbackground.png')}
@@ -169,6 +203,18 @@ export default function LoginScreen() {
                 <Text style={styles.socialButtonText}>Apple</Text>
               </TouchableOpacity>
             </View>
+
+            {/* TEST BUTTON - ADD THIS */}
+            <TouchableOpacity
+              style={styles.testButton}
+              onPress={testBackendConnection}
+            >
+              <Text style={styles.testButtonText}>🔧 Test Backend</Text>
+            </TouchableOpacity>
+
+
+
+
 
             {/* Register Link */}
             <View style={styles.registerLinkContainer}>
@@ -360,5 +406,19 @@ const styles = StyleSheet.create({
   socialIcon: {
     width: 20,
     height: 20,
+  },
+  testButton: {
+    backgroundColor: 'rgba(99, 102, 241, 0.8)',
+    borderRadius: 12,
+    paddingVertical: 12,
+    alignItems: 'center',
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+  },
+  testButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
   },
 });
