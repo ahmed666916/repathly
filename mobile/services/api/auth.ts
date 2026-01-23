@@ -40,16 +40,59 @@ async function apiCall<T>(
             headers['Authorization'] = `Bearer ${token}`;
         }
 
+        console.log(`🔵 API Call: ${method} ${API_BASE_URL}${endpoint}`);
+        console.log('📤 Request body:', body);
+
         const response = await fetch(`${API_BASE_URL}${endpoint}`, {
             method,
             headers,
             body: body ? JSON.stringify(body) : undefined,
         });
 
-        const data = await response.json();
-        return data;
+        console.log(`📥 Response status: ${response.status}`);
+
+        // Get response text first for debugging
+        const responseText = await response.text();
+        console.log('📄 Response text (first 500 chars):', responseText.substring(0, 500));
+
+        // Check if response is ok (status 200-299)
+        if (!response.ok) {
+            console.error('❌ Error response:', responseText);
+
+            // Try to parse as JSON
+            try {
+                const errorData = JSON.parse(responseText);
+                return {
+                    success: false,
+                    message: errorData.message || 'Bir hata oluştu.',
+                    error: errorData.error || responseText,
+                };
+            } catch {
+                // If not JSON, return the text
+                return {
+                    success: false,
+                    message: 'Sunucu hatası oluştu.',
+                    error: responseText.substring(0, 200), // Limit error message length
+                };
+            }
+        }
+
+        // Try to parse the response as JSON
+        try {
+            const data = JSON.parse(responseText);
+            console.log('✅ Response data:', data);
+            return data;
+        } catch (parseError) {
+            console.error('❌ JSON Parse Error:', parseError);
+            console.error('📄 Full response text:', responseText);
+            return {
+                success: false,
+                message: 'Sunucu geçersiz yanıt döndürdü.',
+                error: 'Response is not valid JSON',
+            };
+        }
     } catch (error) {
-        console.error('API call error:', error);
+        console.error('❌ API call error:', error);
         return {
             success: false,
             message: 'Bağlantı hatası. Lütfen internet bağlantınızı kontrol edin.',

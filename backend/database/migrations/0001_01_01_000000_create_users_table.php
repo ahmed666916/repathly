@@ -16,7 +16,10 @@ return new class extends Migration
             $table->string('name');
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
+            $table->boolean('is_email_verified')->default(false);
             $table->string('password');
+            $table->string('profile_photo')->nullable();
+            $table->enum('auth_provider', ['email', 'google', 'apple'])->default('email');
             $table->rememberToken();
             $table->timestamps();
         });
