@@ -17,6 +17,8 @@ import {
 import { FontAwesome } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../hooks/useAuth';
+import { getToken } from '../utils/secureStorage';
+import { checkOnboardingStatus } from '../../services/api/experienceCards';
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -50,6 +52,20 @@ export default function LoginScreen() {
     const result = await login(email.trim(), password);
 
     if (result.success) {
+      try {
+        const token = await getToken();
+        if (token) {
+          const statusResult = await checkOnboardingStatus(token);
+          if (statusResult.success && statusResult.data && !statusResult.data.hasCompletedOnboarding) {
+            console.log('Redirecting to onboarding...');
+            router.replace('/(onboarding)/experience-cards');
+            return;
+          }
+        }
+      } catch (error) {
+        console.error('Onboarding check failed:', error);
+      }
+
       router.replace('/(app)');
     } else {
       Alert.alert('Giriş Başarısız', result.message);

@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\ExperienceCardController;
 
 // Test endpoint for mobile connection
 Route::get('/test', function () {
@@ -40,4 +41,20 @@ Route::middleware('auth:sanctum')->prefix('auth')->group(function () {
     Route::get('/profile', [AuthController::class, 'profile']);
     Route::put('/profile', [AuthController::class, 'updateProfile']);
     Route::post('/change-password', [AuthController::class, 'changePassword']);
+});
+
+// Public experience cards routes
+Route::prefix('experience-cards')->group(function () {
+    Route::get('/', [ExperienceCardController::class, 'index']);
+    Route::get('/grouped', [ExperienceCardController::class, 'grouped']);
+});
+
+// Protected experience cards routes (user selections)
+Route::middleware('auth:sanctum')->prefix('user/experience-cards')->group(function () {
+    Route::get('/', [ExperienceCardController::class, 'getUserCards']);
+    Route::post('/', [ExperienceCardController::class, 'saveUserCards']);
+    Route::put('/', [ExperienceCardController::class, 'updateUserCards']);
+    Route::post('/add', [ExperienceCardController::class, 'addCard']);
+    Route::post('/remove', [ExperienceCardController::class, 'removeCard']);
+    Route::get('/onboarding-status', [ExperienceCardController::class, 'checkOnboardingStatus']);
 });

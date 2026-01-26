@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
@@ -85,5 +86,22 @@ class User extends Authenticatable
     public function getProfilePhotoAttribute(): ?string
     {
         return $this->attributes['profile_photo'] ?? null;
+    }
+
+    /**
+     * Experience cards selected by the user
+     */
+    public function experienceCards(): BelongsToMany
+    {
+        return $this->belongsToMany(ExperienceCard::class, 'user_experience_cards')
+            ->withTimestamps();
+    }
+
+    /**
+     * Check if user has completed onboarding (selected minimum experience cards)
+     */
+    public function hasCompletedOnboarding(): bool
+    {
+        return $this->experienceCards()->count() >= 4;
     }
 }

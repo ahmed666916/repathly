@@ -65,17 +65,17 @@ export default function RegisterScreen() {
 
         if (result.success) {
             Alert.alert(
-                'Kayıt Başarılı! 🎉',
-                result.message,
+                'Kayit Basarili!',
+                'Simdi deneyimlerinizi secin ve size ozel rotalar olusturalim.',
                 [
                     {
-                        text: 'Tamam',
-                        onPress: () => router.replace('/(app)'),
+                        text: 'Devam Et',
+                        onPress: () => router.replace('/(onboarding)/experience-cards'),
                     },
                 ]
             );
         } else {
-            Alert.alert('Kayıt Başarısız', result.message);
+            Alert.alert('Kayit Basarisiz', result.message);
         }
     };
 
