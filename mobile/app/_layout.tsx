@@ -11,6 +11,7 @@ import { Alert } from 'react-native';
 
 import { useColorScheme } from '@/components/useColorScheme';
 import { AuthProvider } from './contexts/AuthContext';
+import { ProfileProvider } from './contexts/ProfileContext';
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -100,7 +101,9 @@ export default function RootLayout() {
 
   return (
     <AuthProvider>
-      <RootLayoutNav />
+      <ProfileProvider>
+        <RootLayoutNav />
+      </ProfileProvider>
     </AuthProvider>
   );
 }

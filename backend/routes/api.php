@@ -4,6 +4,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ExperienceCardController;
+use App\Http\Controllers\Api\ProfileController;
+use App\Http\Controllers\Api\RouteController;
 
 // Test endpoint for mobile connection
 Route::get('/test', function () {
@@ -57,4 +59,25 @@ Route::middleware('auth:sanctum')->prefix('user/experience-cards')->group(functi
     Route::post('/add', [ExperienceCardController::class, 'addCard']);
     Route::post('/remove', [ExperienceCardController::class, 'removeCard']);
     Route::get('/onboarding-status', [ExperienceCardController::class, 'checkOnboardingStatus']);
+});
+
+// Protected profile (taste DNA) routes
+Route::middleware('auth:sanctum')->prefix('profile')->group(function () {
+    Route::get('/', [ProfileController::class, 'show']);
+    Route::put('/', [ProfileController::class, 'update']);
+    Route::get('/experience-weights', [ProfileController::class, 'getExperienceWeights']);
+    Route::put('/experience-weights', [ProfileController::class, 'updateExperienceWeights']);
+    Route::put('/experience-weights/{cardId}', [ProfileController::class, 'updateSingleWeight']);
+    Route::delete('/experience-weights/{cardId}', [ProfileController::class, 'removeWeight']);
+});
+
+// Protected routes (saved routes/trips)
+Route::middleware('auth:sanctum')->prefix('routes')->group(function () {
+    Route::post('/preview', [RouteController::class, 'preview']);
+    Route::get('/', [RouteController::class, 'index']);
+    Route::post('/', [RouteController::class, 'store']);
+    Route::get('/{uuid}', [RouteController::class, 'show']);
+    Route::put('/{uuid}', [RouteController::class, 'update']);
+    Route::delete('/{uuid}', [RouteController::class, 'destroy']);
+    Route::post('/{uuid}/regenerate', [RouteController::class, 'regenerate']);
 });

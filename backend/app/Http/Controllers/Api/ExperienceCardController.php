@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Enums\WeightSource;
 use App\Http\Controllers\Controller;
 use App\Models\ExperienceCard;
+use App\Models\UserExperienceCardWeight;
 use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -73,12 +75,30 @@ class ExperienceCardController extends Controller
     }
 
     /**
-     * Get user's selected experience cards
+     * Get user's selected experience cards with weights
      */
     public function getUserCards()
     {
         $user = Auth::user();
-        $cards = $user->experienceCards()->ordered()->get();
+        $weights = $user->experienceCardWeights()
+            ->with('experienceCard')
+            ->get();
+
+        $cards = $weights->map(function ($weight) {
+            $card = $weight->experienceCard;
+            return [
+                'id' => $card->id,
+                'slug' => $card->slug,
+                'nameEn' => $card->name_en,
+                'nameTr' => $card->name_tr,
+                'descriptionEn' => $card->description_en,
+                'descriptionTr' => $card->description_tr,
+                'icon' => $card->icon,
+                'category' => $card->category,
+                'weight' => $weight->weight,
+                'source' => $weight->source->value,
+            ];
+        });
 
         return $this->success(
             [
@@ -92,6 +112,7 @@ class ExperienceCardController extends Controller
 
     /**
      * Save user's experience card selections (for onboarding)
+     * Creates weighted preferences with default weight of 3
      */
     public function saveUserCards(Request $request)
     {
@@ -111,15 +132,26 @@ class ExperienceCardController extends Controller
 
         $user = Auth::user();
 
-        // Sync the experience cards (replaces all existing selections)
+        // Delete existing weights and create new ones with default weight
+        $user->experienceCardWeights()->delete();
+
+        foreach ($request->card_ids as $cardId) {
+            UserExperienceCardWeight::create([
+                'user_id' => $user->id,
+                'experience_card_id' => $cardId,
+                'weight' => UserExperienceCardWeight::DEFAULT_WEIGHT,
+                'source' => WeightSource::Onboarding,
+            ]);
+        }
+
+        // Also sync to the old pivot table for backwards compatibility
         $user->experienceCards()->sync($request->card_ids);
 
-        $cards = $user->experienceCards()->ordered()->get();
+        $count = $user->experienceCardWeights()->count();
 
         return $this->success(
             [
-                'cards' => $cards,
-                'count' => $cards->count(),
+                'count' => $count,
                 'hasCompletedOnboarding' => true,
             ],
             'Deneyim kartlari basariyla kaydedildi'
@@ -128,6 +160,7 @@ class ExperienceCardController extends Controller
 
     /**
      * Update user's experience card selections
+     * Preserves existing weights for cards that remain selected
      */
     public function updateUserCards(Request $request)
     {
@@ -146,26 +179,52 @@ class ExperienceCardController extends Controller
         }
 
         $user = Auth::user();
+        $newCardIds = collect($request->card_ids);
+
+        // Get current weights
+        $existingWeights = $user->experienceCardWeights()
+            ->pluck('weight', 'experience_card_id');
+
+        // Remove cards that are no longer selected
+        $user->experienceCardWeights()
+            ->whereNotIn('experience_card_id', $newCardIds)
+            ->delete();
+
+        // Add or update weights for selected cards
+        foreach ($newCardIds as $cardId) {
+            UserExperienceCardWeight::updateOrCreate(
+                [
+                    'user_id' => $user->id,
+                    'experience_card_id' => $cardId,
+                ],
+                [
+                    'weight' => $existingWeights->get($cardId, UserExperienceCardWeight::DEFAULT_WEIGHT),
+                    'source' => WeightSource::Manual,
+                ]
+            );
+        }
+
+        // Sync to old pivot table for backwards compatibility
         $user->experienceCards()->sync($request->card_ids);
 
-        $cards = $user->experienceCards()->ordered()->get();
+        $count = $user->experienceCardWeights()->count();
 
         return $this->success(
             [
-                'cards' => $cards,
-                'count' => $cards->count(),
+                'count' => $count,
             ],
             'Deneyim kartlari basariyla guncellendi'
         );
     }
 
     /**
-     * Add a single card to user's selections
+     * Add a single card to user's selections with default weight
      */
     public function addCard(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'card_id' => 'required|exists:experience_cards,id',
+            'weight' => 'nullable|integer|min:' . UserExperienceCardWeight::MIN_WEIGHT . '|max:' . UserExperienceCardWeight::MAX_WEIGHT,
         ]);
 
         if ($validator->fails()) {
@@ -175,14 +234,27 @@ class ExperienceCardController extends Controller
         $user = Auth::user();
 
         // Check if already selected
-        if ($user->experienceCards()->where('experience_card_id', $request->card_id)->exists()) {
+        if ($user->experienceCardWeights()->where('experience_card_id', $request->card_id)->exists()) {
             return $this->error('Bu deneyim karti zaten secili', 409);
         }
 
+        $weight = $request->weight ?? UserExperienceCardWeight::DEFAULT_WEIGHT;
+
+        UserExperienceCardWeight::create([
+            'user_id' => $user->id,
+            'experience_card_id' => $request->card_id,
+            'weight' => $weight,
+            'source' => WeightSource::Manual,
+        ]);
+
+        // Also add to old pivot table for backwards compatibility
         $user->experienceCards()->attach($request->card_id);
 
         return $this->success(
-            ['count' => $user->experienceCards()->count()],
+            [
+                'count' => $user->experienceCardWeights()->count(),
+                'weight' => $weight,
+            ],
             'Deneyim karti basariyla eklendi'
         );
     }
@@ -201,7 +273,7 @@ class ExperienceCardController extends Controller
         }
 
         $user = Auth::user();
-        $currentCount = $user->experienceCards()->count();
+        $currentCount = $user->experienceCardWeights()->count();
 
         // Prevent removing if it would go below minimum
         if ($currentCount <= self::MIN_CARDS_REQUIRED) {
@@ -211,10 +283,13 @@ class ExperienceCardController extends Controller
             );
         }
 
+        $user->experienceCardWeights()->where('experience_card_id', $request->card_id)->delete();
+
+        // Also remove from old pivot table for backwards compatibility
         $user->experienceCards()->detach($request->card_id);
 
         return $this->success(
-            ['count' => $user->experienceCards()->count()],
+            ['count' => $user->experienceCardWeights()->count()],
             'Deneyim karti basariyla kaldirildi'
         );
     }
@@ -225,7 +300,7 @@ class ExperienceCardController extends Controller
     public function checkOnboardingStatus()
     {
         $user = Auth::user();
-        $count = $user->experienceCards()->count();
+        $count = $user->experienceCardWeights()->count();
 
         return $this->success(
             [

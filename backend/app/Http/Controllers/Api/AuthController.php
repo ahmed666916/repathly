@@ -10,6 +10,7 @@ use App\Http\Requests\Auth\ResetPasswordRequest;
 use App\Http\Requests\Auth\UpdateProfileRequest;
 use App\Http\Requests\Auth\ChangePasswordRequest;
 use App\Models\User;
+use App\Models\UserProfile;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -38,6 +39,9 @@ class AuthController extends Controller
                 'auth_provider' => 'email',
                 'is_email_verified' => false,
             ]);
+
+            // Create default taste DNA profile
+            UserProfile::createDefault($user->id);
 
             // Create Sanctum token
             $token = $user->createToken('mobile-app')->plainTextToken;

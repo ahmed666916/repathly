@@ -5,6 +5,8 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
@@ -102,6 +104,40 @@ class User extends Authenticatable
      */
     public function hasCompletedOnboarding(): bool
     {
-        return $this->experienceCards()->count() >= 4;
+        return $this->experienceCardWeights()->count() >= 4;
+    }
+
+    /**
+     * User's taste DNA profile
+     */
+    public function profile(): HasOne
+    {
+        return $this->hasOne(UserProfile::class);
+    }
+
+    /**
+     * User's routes
+     */
+    public function routes(): HasMany
+    {
+        return $this->hasMany(Route::class);
+    }
+
+    /**
+     * User's experience card weights (weighted preferences)
+     */
+    public function experienceCardWeights(): HasMany
+    {
+        return $this->hasMany(UserExperienceCardWeight::class);
+    }
+
+    /**
+     * Get experience weights as an associative array {card_id: weight}
+     */
+    public function getExperienceWeightsArray(): array
+    {
+        return $this->experienceCardWeights()
+            ->pluck('weight', 'experience_card_id')
+            ->toArray();
     }
 }
