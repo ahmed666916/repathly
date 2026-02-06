@@ -15,6 +15,7 @@ import {
 import { FontAwesome5 } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import GOOGLE_MAPS_KEY from '../../constants/googleMapsKey';
+import { t } from '../../services/api/i18n';
 
 const { width } = Dimensions.get('window');
 
@@ -379,9 +380,9 @@ export default function UserProfileScreen() {
         <StatusBar barStyle="dark-content" backgroundColor="#fff" />
         <View style={styles.errorContainer}>
           <FontAwesome5 name="user-slash" size={48} color="#ccc" />
-          <Text style={styles.errorText}>Kullanıcı bulunamadı</Text>
+          <Text style={styles.errorText}>{t('profile.userNotFound')}</Text>
           <TouchableOpacity style={styles.backButton} onPress={handleBack}>
-            <Text style={styles.backButtonText}>Geri Dön</Text>
+            <Text style={styles.backButtonText}>{t('profile.back')}</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -430,19 +431,19 @@ export default function UserProfileScreen() {
         <View style={styles.statsContainer}>
           <View style={styles.statItem}>
             <Text style={styles.statNumber}>{userProfile.reviewCount}</Text>
-            <Text style={styles.statLabel}>Yorum</Text>
+            <Text style={styles.statLabel}>{t('profile.reviews')}</Text>
           </View>
           <View style={styles.statItem}>
             <Text style={styles.statNumber}>{userProfile.placesVisited}</Text>
-            <Text style={styles.statLabel}>Ziyaret</Text>
+            <Text style={styles.statLabel}>{t('profile.visits')}</Text>
           </View>
           <View style={styles.statItem}>
             <Text style={styles.statNumber}>{userProfile.followers}</Text>
-            <Text style={styles.statLabel}>Takipçi</Text>
+            <Text style={styles.statLabel}>{t('profile.followers')}</Text>
           </View>
           <View style={styles.statItem}>
             <Text style={styles.statNumber}>{userProfile.following}</Text>
-            <Text style={styles.statLabel}>Takip</Text>
+            <Text style={styles.statLabel}>{t('profile.following')}</Text>
           </View>
         </View>
 
@@ -454,7 +455,7 @@ export default function UserProfileScreen() {
           >
             <FontAwesome5 name="map-marker-alt" size={20} color={activeTab === 0 ? '#E91E63' : '#666'} />
             <Text style={[styles.tabText, activeTab === 0 && styles.activeTabText]}>
-              Gezdiği Yerler
+              {t('profile.visitedPlaces')}
             </Text>
           </TouchableOpacity>
 
@@ -464,7 +465,7 @@ export default function UserProfileScreen() {
           >
             <FontAwesome5 name="comment" size={20} color={activeTab === 1 ? '#E91E63' : '#666'} />
             <Text style={[styles.tabText, activeTab === 1 && styles.activeTabText]}>
-              Son Yorumlar
+              {t('profile.recentReviews')}
             </Text>
           </TouchableOpacity>
         </View>

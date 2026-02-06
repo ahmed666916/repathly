@@ -2,6 +2,7 @@ import React from 'react';
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import { Tabs, useRouter } from 'expo-router';
 import { FontAwesome5 } from '@expo/vector-icons';
+import { t } from '../../services/api/i18n';
 
 interface CustomTabBarProps {
   state: any;
@@ -54,13 +55,13 @@ function CustomTabBar({ state, descriptors, navigation }: CustomTabBarProps) {
 
           const Icon = ({ color }: { color: string }) => {
             let iconName;
-            if (label === 'Ana Sayfa') iconName = 'home';
-            else if (label === 'İlgi Alanları') iconName = 'bell';
-            else if (label === 'Favoriler') iconName = 'bookmark';
-            else if (label === 'Map') iconName = 'map-marked-alt';
+            if (label === t('routing.home')) iconName = 'home';
+            else if (label === t('routing.interests')) iconName = 'bell';
+            else if (label === t('routing.favorites')) iconName = 'bookmark';
+            else if (label === t('routing.map')) iconName = 'map-marked-alt';
             return <FontAwesome5 name={iconName} size={24} color={color} solid={isFocused} />;
           };
-          
+
           return (
             <TouchableOpacity
               key={route.key}
@@ -73,7 +74,7 @@ function CustomTabBar({ state, descriptors, navigation }: CustomTabBarProps) {
               style={styles.tabItem}
             >
               <View style={isFocused ? styles.activeTab : null}>
-                 <Icon color={isFocused ? '#fff' : '#8A95A0'} />
+                <Icon color={isFocused ? '#fff' : '#8A95A0'} />
               </View>
             </TouchableOpacity>
           );
@@ -95,73 +96,73 @@ export default function TabLayout() {
         headerShown: false,
       }}
     >
-      <Tabs.Screen name="index" options={{ title: 'Ana Sayfa' }} />
-      <Tabs.Screen name="interests" options={{ title: 'İlgi Alanları' }} />
-      <Tabs.Screen name="add" options={{ title: 'Ekle' }} />
-      <Tabs.Screen name="favorites" options={{ title: 'Favoriler' }} />
-      <Tabs.Screen name="map" options={{ title: 'Map' }} />
-      <Tabs.Screen 
-        name="recommendations" 
-        options={{ 
-          title: 'Öneriler',
+      <Tabs.Screen name="index" options={{ title: t('routing.home') }} />
+      <Tabs.Screen name="interests" options={{ title: t('routing.interests') }} />
+      <Tabs.Screen name="add" options={{ title: t('routing.add') }} />
+      <Tabs.Screen name="favorites" options={{ title: t('routing.favorites') }} />
+      <Tabs.Screen name="map" options={{ title: t('routing.map') }} />
+      <Tabs.Screen
+        name="recommendations"
+        options={{
+          title: t('routing.recommendations'),
           href: null, // Tab bar'da gösterme
-        }} 
+        }}
       />
-      <Tabs.Screen 
-        name="route-planner" 
-        options={{ 
-          title: 'Rota Planlayıcı',
+      <Tabs.Screen
+        name="route-planner"
+        options={{
+          title: t('routing.routePlanner'),
           href: null, // Tab bar'da gösterme
-        }} 
+        }}
       />
-      <Tabs.Screen 
-        name="profile" 
-        options={{ 
-          title: 'Profil',
+      <Tabs.Screen
+        name="profile"
+        options={{
+          title: t('profile.title'),
           href: null, // Tab bar'da gösterme
-        }} 
+        }}
       />
-      <Tabs.Screen 
-        name="user-profile" 
-        options={{ 
-          title: 'Kullanıcı Profili',
+      <Tabs.Screen
+        name="user-profile"
+        options={{
+          title: t('profile.userProfile'),
           href: null, // Tab bar'da gösterme
-        }} 
+        }}
       />
-      <Tabs.Screen 
-        name="chats" 
-        options={{ 
-          title: 'Sohbetler',
+      <Tabs.Screen
+        name="chats"
+        options={{
+          title: t('chat.chats'),
           href: null, // Tab bar'da gösterme
-        }} 
+        }}
       />
-      <Tabs.Screen 
-        name="chat" 
-        options={{ 
-          title: 'Sohbet',
+      <Tabs.Screen
+        name="chat"
+        options={{
+          title: t('chat.chat'),
           href: null, // Tab bar'da gösterme
-        }} 
+        }}
       />
-      <Tabs.Screen 
-        name="route-preview" 
-        options={{ 
-          title: 'Rota Önizleme',
+      <Tabs.Screen
+        name="route-preview"
+        options={{
+          title: t('routing.routePreview'),
           href: null, // Tab bar'da gösterme
-        }} 
+        }}
       />
-      <Tabs.Screen 
-        name="waypoints" 
-        options={{ 
-          title: 'Durak Noktaları',
+      <Tabs.Screen
+        name="waypoints"
+        options={{
+          title: t('routing.waypoints'),
           href: null, // Tab bar'da gösterme
-        }} 
+        }}
       />
-      <Tabs.Screen 
-        name="fullscreen-map" 
-        options={{ 
-          title: 'Tam Ekran Harita',
+      <Tabs.Screen
+        name="fullscreen-map"
+        options={{
+          title: t('routing.fullscreenMap'),
           href: null, // Tab bar'da gösterme
-        }} 
+        }}
       />
     </Tabs>
   );
@@ -173,7 +174,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    height: 90, 
+    height: 90,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: 'transparent',

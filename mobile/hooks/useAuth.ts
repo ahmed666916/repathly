@@ -1,7 +1,8 @@
 import { useContext, useState, useCallback } from 'react';
 import AuthContext from '../contexts/AuthContext';
-import * as authApi from '../../services/api/auth';
+import * as authApi from '../services/api/auth';
 import * as secureStorage from '../utils/secureStorage';
+import { syncOnboardingState, getNextOnboardingStep } from '../utils/onboardingManager';
 
 /**
  * Custom hook for accessing auth state and actions
@@ -29,6 +30,14 @@ export function useAuth() {
                     await secureStorage.saveRefreshToken(response.data.refreshToken);
                 }
                 await secureStorage.saveUser(response.data.user);
+                
+                // Sync local onboarding state with backend user data
+                await syncOnboardingState(
+                    response.data.user.hasCompletedProfile,
+                    response.data.user.hasCompletedTasteDna || false,
+                    response.data.user.hasSelectedExperiences
+                );
+
                 return { success: true, message: response.message };
             }
 
@@ -52,6 +61,14 @@ export function useAuth() {
                     await secureStorage.saveRefreshToken(response.data.refreshToken);
                 }
                 await secureStorage.saveUser(response.data.user);
+                
+                // Sync local onboarding state with backend user data
+                await syncOnboardingState(
+                    response.data.user.hasCompletedProfile,
+                    response.data.user.hasCompletedTasteDna || false,
+                    response.data.user.hasSelectedExperiences
+                );
+
                 return { success: true, message: response.message };
             }
 
@@ -81,6 +98,11 @@ export function useAuth() {
     const updateUser = async () => { };
     const resendVerificationEmail = async () => ({ success: false, message: 'Not available' });
 
+    // Use the onboarding manager for the fallback implementation
+    const getOnboardingStep = useCallback(async () => {
+        return await getNextOnboardingStep();
+    }, []);
+
     return {
         user: null,
         isAuthenticated: false,
@@ -92,6 +114,7 @@ export function useAuth() {
         checkAuth,
         updateUser,
         resendVerificationEmail,
+        getOnboardingStep,
     };
 }
 

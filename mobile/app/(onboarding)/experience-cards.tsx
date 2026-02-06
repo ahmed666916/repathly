@@ -14,7 +14,9 @@ import {
 } from 'react-native';
 import { FontAwesome, FontAwesome5 } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { getToken } from '../utils/secureStorage';
+import { getToken } from '../../utils/secureStorage';
+import { setExperiencesSelected } from '../../utils/onboardingManager';
+import { t } from '../../services/api/i18n';
 import {
     ExperienceCard,
     getExperienceCards,
@@ -84,7 +86,7 @@ export default function ExperienceCardsOnboarding() {
         if (result.success && result.data) {
             setCards(result.data);
         } else {
-            setError(result.message || 'Kartlar yuklenemedi');
+            setError(result.message || t('onboarding.cardsLoadError'));
         }
 
         setIsLoading(false);
@@ -105,8 +107,8 @@ export default function ExperienceCardsOnboarding() {
     const handleContinue = async () => {
         if (selectedCardIds.length < MIN_CARDS_REQUIRED) {
             Alert.alert(
-                'Yetersiz Secim',
-                `Lutfen en az ${MIN_CARDS_REQUIRED} deneyim karti secin. Su anda ${selectedCardIds.length} kart secili.`
+                t('onboarding.insufficientSelection'),
+                t('onboarding.insufficientSelectionDesc', { min: MIN_CARDS_REQUIRED, count: selectedCardIds.length })
             );
             return;
         }
@@ -125,29 +127,32 @@ export default function ExperienceCardsOnboarding() {
         setIsSaving(false);
 
         if (result.success) {
+            // Mark experiences as selected in persistent storage
+            await setExperiencesSelected(true);
+
             Alert.alert(
-                'Basarili!',
-                'Deneyim tercihleriniz kaydedildi. Artik size ozel rotalar ve oneriler goreceksiniz!',
+                t('onboarding.saveSuccessTitle'),
+                t('onboarding.saveSuccessMessage'),
                 [
                     {
-                        text: 'Baslayalim!',
+                        text: t('onboarding.letsStart'),
                         onPress: () => router.replace('/(app)'),
                     },
                 ]
             );
         } else {
-            Alert.alert('Hata', result.message || 'Tercihler kaydedilemedi');
+            Alert.alert(t('common.error'), result.message || t('onboarding.saveError'));
         }
     };
 
     const handleSkip = () => {
         Alert.alert(
-            'Atlamak istediginizden emin misiniz?',
-            'Deneyim kartlari secmeden devam ederseniz, size ozel oneriler alamayacaksiniz. Daha sonra ayarlardan secebilirsiniz.',
+            t('onboarding.skipConfirmTitle'),
+            t('onboarding.skipConfirmMessage'),
             [
-                { text: 'Iptal', style: 'cancel' },
+                { text: t('common.cancel'), style: 'cancel' },
                 {
-                    text: 'Devam Et',
+                    text: t('common.next'),
                     onPress: () => router.replace('/(app)'),
                 },
             ]
@@ -180,7 +185,7 @@ export default function ExperienceCardsOnboarding() {
             >
                 <View style={styles.loadingOverlay}>
                     <ActivityIndicator size="large" color="#E91E63" />
-                    <Text style={styles.loadingText}>Deneyim kartlari yukleniyor...</Text>
+                    <Text style={styles.loadingText}>{t('onboarding.loadingCards')}</Text>
                 </View>
             </ImageBackground>
         );
@@ -197,7 +202,7 @@ export default function ExperienceCardsOnboarding() {
                     <FontAwesome5 name="exclamation-circle" size={48} color="#E91E63" />
                     <Text style={styles.errorText}>{error}</Text>
                     <TouchableOpacity style={styles.retryButton} onPress={loadExperienceCards}>
-                        <Text style={styles.retryButtonText}>Tekrar Dene</Text>
+                        <Text style={styles.retryButtonText}>{t('common.retry')}</Text>
                     </TouchableOpacity>
                 </View>
             </ImageBackground>
@@ -216,18 +221,18 @@ export default function ExperienceCardsOnboarding() {
                     {/* Header */}
                     <View style={styles.header}>
                         <View style={styles.headerLeft}>
-                            <Text style={styles.stepIndicator}>Adim 2/2</Text>
+                            <Text style={styles.stepIndicator}>{t('onboarding.stepIndicator', { current: 2, total: 2 })}</Text>
                         </View>
                         <TouchableOpacity onPress={handleSkip} style={styles.skipButton}>
-                            <Text style={styles.skipText}>Atla</Text>
+                            <Text style={styles.skipText}>{t('onboarding.skip')}</Text>
                         </TouchableOpacity>
                     </View>
 
                     {/* Title Section */}
                     <View style={styles.titleSection}>
-                        <Text style={styles.title}>Deneyimlerinizi Secin</Text>
+                        <Text style={styles.title}>{t('onboarding.chooseExperiences')}</Text>
                         <Text style={styles.subtitle}>
-                            Size ozel rotalar ve oneriler icin en az {MIN_CARDS_REQUIRED} kart secin
+                            {t('onboarding.chooseExperiencesDesc', { min: MIN_CARDS_REQUIRED })}
                         </Text>
                         <View style={styles.selectionCounter}>
                             <FontAwesome5 name="check-circle" size={16} color={selectedCardIds.length >= MIN_CARDS_REQUIRED ? '#4CAF50' : '#8A9A94'} />
@@ -307,7 +312,7 @@ export default function ExperienceCardsOnboarding() {
                                         styles.continueButtonText,
                                         selectedCardIds.length < MIN_CARDS_REQUIRED && styles.continueButtonTextDisabled
                                     ]}>
-                                        Devam Et ({selectedCardIds.length})
+                                        {t('common.next')} ({selectedCardIds.length})
                                     </Text>
                                     <FontAwesome5 name="arrow-right" size={18} color={selectedCardIds.length >= MIN_CARDS_REQUIRED ? '#fff' : '#999'} />
                                 </>

@@ -12,7 +12,8 @@ import {
 } from 'react-native';
 import { FontAwesome5 } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useProfileContext } from '../../contexts/ProfileContext';
+import { useProfileContext } from '../../../contexts/ProfileContext';
+import { t } from '../../../services/api/i18n';
 import {
   travelStyleLabels,
   detourToleranceLabels,
@@ -63,18 +64,18 @@ export default function TasteDNAScreen() {
 
   useEffect(() => {
     if (error) {
-      Alert.alert('Hata', error, [{ text: 'Tamam', onPress: clearError }]);
+      Alert.alert(t('common.error'), error, [{ text: t('common.success'), onPress: clearError }]);
     }
   }, [error, clearError]);
 
   const handleBack = () => {
     if (hasChanges) {
       Alert.alert(
-        'Kaydetmeden Cik',
-        'Degisiklikler kaydedilmedi. Cikmak istediginize emin misiniz?',
+        t('taste_dna.unsavedChanges'),
+        t('taste_dna.unsavedChangesDesc'),
         [
-          { text: 'Iptal', style: 'cancel' },
-          { text: 'Cikmak', onPress: () => router.back() },
+          { text: t('common.cancel'), style: 'cancel' },
+          { text: t('profile.back'), onPress: () => router.back() },
         ]
       );
     } else {
@@ -89,9 +90,9 @@ export default function TasteDNAScreen() {
 
     if (result.success) {
       setHasChanges(false);
-      Alert.alert('Basarili', 'Profil tercihleri guncellendi.');
+      Alert.alert(t('taste_dna.saved'), t('taste_dna.profileUpdated'));
     } else {
-      Alert.alert('Hata', result.message);
+      Alert.alert(t('common.error'), result.message);
     }
   };
 
@@ -139,7 +140,7 @@ export default function TasteDNAScreen() {
       <SafeAreaView style={styles.container}>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#E91E63" />
-          <Text style={styles.loadingText}>Yukleniyor...</Text>
+          <Text style={styles.loadingText}>{t('common.loading')}</Text>
         </View>
       </SafeAreaView>
     );
@@ -186,7 +187,7 @@ export default function TasteDNAScreen() {
         <TouchableOpacity onPress={handleBack} style={styles.backButton}>
           <FontAwesome5 name="arrow-left" size={20} color="#333" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Seyahat Tercihlerim</Text>
+        <Text style={styles.headerTitle}>{t('taste_dna.title')}</Text>
         <TouchableOpacity
           onPress={handleSave}
           style={[styles.saveButton, !hasChanges && styles.saveButtonDisabled]}
@@ -195,7 +196,7 @@ export default function TasteDNAScreen() {
           {isSaving ? (
             <ActivityIndicator size="small" color="#fff" />
           ) : (
-            <Text style={styles.saveButtonText}>Kaydet</Text>
+            <Text style={styles.saveButtonText}>{t('common.save')}</Text>
           )}
         </TouchableOpacity>
       </View>
@@ -204,49 +205,48 @@ export default function TasteDNAScreen() {
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.introContainer}>
           <FontAwesome5 name="dna" size={32} color="#E91E63" />
-          <Text style={styles.introTitle}>Seyahat DNA'niz</Text>
+          <Text style={styles.introTitle}>{t('taste_dna.travelDna')}</Text>
           <Text style={styles.introText}>
-            Bu tercihler rotalarinizin nasil olusturulacagini belirler.
-            Tercihlerinizi dilediginiz zaman degistirebilirsiniz.
+            {t('taste_dna.description')}
           </Text>
         </View>
 
         <View style={styles.formContainer}>
           {renderOptionGroup(
-            'Seyahat Stili',
-            'Yolculuklarda zaman mi deneyim mi oncelikli?',
+            t('taste_dna.travelStyle'),
+            t('taste_dna.travelStyleDesc'),
             travelStyleOptions,
             localProfile.travelStyle,
             (value) => updateField('travelStyle', value)
           )}
 
           {renderOptionGroup(
-            'Sapma Toleransi',
-            'Ana rotadan ne kadar sapmaya aciksiniz?',
+            t('taste_dna.detourTolerance'),
+            t('taste_dna.detourToleranceDesc'),
             detourToleranceOptions,
             localProfile.detourTolerance,
             (value) => updateField('detourTolerance', value)
           )}
 
           {renderOptionGroup(
-            'Butce Tercihi',
-            'Hangi fiyat araliginda mekanlar tercih edersiniz?',
+            t('taste_dna.budgetPreference'),
+            t('taste_dna.budgetPreferenceDesc'),
             budgetOptions,
             localProfile.budgetSensitivity,
             (value) => updateField('budgetSensitivity', value)
           )}
 
           {renderOptionGroup(
-            'Grup Tipi',
-            'Genellikle kimlerle seyahat ediyorsunuz?',
+            t('taste_dna.groupType'),
+            t('taste_dna.groupTypeDesc'),
             groupTypeOptions,
             localProfile.preferredGroupType,
             (value) => updateField('preferredGroupType', value)
           )}
 
           {renderOptionGroup(
-            'Durak Yogunlugu',
-            'Yolculukta ne siklikta durmak istersiniz?',
+            t('taste_dna.stopIntensity'),
+            t('taste_dna.stopIntensityDesc'),
             stopIntensityOptions,
             localProfile.stopIntensity,
             (value) => updateField('stopIntensity', value)
@@ -261,9 +261,9 @@ export default function TasteDNAScreen() {
           <View style={styles.linkContent}>
             <FontAwesome5 name="sliders-h" size={20} color="#E91E63" />
             <View style={styles.linkTextContainer}>
-              <Text style={styles.linkTitle}>Deneyim Agirliklarini Duzenle</Text>
+              <Text style={styles.linkTitle}>{t('taste_dna.editExperienceWeights')}</Text>
               <Text style={styles.linkDescription}>
-                Sectiginiz deneyim kartlarinin onecelik sirasini ayarlayin
+                {t('taste_dna.editWeightsDesc')}
               </Text>
             </View>
           </View>

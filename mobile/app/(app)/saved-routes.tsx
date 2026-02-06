@@ -15,7 +15,7 @@ import { FontAwesome5 } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import * as routesApi from '../../services/api/routes';
 import { RouteListItem, routeModeLabels, routeStatusLabels } from '../../services/api/routes';
-import * as secureStorage from '../utils/secureStorage';
+import * as secureStorage from '../../utils/secureStorage';
 
 export default function SavedRoutesScreen() {
   const router = useRouter();

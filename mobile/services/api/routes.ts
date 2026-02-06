@@ -137,6 +137,7 @@ async function apiCall<T>(
     try {
         const headers: HeadersInit = {
             'Content-Type': 'application/json',
+            'Accept': 'application/json',
         };
 
         if (token) {

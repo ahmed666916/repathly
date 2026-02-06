@@ -35,6 +35,10 @@ export interface User {
     profilePhoto?: string;
     isEmailVerified: boolean;
     authProvider?: 'email' | 'google' | 'apple';
+    hasCompletedProfile: boolean;
+    hasCompletedTasteDna: boolean;
+    hasSelectedExperiences: boolean;
+    isOnboardingCompleted: boolean;
     createdAt?: string;
 }
 

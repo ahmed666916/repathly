@@ -15,7 +15,8 @@ import {
 } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useAuth } from '../hooks/useAuth';
+import { useAuth } from '../../hooks/useAuth';
+import { t } from '../../services/api/i18n';
 
 export default function RegisterScreen() {
     const router = useRouter();
@@ -33,25 +34,25 @@ export default function RegisterScreen() {
         const newErrors: { [key: string]: string } = {};
 
         if (!name.trim()) {
-            newErrors.name = 'Ad soyad gereklidir.';
+            newErrors.name = t('auth.nameRequired');
         }
 
         if (!email.trim()) {
-            newErrors.email = 'Email adresi gereklidir.';
+            newErrors.email = t('auth.emailRequired');
         } else if (!/\S+@\S+\.\S+/.test(email)) {
-            newErrors.email = 'Geçerli bir email adresi girin.';
+            newErrors.email = t('auth.invalidEmail');
         }
 
         if (!password) {
-            newErrors.password = 'Şifre gereklidir.';
+            newErrors.password = t('auth.passwordRequired');
         } else if (password.length < 6) {
-            newErrors.password = 'Şifre en az 6 karakter olmalıdır.';
+            newErrors.password = t('auth.passwordMinLength');
         }
 
         if (!confirmPassword) {
-            newErrors.confirmPassword = 'Şifre tekrarı gereklidir.';
+            newErrors.confirmPassword = t('auth.confirmPasswordRequired');
         } else if (password !== confirmPassword) {
-            newErrors.confirmPassword = 'Şifreler eşleşmiyor.';
+            newErrors.confirmPassword = t('auth.passwordsDoNotMatch');
         }
 
         setErrors(newErrors);
@@ -65,17 +66,20 @@ export default function RegisterScreen() {
 
         if (result.success) {
             Alert.alert(
-                'Kayit Basarili!',
-                'Simdi deneyimlerinizi secin ve size ozel rotalar olusturalim.',
+                t('auth.registerSuccessTitle'),
+                t('auth.registerSuccessMessage'),
                 [
                     {
-                        text: 'Devam Et',
-                        onPress: () => router.replace('/(onboarding)/experience-cards'),
+                        text: t('common.next'),
+                        onPress: async () => {
+                            // Route to onboarding resolver which will determine the correct next step
+                            router.replace('/(auth)/onboarding-resolver');
+                        },
                     },
                 ]
             );
         } else {
-            Alert.alert('Kayit Basarisiz', result.message);
+            Alert.alert(t('common.error'), result.message);
         }
     };
 
@@ -108,16 +112,16 @@ export default function RegisterScreen() {
                         {/* Back Button */}
                         <TouchableOpacity
                             style={styles.backButton}
-                            onPress={() => router.back()}
+                            onPress={() => router.replace('/(auth)/login')}
                         >
                             <FontAwesome name="arrow-left" size={20} color="#fff" />
                         </TouchableOpacity>
 
                         {/* Header */}
                         <View style={styles.header}>
-                            <Text style={styles.title}>Hesap Oluştur</Text>
+                            <Text style={styles.title}>{t('auth.register')}</Text>
                             <Text style={styles.subtitle}>
-                                Yolculuğunuza başlamak için kayıt olun
+                                {t('auth.registerSubtitle')}
                             </Text>
                         </View>
 
@@ -128,7 +132,7 @@ export default function RegisterScreen() {
                                 <FontAwesome name="user" size={18} color="#8A9A94" style={styles.inputIcon} />
                                 <TextInput
                                     style={styles.input}
-                                    placeholder="Ad Soyad"
+                                    placeholder={t('auth.name')}
                                     placeholderTextColor="#8A9A94"
                                     value={name}
                                     onChangeText={setName}
@@ -142,7 +146,7 @@ export default function RegisterScreen() {
                                 <FontAwesome name="envelope" size={16} color="#8A9A94" style={styles.inputIcon} />
                                 <TextInput
                                     style={styles.input}
-                                    placeholder="Email Adresi"
+                                    placeholder={t('auth.email')}
                                     placeholderTextColor="#8A9A94"
                                     value={email}
                                     onChangeText={setEmail}
@@ -158,7 +162,7 @@ export default function RegisterScreen() {
                                 <FontAwesome name="lock" size={20} color="#8A9A94" style={styles.inputIcon} />
                                 <TextInput
                                     style={styles.input}
-                                    placeholder="Şifre"
+                                    placeholder={t('auth.password')}
                                     placeholderTextColor="#8A9A94"
                                     value={password}
                                     onChangeText={setPassword}
@@ -179,7 +183,7 @@ export default function RegisterScreen() {
                                 <FontAwesome name="lock" size={20} color="#8A9A94" style={styles.inputIcon} />
                                 <TextInput
                                     style={styles.input}
-                                    placeholder="Şifre Tekrar"
+                                    placeholder={t('auth.confirmPassword')}
                                     placeholderTextColor="#8A9A94"
                                     value={confirmPassword}
                                     onChangeText={setConfirmPassword}
@@ -204,7 +208,7 @@ export default function RegisterScreen() {
                                 {isLoading ? (
                                     <ActivityIndicator color="#fff" />
                                 ) : (
-                                    <Text style={styles.registerButtonText}>Kayıt Ol</Text>
+                                    <Text style={styles.registerButtonText}>{t('auth.register')}</Text>
                                 )}
                             </TouchableOpacity>
                         </View>
@@ -212,7 +216,7 @@ export default function RegisterScreen() {
                         {/* Divider */}
                         <View style={styles.divider}>
                             <View style={styles.dividerLine} />
-                            <Text style={styles.dividerText}>veya</Text>
+                            <Text style={styles.dividerText}>{t('auth.or')}</Text>
                             <View style={styles.dividerLine} />
                         </View>
 
@@ -230,9 +234,9 @@ export default function RegisterScreen() {
 
                         {/* Login Link */}
                         <View style={styles.loginLinkContainer}>
-                            <Text style={styles.loginLinkText}>Zaten hesabınız var mı? </Text>
+                            <Text style={styles.loginLinkText}>{t('auth.alreadyHaveAccount')} </Text>
                             <TouchableOpacity onPress={() => router.push('/(auth)/login')}>
-                                <Text style={styles.loginLink}>Giriş Yap</Text>
+                                <Text style={styles.loginLink}>{t('auth.login')}</Text>
                             </TouchableOpacity>
                         </View>
                     </ScrollView>

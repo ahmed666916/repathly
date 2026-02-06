@@ -1,17 +1,16 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, Dimensions } from 'react-native';
 import { TabView, SceneMap, TabBar } from 'react-native-tab-view';
-import { ThemedText } from '@/components/Themed';
 
 const FavoritesRoute = () => (
   <View style={[styles.scene, { backgroundColor: 'white' }]}>
-    <ThemedText>Favorilerim</ThemedText>
+    <Text>Favorilerim</Text>
   </View>
 );
 
 const HistoryRoute = () => (
   <View style={[styles.scene, { backgroundColor: 'white' }]}>
-    <ThemedText>Geçmiş</ThemedText>
+    <Text>Geçmiş</Text>
   </View>
 );
 

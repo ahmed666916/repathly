@@ -1,11 +1,10 @@
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
-import { ThemedText } from '@/components/Themed';
+import { View, Text, StyleSheet } from 'react-native';
 
 export default function AddScreen() {
   return (
     <View style={styles.container}>
-      <ThemedText type="title">Ekle</ThemedText>
+      <Text style={styles.title}>Ekle</Text>
     </View>
   );
 }
@@ -15,5 +14,9 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
   },
 });

@@ -53,6 +53,10 @@ class AuthController extends Controller
                     'email' => $user->email,
                     'isEmailVerified' => $user->is_email_verified,
                     'authProvider' => $user->auth_provider,
+                    'hasCompletedProfile' => $user->has_completed_profile,
+                    'hasCompletedTasteDna' => $user->has_completed_taste_dna,
+                    'hasSelectedExperiences' => $user->has_selected_experiences,
+                    'isOnboardingCompleted' => $user->is_onboarding_completed,
                     'createdAt' => $user->created_at?->toIso8601String() ?? null,
                 ],
                 'token' => $token,
@@ -92,6 +96,10 @@ class AuthController extends Controller
                     'profilePhoto' => $user->profile_photo,
                     'isEmailVerified' => $user->is_email_verified,
                     'authProvider' => $user->auth_provider,
+                    'hasCompletedProfile' => $user->has_completed_profile,
+                    'hasCompletedTasteDna' => $user->has_completed_taste_dna,
+                    'hasSelectedExperiences' => $user->has_selected_experiences,
+                    'isOnboardingCompleted' => $user->is_onboarding_completed,
                     'createdAt' => $user->created_at?->toIso8601String() ?? null,
                 ],
                 'token' => $token,
@@ -271,6 +279,10 @@ class AuthController extends Controller
                 'profilePhoto' => $user->profile_photo,
                 'isEmailVerified' => $user->is_email_verified,
                 'authProvider' => $user->auth_provider,
+                'hasCompletedProfile' => $user->has_completed_profile,
+                'hasCompletedTasteDna' => $user->has_completed_taste_dna,
+                'hasSelectedExperiences' => $user->has_selected_experiences,
+                'isOnboardingCompleted' => $user->is_onboarding_completed,
                 'createdAt' => $user->created_at?->toIso8601String() ?? null,
             ], 'Profil bilgileri alındı.');
 
@@ -295,25 +307,29 @@ class AuthController extends Controller
                 $user->name = $request->name;
             }
 
-            if ($request->has('email')) {
-                $user->email = $request->email;
-            }
-
-            if ($request->has('profilePhoto')) {
-                $user->profile_photo = $request->profilePhoto;
-            }
+            if ($request->has('name')) $user->name = $request->name;
+            if ($request->has('bio')) $user->bio = $request->bio;
+            if ($request->has('hasCompletedProfile')) $user->has_completed_profile = $request->hasCompletedProfile;
+            if ($request->has('profilePhoto')) $user->profile_photo = $request->profilePhoto;
 
             $user->save();
 
             return $this->success([
-                'id' => (string) $user->id,
-                'name' => $user->name,
-                'email' => $user->email,
-                'profilePhoto' => $user->profile_photo,
-                'isEmailVerified' => $user->is_email_verified,
-                'authProvider' => $user->auth_provider,
-                'createdAt' => $user->created_at?->toIso8601String() ?? null,
-            ], 'Profil güncellendi.');
+                'user' => [
+                    'id' => (string) $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'bio' => $user->bio,
+                    'isEmailVerified' => $user->is_email_verified,
+                    'authProvider' => $user->auth_provider,
+                    'profilePhoto' => $user->profile_photo,
+                    'hasCompletedProfile' => $user->has_completed_profile,
+                    'hasCompletedTasteDna' => $user->has_completed_taste_dna,
+                    'hasSelectedExperiences' => $user->has_selected_experiences,
+                    'isOnboardingCompleted' => $user->is_onboarding_completed,
+                    'createdAt' => $user->created_at?->toIso8601String() ?? null,
+                ],
+            ], 'Profil başarıyla güncellendi.');
 
         } catch (\Exception $e) {
             return $this->error('Profil güncellenirken bir hata oluştu.', 500, $e->getMessage());

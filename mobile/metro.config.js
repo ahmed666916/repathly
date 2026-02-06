@@ -5,7 +5,7 @@ const config = getDefaultConfig(__dirname);
 
 // Metro'ya yol kısayollarını tanıt
 config.resolver.alias = {
-  '@': path.resolve(__dirname, './app'),
+  '@': path.resolve(__dirname, '.'),
 };
 
 module.exports = config;

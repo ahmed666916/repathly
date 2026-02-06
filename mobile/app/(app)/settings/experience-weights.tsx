@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import { FontAwesome5 } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useProfileContext } from '../../contexts/ProfileContext';
+import { useProfileContext } from '../../../contexts/ProfileContext';
 import { weightLabels } from '../../../services/api/profile';
 
 export default function ExperienceWeightsScreen() {

@@ -16,6 +16,7 @@ import { FontAwesome } from '@expo/vector-icons';
 import { useRouter, useFocusEffect } from 'expo-router';
 import ProfileButton from '../../components/ProfileButton';
 import GOOGLE_MAPS_KEY from '../../constants/googleMapsKey';
+import { t } from '../../services/api/i18n';
 
 interface PlaceSuggestion {
   place_id: string;
@@ -44,7 +45,7 @@ export default function HomeScreen() {
 
   const handleContinue = () => {
     if (!destination.trim()) {
-      Alert.alert('Hata', 'Lütfen nereye gitmek istediğinizi girin.');
+      Alert.alert(t('common.error'), t('routing.enterDestination'));
       return;
     }
 
@@ -134,26 +135,26 @@ export default function HomeScreen() {
         <View style={styles.profileButtonContainer}>
           <ProfileButton
             onPress={handleProfilePress}
-            userName="Kullanıcı"
+            userName={t('profile.user')}
             authProvider="google"
           />
         </View>
 
         <View style={styles.content}>
           <View style={styles.welcomeSection}>
-            <Text style={styles.welcomeTitle}>Hoş Geldiniz!</Text>
+            <Text style={styles.welcomeTitle}>{t('home.welcome')}</Text>
             <Text style={styles.welcomeSubtitle}>
-              Keşfe başlamak için rotanızı belirleyiniz
+              {t('home.startExploring')}
             </Text>
           </View>
 
           <View style={styles.inputSection}>
-            <Text style={styles.inputLabel}>Nereye gitmek istiyorsunuz?</Text>
+            <Text style={styles.inputLabel}>{t('home.whereTo')}</Text>
             <View style={styles.inputContainer}>
               <FontAwesome name="map-marker" size={20} color="#E91E63" style={styles.inputIcon} />
               <TextInput
                 style={styles.textInput}
-                placeholder="Örn: Antalya, Cappadocia, Bodrum..."
+                placeholder={t('home.destinationPlaceholder')}
                 placeholderTextColor="rgba(255, 255, 255, 0.6)"
                 value={destination}
                 onChangeText={handleDestinationChange}
@@ -204,7 +205,7 @@ export default function HomeScreen() {
             onPress={handleContinue}
             disabled={!destination.trim()}
           >
-            <Text style={styles.continueButtonText}>Devam Et</Text>
+            <Text style={styles.continueButtonText}>{t('common.next')}</Text>
             <FontAwesome name="arrow-right" size={20} color="#fff" />
           </TouchableOpacity>
         </View>

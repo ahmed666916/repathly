@@ -1,4 +1,4 @@
-import { User } from '../../app/utils/secureStorage';
+import { User } from '../../utils/secureStorage';
 
 // TODO: Replace with your actual API base URL when backend is ready
 const API_BASE_URL = 'http://192.168.100.23:8000/api';
@@ -34,6 +34,7 @@ async function apiCall<T>(
     try {
         const headers: HeadersInit = {
             'Content-Type': 'application/json',
+            'Accept': 'application/json',
         };
 
         if (token) {
@@ -137,6 +138,9 @@ export async function login(email: string, password: string): Promise<AuthRespon
                     email: email,
                     isEmailVerified: true,
                     authProvider: 'email',
+                    hasCompletedProfile: true,
+                    hasSelectedExperiences: true,
+                    isOnboardingCompleted: true,
                     createdAt: new Date().toISOString(),
                 },
                 token: 'mock-jwt-token-' + Date.now(),
@@ -190,6 +194,9 @@ export async function register(
                     email: email,
                     isEmailVerified: false, // Email verification required
                     authProvider: 'email',
+                    hasCompletedProfile: false,
+                    hasSelectedExperiences: false,
+                    isOnboardingCompleted: false,
                     createdAt: new Date().toISOString(),
                 },
                 token: 'mock-jwt-token-' + Date.now(),
@@ -315,6 +322,9 @@ export async function getProfile(token: string): Promise<ApiResponse<User>> {
                 email: 'test@example.com',
                 isEmailVerified: true,
                 authProvider: 'email',
+                hasCompletedProfile: true,
+                hasSelectedExperiences: true,
+                isOnboardingCompleted: true,
                 createdAt: new Date().toISOString(),
             },
         };
@@ -341,6 +351,9 @@ export async function updateProfile(
                 profilePhoto: updates.profilePhoto,
                 isEmailVerified: true,
                 authProvider: 'email',
+                hasCompletedProfile: true,
+                hasSelectedExperiences: true,
+                isOnboardingCompleted: true,
                 createdAt: new Date().toISOString(),
             },
         };

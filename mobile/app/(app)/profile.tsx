@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   StyleSheet,
   View,
@@ -10,167 +10,108 @@ import {
   Image,
   Alert,
   Dimensions,
+  ActivityIndicator,
 } from 'react-native';
 import { FontAwesome5 } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { t } from '../../services/api/i18n';
+import { useAuthContext } from '../../contexts/AuthContext';
+import { useProfileContext } from '../../contexts/ProfileContext';
 
 const { width } = Dimensions.get('window');
 
 export default function ProfileScreen() {
   const router = useRouter();
+  const { user } = useAuthContext();
+  const { profile, isLoading, fetchProfile, error } = useProfileContext();
   const [activeTab, setActiveTab] = useState<'favorites' | 'reviews'>('favorites');
 
-  // Mock current user data with cities and destinations
+  useEffect(() => {
+    // Fetch profile data when component mounts
+    if (user) {
+      fetchProfile();
+    }
+  }, [user, fetchProfile]);
+
+  if (!user) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.centerContainer}>
+          <Text style={styles.errorText}>Kullanıcı bulunamadı</Text>
+          <TouchableOpacity 
+            style={styles.primaryButton}
+            onPress={() => router.back()}
+          >
+            <Text style={styles.buttonText}>Geri Dön</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.centerContainer}>
+          <ActivityIndicator size="large" color="#E91E63" />
+          <Text style={styles.loadingText}>{t('common.loading')}</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (error) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.centerContainer}>
+          <FontAwesome5 name="exclamation-circle" size={48} color="#E91E63" />
+          <Text style={styles.errorText}>{error}</Text>
+          <TouchableOpacity 
+            style={styles.primaryButton}
+            onPress={() => fetchProfile()}
+          >
+            <Text style={styles.buttonText}>Tekrar Dene</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  // Use real user data with safe fallbacks
   const currentUser = {
-    id: '1',
-    name: 'Mehmet Özkan',
-    username: 'mehmet_ozkan',
-    profilePhoto: 'https://randomuser.me/api/portraits/men/3.jpg',
+    id: user.id,
+    name: user.name || 'Kullanıcı',
+    username: user.email?.split('@')[0] || 'user',
+    profilePhoto: user.profilePhoto || 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y',
     coverPhoto: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=400&fit=crop',
-    bio: 'Türkiye\'nin her köşesini keşfetmeyi seven bir gezgin. Yemek kültürü ve tarihi mekanlar tutkunu.',
-    reviewCount: 89,
-    placesVisited: 234,
-    followers: 456,
-    following: 123,
-    joinDate: '2022-08-15',
-    isPublic: true,
-    stories: [
-      { 
-        id: '1', 
-        title: 'İstanbul', 
-        image: 'https://images.unsplash.com/photo-1524231757912-21f4fe3a7200?w=200&h=200&fit=crop',
-        description: 'Türkiye\'nin en büyük şehri, tarihi ve kültürel merkezi',
-        visitedPlaces: [
-          { name: 'Galata Kulesi', image: 'https://images.unsplash.com/photo-1524231757912-21f4fe3a7200?w=300&h=300&fit=crop', rating: 4.8, description: 'İstanbul\'un simgesi, 528 yılında inşa edilen tarihi kule' },
-          { name: 'Ayasofya', image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=300&h=300&fit=crop', rating: 4.9, description: '1500 yıllık tarihi ile dünya mimarlık tarihinin başyapıtı' },
-          { name: 'Topkapı Sarayı', image: 'https://images.unsplash.com/photo-1589308078059-be1415eab4c3?w=300&h=300&fit=crop', rating: 4.7, description: 'Osmanlı İmparatorluğu\'nun 400 yıl boyunca ana sarayı' },
-          { name: 'Kapalı Çarşı', image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=300&h=300&fit=crop', rating: 4.6, description: 'Dünyanın en eski ve en büyük kapalı çarşılarından biri' },
-          { name: 'Sultanahmet Camii', image: 'https://images.unsplash.com/photo-1524231757912-21f4fe3a7200?w=300&h=300&fit=crop', rating: 4.8, description: 'Mavi Camii olarak bilinen, 6 minareli tarihi cami' }
-        ]
-      },
-      { 
-        id: '2', 
-        title: 'Ankara', 
-        image: 'https://images.unsplash.com/photo-1589308078059-be1415eab4c3?w=200&h=200&fit=crop',
-        description: 'Türkiye\'nin başkenti, Atatürk\'ün şehri',
-        visitedPlaces: [
-          { name: 'Anıtkabir', image: 'https://images.unsplash.com/photo-1589308078059-be1415eab4c3?w=300&h=300&fit=crop', rating: 4.9, description: 'Mustafa Kemal Atatürk\'ün anıt mezarı, Türkiye\'nin en önemli simgesi' },
-          { name: 'Kızılay Meydanı', image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=300&h=300&fit=crop', rating: 4.3, description: 'Ankara\'nın kalbi, alışveriş ve sosyal hayatın merkezi' },
-          { name: 'Atakule', image: 'https://images.unsplash.com/photo-1524231757912-21f4fe3a7200?w=300&h=300&fit=crop', rating: 4.1, description: 'Ankara\'nın simgesi, 125 metre yüksekliğinde kule' },
-          { name: 'Ulus Meydanı', image: 'https://images.unsplash.com/photo-1589308078059-be1415eab4c3?w=300&h=300&fit=crop', rating: 4.2, description: 'Tarihi Ankara\'nın merkezi, Roma döneminden kalma yapılar' }
-        ]
-      },
-      { 
-        id: '3', 
-        title: 'İzmir', 
-        image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=200&h=200&fit=crop',
-        description: 'Ege\'nin incisi, antik çağların önemli liman kenti',
-        visitedPlaces: [
-          { name: 'Efes Antik Kenti', image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=300&h=300&fit=crop', rating: 4.8, description: 'Antik dünyanın en büyük ve en iyi korunmuş antik kenti' },
-          { name: 'Kemeraltı Çarşısı', image: 'https://images.unsplash.com/photo-1589308078059-be1415eab4c3?w=300&h=300&fit=crop', rating: 4.4, description: '400 yıllık tarihi çarşı, geleneksel el sanatları merkezi' },
-          { name: 'Saat Kulesi', image: 'https://images.unsplash.com/photo-1524231757912-21f4fe3a7200?w=300&h=300&fit=crop', rating: 4.2, description: 'İzmir\'in simgesi, 1901 yılında inşa edilen tarihi kule' },
-          { name: 'Kordon Boyu', image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=300&h=300&fit=crop', rating: 4.5, description: 'Ege Denizi manzaralı, yürüyüş ve dinlenme alanı' }
-        ]
-      },
-      { 
-        id: '4', 
-        title: 'Antalya', 
-        image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=200&h=200&fit=crop',
-        description: 'Türkiye\'nin turizm başkenti, tarih ve doğanın buluştuğu yer',
-        visitedPlaces: [
-          { name: 'Kaleiçi', image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=300&h=300&fit=crop', rating: 4.6, description: 'Antalya\'nın tarihi merkezi, Roma döneminden kalma surlar' },
-          { name: 'Düden Şelalesi', image: 'https://images.unsplash.com/photo-1589308078059-be1415eab4c3?w=300&h=300&fit=crop', rating: 4.5, description: 'Antalya\'nın doğal güzelliği, 40 metre yüksekliğinde şelale' },
-          { name: 'Aspendos Antik Tiyatrosu', image: 'https://images.unsplash.com/photo-1524231757912-21f4fe3a7200?w=300&h=300&fit=crop', rating: 4.7, description: 'Roma döneminden kalma, dünyanın en iyi korunmuş antik tiyatrosu' },
-          { name: 'Köprülü Kanyon', image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=300&h=300&fit=crop', rating: 4.4, description: '14 km uzunluğunda, rafting için ideal doğal kanyon' }
-        ]
-      },
-      { 
-        id: '5', 
-        title: 'Kapadokya', 
-        image: 'https://images.unsplash.com/photo-1589308078059-be1415eab4c3?w=200&h=200&fit=crop',
-        description: 'Peri bacaları ve sıcak hava balonları ile ünlü doğal harika',
-        visitedPlaces: [
-          { name: 'Peribacaları', image: 'https://images.unsplash.com/photo-1589308078059-be1415eab4c3?w=300&h=300&fit=crop', rating: 4.9, description: 'Doğanın milyonlarca yılda oluşturduğu eşsiz jeolojik yapılar' },
-          { name: 'Göreme Açık Hava Müzesi', image: 'https://images.unsplash.com/photo-1524231757912-21f4fe3a7200?w=300&h=300&fit=crop', rating: 4.8, description: 'UNESCO Dünya Mirası Listesi\'nde yer alan tarihi alan' },
-          { name: 'Uçhisar Kalesi', image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=300&h=300&fit=crop', rating: 4.6, description: 'Kapadokya\'nın en yüksek noktası, muhteşem manzara' },
-          { name: 'Ihlara Vadisi', image: 'https://images.unsplash.com/photo-1589308078059-be1415eab4c3?w=300&h=300&fit=crop', rating: 4.7, description: '14 km uzunluğunda, tarihi kiliseleri olan doğal vadi' }
-        ]
-      }
-    ],
+    bio: profile?.bio || 'Yeni Repathly gezgini!',
+    stats: {
+      reviewCount: 0,
+      placesVisited: 0,
+      followers: 0,
+      following: 0,
+    },
+    joinDate: user.createdAt ? new Date(user.createdAt).toLocaleDateString() : '2024',
+    stories: [],
     favoriteExperiences: [
-      { 
-        id: '1', 
-        name: 'Galata Kulesi', 
-        city: 'İstanbul', 
-        image: 'https://images.unsplash.com/photo-1524231757912-21f4fe3a7200?w=300&h=300&fit=crop', 
+      {
+        id: '1',
+        name: 'Galata Kulesi',
+        city: 'İstanbul',
+        image: 'https://images.unsplash.com/photo-1524231757912-21f4fe3a7200?w=300&h=300&fit=crop',
         rating: 4.8,
         description: 'İstanbul\'un simgesi, 528 yılında inşa edilen tarihi kule'
       },
-      { 
-        id: '2', 
-        name: 'Anıtkabir', 
-        city: 'Ankara', 
-        image: 'https://images.unsplash.com/photo-1589308078059-be1415eab4c3?w=300&h=300&fit=crop', 
+      {
+        id: '2',
+        name: 'Anıtkabir',
+        city: 'Ankara',
+        image: 'https://images.unsplash.com/photo-1589308078059-be1415eab4c3?w=300&h=300&fit=crop',
         rating: 4.9,
         description: 'Mustafa Kemal Atatürk\'ün anıt mezarı, Türkiye\'nin en önemli simgesi'
-      },
-      { 
-        id: '3', 
-        name: 'Efes Antik Kenti', 
-        city: 'İzmir', 
-        image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=300&h=300&fit=crop', 
-        rating: 4.8,
-        description: 'Antik dünyanın en büyük ve en iyi korunmuş antik kenti'
-      },
-      { 
-        id: '4', 
-        name: 'Kaleiçi', 
-        city: 'Antalya', 
-        image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=300&h=300&fit=crop', 
-        rating: 4.6,
-        description: 'Antalya\'nın tarihi merkezi, Roma döneminden kalma surlar'
-      },
-      { 
-        id: '5', 
-        name: 'Peribacaları', 
-        city: 'Kapadokya', 
-        image: 'https://images.unsplash.com/photo-1589308078059-be1415eab4c3?w=300&h=300&fit=crop', 
-        rating: 4.9,
-        description: 'Doğanın mucizesi, kesinlikle görülmeli! Balon turu harika.'
-      },
-      { 
-        id: '6', 
-        name: 'Ayasofya', 
-        city: 'İstanbul', 
-        image: 'https://images.unsplash.com/photo-1524231757912-21f4fe3a7200?w=300&h=300&fit=crop', 
-        rating: 4.9,
-        description: 'İnsanlık tarihinin en önemli yapılarından. İçerideki mozaikler muhteşem.'
-      },
-      { 
-        id: '7', 
-        name: 'Topkapı Sarayı', 
-        city: 'İstanbul', 
-        image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=300&h=300&fit=crop', 
-        rating: 4.7,
-        description: 'Osmanlı İmparatorluğu\'nun 400 yıl boyunca ana sarayı'
-      },
-      { 
-        id: '8', 
-        name: 'Pamukkale', 
-        city: 'Denizli', 
-        image: 'https://images.unsplash.com/photo-1589308078059-be1415eab4c3?w=300&h=300&fit=crop', 
-        rating: 4.8,
-        description: 'Beyaz traverten terasları ile ünlü doğal harika'
       }
     ],
-    recentReviews: [
-      { id: '1', placeName: 'Galata Kulesi', city: 'İstanbul', image: 'https://images.unsplash.com/photo-1524231757912-21f4fe3a7200?w=300&h=300&fit=crop', rating: 4.8, review: 'Muhteşem manzara ve tarihi atmosfer! İstanbul\'un en güzel manzarasını sunuyor.', date: '2024-01-15' },
-      { id: '2', placeName: 'Anıtkabir', city: 'Ankara', image: 'https://images.unsplash.com/photo-1589308078059-be1415eab4c3?w=300&h=300&fit=crop', rating: 4.9, review: 'Her Türk vatandaşının görmesi gereken yer. Atatürk\'ün anısına saygıyla...', date: '2024-01-10' },
-      { id: '3', placeName: 'Efes Antik Kenti', city: 'İzmir', image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=300&h=300&fit=crop', rating: 4.8, review: 'Antik dünyanın en etkileyici kalıntıları. Tarih kokan sokaklar...', date: '2024-01-05' },
-      { id: '4', placeName: 'Kaleiçi', city: 'Antalya', image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=300&h=300&fit=crop', rating: 4.6, review: 'Tarihi sokaklarda kaybolmak çok keyifli. Roma surları etkileyici.', date: '2023-12-28' },
-      { id: '5', placeName: 'Peribacaları', city: 'Kapadokya', image: 'https://images.unsplash.com/photo-1589308078059-be1415eab4c3?w=300&h=300&fit=crop', rating: 4.9, review: 'Doğanın mucizesi, kesinlikle görülmeli! Balon turu harika.', date: '2023-12-20' },
-      { id: '6', placeName: 'Ayasofya', city: 'İstanbul', image: 'https://images.unsplash.com/photo-1524231757912-21f4fe3a7200?w=300&h=300&fit=crop', rating: 4.9, review: 'İnsanlık tarihinin en önemli yapılarından. İçerideki mozaikler muhteşem.', date: '2023-12-15' },
-    ]
+    recentReviews: []
   };
 
   const handleBack = () => {
@@ -186,27 +127,32 @@ export default function ProfileScreen() {
   };
 
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffTime = Math.abs(now.getTime() - date.getTime());
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
-    if (diffDays === 1) return '1 gün önce';
-    if (diffDays < 7) return `${diffDays} gün önce`;
-    if (diffDays < 30) return `${Math.floor(diffDays / 7)} hafta önce`;
-    return `${Math.floor(diffDays / 30)} ay önce`;
+    try {
+      const date = new Date(dateString);
+      const now = new Date();
+      const diffTime = Math.abs(now.getTime() - date.getTime());
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+      if (isNaN(date.getTime())) return 'Yakın zamanda';
+      if (diffDays === 1) return '1 gün önce';
+      if (diffDays < 7) return `${diffDays} gün önce`;
+      if (diffDays < 30) return `${Math.floor(diffDays / 7)} hafta önce`;
+      return `${Math.floor(diffDays / 30)} ay önce`;
+    } catch {
+      return 'Yakın zamanda';
+    }
   };
 
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
-      
+
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={handleBack} style={styles.backButton}>
           <FontAwesome5 name="arrow-left" size={20} color="white" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Profilim</Text>
+        <Text style={styles.headerTitle}>{t('profile.myProfile')}</Text>
         <TouchableOpacity onPress={handleSettings} style={styles.settingsButton}>
           <FontAwesome5 name="cog" size={20} color="white" />
         </TouchableOpacity>
@@ -215,16 +161,16 @@ export default function ProfileScreen() {
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* Cover Photo */}
         <View style={styles.coverContainer}>
-          <Image 
-            source={{ uri: currentUser.coverPhoto }} 
+          <Image
+            source={{ uri: currentUser.coverPhoto }}
             style={styles.coverPhoto}
           />
           <View style={styles.coverOverlay} />
-          
+
           {/* Profile Photo Overlay */}
           <View style={styles.profilePhotoContainer}>
-            <Image 
-              source={{ uri: currentUser.profilePhoto }} 
+            <Image
+              source={{ uri: currentUser.profilePhoto }}
               style={styles.profilePhoto}
             />
           </View>
@@ -235,89 +181,52 @@ export default function ProfileScreen() {
           <Text style={styles.profileName}>{currentUser.name}</Text>
           <Text style={styles.profileUsername}>@{currentUser.username}</Text>
           <Text style={styles.profileBio}>{currentUser.bio}</Text>
-          
+
+          <TouchableOpacity style={styles.editButton} onPress={handleEditProfile}>
+            <FontAwesome5 name="edit" size={14} color="white" />
+            <Text style={styles.editButtonText}>Profili Düzenle</Text>
+          </TouchableOpacity>
         </View>
 
         {/* Stats */}
         <View style={styles.statsContainer}>
           <View style={styles.statItem}>
-            <Text style={styles.statNumber}>{currentUser.reviewCount}</Text>
-            <Text style={styles.statLabel}>Yorum</Text>
+            <Text style={styles.statNumber}>{currentUser.stats.reviewCount}</Text>
+            <Text style={styles.statLabel}>{t('profile.reviews')}</Text>
           </View>
           <View style={styles.statItem}>
-            <Text style={styles.statNumber}>{currentUser.placesVisited}</Text>
-            <Text style={styles.statLabel}>Ziyaret</Text>
+            <Text style={styles.statNumber}>{currentUser.stats.placesVisited}</Text>
+            <Text style={styles.statLabel}>{t('profile.visits')}</Text>
           </View>
           <View style={styles.statItem}>
-            <Text style={styles.statNumber}>{currentUser.followers}</Text>
-            <Text style={styles.statLabel}>Takipçi</Text>
+            <Text style={styles.statNumber}>{currentUser.stats.followers}</Text>
+            <Text style={styles.statLabel}>{t('profile.followers')}</Text>
           </View>
           <View style={styles.statItem}>
-            <Text style={styles.statNumber}>{currentUser.following}</Text>
-            <Text style={styles.statLabel}>Takip</Text>
+            <Text style={styles.statNumber}>{currentUser.stats.following}</Text>
+            <Text style={styles.statLabel}>{t('profile.following')}</Text>
           </View>
-        </View>
-
-        {/* Stories Section */}
-        <View style={styles.storiesSection}>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            {currentUser.stories.map((story) => (
-              <TouchableOpacity 
-                key={story.id} 
-                style={styles.storyItem}
-                onPress={() => {
-                  console.log('Story clicked:', story);
-                  // Şehir bilgilerini place-detail sayfasına gönder
-                  const cityData = {
-                    id: story.id,
-                    name: story.title,
-                    category: 'Şehir',
-                    rating: 4.8,
-                    reviewCount: story.visitedPlaces.length,
-                    description: story.description,
-                    imageUri: story.image,
-                    address: `${story.title}, Türkiye`,
-                    priceLevel: 2,
-                    visitedPlaces: story.visitedPlaces
-                  };
-                  
-                  router.push({
-                    pathname: '/(app)/place-detail',
-                    params: { 
-                      placeData: JSON.stringify(cityData)
-                    }
-                  });
-                }}
-                activeOpacity={0.7}
-              >
-                <View style={styles.storyCircle}>
-                  <Image source={{ uri: story.image }} style={styles.storyImage} />
-                </View>
-                <Text style={styles.storyTitle}>{story.title}</Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
         </View>
 
         {/* Tab Navigation */}
         <View style={styles.tabContainer}>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={[styles.tabButton, activeTab === 'favorites' && styles.activeTabButton]}
             onPress={() => setActiveTab('favorites')}
           >
             <FontAwesome5 name="heart" size={20} color={activeTab === 'favorites' ? '#E91E63' : '#666'} />
             <Text style={[styles.tabText, activeTab === 'favorites' && styles.activeTabText]}>
-              Favori Deneyimler
+              {t('profile.favoriteExperiences')}
             </Text>
           </TouchableOpacity>
-          
-          <TouchableOpacity 
+
+          <TouchableOpacity
             style={[styles.tabButton, activeTab === 'reviews' && styles.activeTabButton]}
             onPress={() => setActiveTab('reviews')}
           >
             <FontAwesome5 name="comment" size={20} color={activeTab === 'reviews' ? '#E91E63' : '#666'} />
             <Text style={[styles.tabText, activeTab === 'reviews' && styles.activeTabText]}>
-              Son Yorumlar
+              {t('profile.recentReviews')}
             </Text>
           </TouchableOpacity>
         </View>
@@ -342,7 +251,7 @@ export default function ProfileScreen() {
           </View>
         ) : (
           <View style={styles.reviewsList}>
-            {currentUser.recentReviews.map((review) => (
+            {currentUser.recentReviews.map((review: any) => (
               <View key={review.id} style={styles.reviewItem}>
                 <Image source={{ uri: review.image }} style={styles.reviewImage} />
                 <View style={styles.reviewContent}>
@@ -359,6 +268,11 @@ export default function ProfileScreen() {
                 </View>
               </View>
             ))}
+            {currentUser.recentReviews.length === 0 && (
+              <View style={styles.emptyState}>
+                <Text style={styles.emptyText}>Henüz yorum yok.</Text>
+              </View>
+            )}
           </View>
         )}
       </ScrollView>
@@ -369,7 +283,37 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#1a1a1a',
+  },
+  centerContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  loadingText: {
+    marginTop: 12,
+    color: '#999',
+    fontSize: 16,
+  },
+  errorText: {
+    color: '#E91E63',
+    fontSize: 16,
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  primaryButton: {
+    backgroundColor: '#E91E63',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 8,
+    marginTop: 20,
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+    textAlign: 'center',
   },
   header: {
     flexDirection: 'row',
@@ -456,7 +400,7 @@ const styles = StyleSheet.create({
   editButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#E91E63',
+    backgroundColor: '#007AFF', // Using standard iOS blue for now
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 20,
@@ -482,38 +426,12 @@ const styles = StyleSheet.create({
   statNumber: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#E91E63',
+    color: '#007AFF',
   },
   statLabel: {
     fontSize: 12,
     color: '#666',
     marginTop: 5,
-  },
-  storiesSection: {
-    paddingHorizontal: 20,
-    marginBottom: 25,
-  },
-  storyItem: {
-    alignItems: 'center',
-    marginRight: 20,
-  },
-  storyCircle: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    borderWidth: 3,
-    borderColor: '#E91E63',
-    marginBottom: 8,
-    overflow: 'hidden',
-  },
-  storyImage: {
-    width: '100%',
-    height: '100%',
-  },
-  storyTitle: {
-    fontSize: 12,
-    color: '#333',
-    fontWeight: '500',
   },
   tabContainer: {
     flexDirection: 'row',
@@ -532,7 +450,7 @@ const styles = StyleSheet.create({
   },
   activeTabButton: {
     borderBottomWidth: 2,
-    borderBottomColor: '#E91E63',
+    borderBottomColor: '#007AFF',
   },
   tabText: {
     fontSize: 14,
@@ -540,7 +458,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   activeTabText: {
-    color: '#E91E63',
+    color: '#007AFF',
     fontWeight: '600',
   },
   favoritesGrid: {
@@ -650,4 +568,12 @@ const styles = StyleSheet.create({
     color: '#999',
     fontStyle: 'italic',
   },
+  emptyState: {
+    padding: 40,
+    alignItems: 'center',
+  },
+  emptyText: {
+    color: '#999',
+    fontSize: 16,
+  }
 });

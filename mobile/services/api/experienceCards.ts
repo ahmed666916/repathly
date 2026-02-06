@@ -1,4 +1,4 @@
-import { getToken } from '../../app/utils/secureStorage';
+import { getToken } from '../../utils/secureStorage';
 
 const API_BASE_URL = 'http://192.168.100.23:8000/api';
 
@@ -59,6 +59,7 @@ async function apiCall<T>(
     try {
         const headers: HeadersInit = {
             'Content-Type': 'application/json',
+            'Accept': 'application/json',
         };
 
         if (token) {

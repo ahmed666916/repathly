@@ -16,9 +16,10 @@ import {
 } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useAuth } from '../hooks/useAuth';
-import { getToken } from '../utils/secureStorage';
+import { useAuth } from '../../hooks/useAuth';
+import { getToken } from '../../utils/secureStorage';
 import { checkOnboardingStatus } from '../../services/api/experienceCards';
+import { t } from '../../services/api/i18n';
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -33,13 +34,13 @@ export default function LoginScreen() {
     const newErrors: { [key: string]: string } = {};
 
     if (!email.trim()) {
-      newErrors.email = 'Email adresi gereklidir.';
+      newErrors.email = t('auth.emailRequired');
     } else if (!/\S+@\S+\.\S+/.test(email)) {
-      newErrors.email = 'Geçerli bir email adresi girin.';
+      newErrors.email = t('auth.invalidEmail');
     }
 
     if (!password) {
-      newErrors.password = 'Şifre gereklidir.';
+      newErrors.password = t('auth.passwordRequired');
     }
 
     setErrors(newErrors);
@@ -52,23 +53,10 @@ export default function LoginScreen() {
     const result = await login(email.trim(), password);
 
     if (result.success) {
-      try {
-        const token = await getToken();
-        if (token) {
-          const statusResult = await checkOnboardingStatus(token);
-          if (statusResult.success && statusResult.data && !statusResult.data.hasCompletedOnboarding) {
-            console.log('Redirecting to onboarding...');
-            router.replace('/(onboarding)/experience-cards');
-            return;
-          }
-        }
-      } catch (error) {
-        console.error('Onboarding check failed:', error);
-      }
-
-      router.replace('/(app)');
+      // Route to onboarding resolver which will determine the correct next step
+      router.replace('/(auth)/onboarding-resolver');
     } else {
-      Alert.alert('Giriş Başarısız', result.message);
+      Alert.alert(t('common.error'), result.message);
     }
   };
 
@@ -130,9 +118,9 @@ export default function LoginScreen() {
               <Text style={styles.brandName}>Repathly</Text>
             </View>
 
-            <Text style={styles.title}>Hoş Geldiniz</Text>
+            <Text style={styles.title}>{t('onboarding.welcome')}</Text>
             <Text style={styles.subtitle}>
-              Devam etmek için giriş yapın veya yeni hesap oluşturun
+              {t('auth.loginSubtitle')}
             </Text>
 
             {/* Login Form */}
@@ -142,7 +130,7 @@ export default function LoginScreen() {
                 <FontAwesome name="envelope" size={16} color="#8A9A94" style={styles.inputIcon} />
                 <TextInput
                   style={styles.input}
-                  placeholder="Email Adresi"
+                  placeholder={t('auth.email')}
                   placeholderTextColor="#8A9A94"
                   value={email}
                   onChangeText={(text) => {
@@ -161,7 +149,7 @@ export default function LoginScreen() {
                 <FontAwesome name="lock" size={20} color="#8A9A94" style={styles.inputIcon} />
                 <TextInput
                   style={styles.input}
-                  placeholder="Şifre"
+                  placeholder={t('auth.password')}
                   placeholderTextColor="#8A9A94"
                   value={password}
                   onChangeText={(text) => {
@@ -185,7 +173,7 @@ export default function LoginScreen() {
                 style={styles.forgotPassword}
                 onPress={() => router.push('/(auth)/forgot-password')}
               >
-                <Text style={styles.forgotPasswordText}>Şifremi Unuttum</Text>
+                <Text style={styles.forgotPasswordText}>{t('auth.forgotPassword')}</Text>
               </TouchableOpacity>
 
               {/* Login Button */}
@@ -205,7 +193,7 @@ export default function LoginScreen() {
             {/* Divider */}
             <View style={styles.divider}>
               <View style={styles.dividerLine} />
-              <Text style={styles.dividerText}>veya</Text>
+              <Text style={styles.dividerText}>{t('auth.or')}</Text>
               <View style={styles.dividerLine} />
             </View>
 
@@ -235,9 +223,9 @@ export default function LoginScreen() {
 
             {/* Register Link */}
             <View style={styles.registerLinkContainer}>
-              <Text style={styles.registerLinkText}>Hesabınız yok mu? </Text>
+              <Text style={styles.registerLinkText}>{t('auth.noAccount')} </Text>
               <TouchableOpacity onPress={() => router.push('/(auth)/register')}>
-                <Text style={styles.registerLink}>Kayıt Ol</Text>
+                <Text style={styles.registerLink}>{t('auth.register')}</Text>
               </TouchableOpacity>
             </View>
 

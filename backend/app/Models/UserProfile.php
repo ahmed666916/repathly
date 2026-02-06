@@ -19,6 +19,7 @@ class UserProfile extends Model
         'budget_sensitivity',
         'preferred_group_type',
         'stop_intensity',
+        'has_completed_taste_dna',
     ];
 
     protected $casts = [
@@ -27,6 +28,7 @@ class UserProfile extends Model
         'budget_sensitivity' => BudgetSensitivity::class,
         'preferred_group_type' => GroupType::class,
         'stop_intensity' => StopIntensity::class,
+        'has_completed_taste_dna' => 'boolean',
     ];
 
     protected $appends = [

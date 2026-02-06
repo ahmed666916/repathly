@@ -4,14 +4,17 @@ import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, useState } from 'react';
-import 'react-native-reanimated';
+// import 'react-native-reanimated'; // Temporarily disabled - needs native rebuild
 import * as Location from 'expo-location';
 import Constants from 'expo-constants';
 import { Alert } from 'react-native';
 
 import { useColorScheme } from '@/components/useColorScheme';
-import { AuthProvider } from './contexts/AuthContext';
-import { ProfileProvider } from './contexts/ProfileContext';
+import { AuthProvider, useAuthContext } from '../contexts/AuthContext';
+import { ProfileProvider } from '../contexts/ProfileContext';
+import { initI18n } from '../services/api/i18n';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useRouter } from 'expo-router';
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -110,6 +113,37 @@ export default function RootLayout() {
 
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
+  const { languageSelected, setLanguageSelected, isLoading } = useAuthContext();
+  const [isI18nReady, setIsI18nReady] = useState(false);
+  const router = useRouter();
+
+  useEffect(() => {
+    async function prepare() {
+      try {
+        await initI18n();
+        const savedLanguage = await AsyncStorage.getItem('@user_language');
+        if (savedLanguage) {
+          setLanguageSelected(true);
+        }
+        setIsI18nReady(true);
+      } catch (e) {
+        console.warn(e);
+      }
+    }
+    prepare();
+  }, []);
+
+  useEffect(() => {
+    if (isI18nReady && !isLoading) {
+      if (!languageSelected) {
+        router.replace('/(auth)/language-selection');
+      }
+    }
+  }, [isI18nReady, isLoading, languageSelected]);
+
+  if (!isI18nReady || isLoading) {
+    return null;
+  }
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>

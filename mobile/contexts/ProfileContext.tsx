@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
-import * as profileApi from '../../services/api/profile';
+import * as profileApi from '../services/api/profile';
 import * as secureStorage from '../utils/secureStorage';
 import {
     TasteDNAProfile,
@@ -9,7 +9,7 @@ import {
     BudgetSensitivity,
     GroupType,
     StopIntensity,
-} from '../../services/api/profile';
+} from '../services/api/profile';
 
 interface ProfileContextType {
     profile: TasteDNAProfile | null;

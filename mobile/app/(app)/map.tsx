@@ -5,6 +5,7 @@ import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import MapViewDirections from 'react-native-maps-directions';
 import { FontAwesome } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
+import { t } from '../../services/api/i18n';
 
 const GOOGLE_MAPS_API_KEY = GOOGLE_MAPS_KEY;
 
@@ -26,7 +27,7 @@ export default function MainMapScreen() {
 
   // Global'den alınmış gerçek kullanıcı konumunu kullan
   const globalUserLocation = (global as any).userLocation;
-  const startLocationName = globalUserLocation ? "Mevcut Konumunuz" : "İstanbul";
+  const startLocationName = globalUserLocation ? t('routing.currentLocation') : "İstanbul";
 
   const startLocation = globalUserLocation
     ? { latitude: globalUserLocation.latitude, longitude: globalUserLocation.longitude }
@@ -153,14 +154,14 @@ export default function MainMapScreen() {
             }}>
               <FontAwesome name="arrow-left" size={20} color="#fff" />
             </TouchableOpacity>
-            <Text style={styles.headerTitle}>Rota Haritası</Text>
+            <Text style={styles.headerTitle}>{t('routing.routeMap')}</Text>
             <View style={styles.placeholder} />
           </View>
 
           <View style={styles.contentContainer}>
             {destination && (
               <View style={styles.miniMapContainer}>
-                <Text style={styles.miniMapTitle}>Rota Önizleme</Text>
+                <Text style={styles.miniMapTitle}>{t('routing.routePreview')}</Text>
                 <View style={styles.miniMapPreview}>
                   <MapView
                     ref={mapRef}
@@ -177,7 +178,7 @@ export default function MainMapScreen() {
                     {/* Başlangıç marker */}
                     <Marker
                       coordinate={startLocation}
-                      title="Başlangıç"
+                      title={t('routing.start')}
                       pinColor="#4285F4"
                     />
 
@@ -194,7 +195,7 @@ export default function MainMapScreen() {
                         onReady={onDirectionsReady}
                         onError={(errorMessage) => {
                           console.error('Directions error:', errorMessage);
-                          Alert.alert('Rota Hatası', 'Rota hesaplanamadı. Lütfen hedef ve ara durakları kontrol edin.');
+                          Alert.alert(t('common.error'), t('routing.routeError'));
                         }}
                         language="tr"
                         region="tr"
@@ -205,19 +206,19 @@ export default function MainMapScreen() {
                   {!isMapReady && (
                     <View style={styles.mapLoadingOverlay}>
                       <ActivityIndicator size="large" color="#E91E63" />
-                      <Text style={styles.loadingText}>Harita yükleniyor...</Text>
+                      <Text style={styles.loadingText}>{t('routing.mapLoading')}</Text>
                     </View>
                   )}
                 </View>
                 <View style={styles.routeInfoCompact}>
                   <View style={styles.routeInfoSection}>
-                    <Text style={styles.routeInfoLabel}>Rota Sırası:</Text>
+                    <Text style={styles.routeInfoLabel}>{t('routing.routeOrder')}:</Text>
                     <View style={styles.routeSequence}>
                       <View style={styles.routeStep}>
                         <View style={styles.stepNumber}>
                           <Text style={styles.stepNumberText}>1</Text>
                         </View>
-                        <Text style={styles.stepText}>{startLocationName} (Başlangıç)</Text>
+                        <Text style={styles.stepText}>{startLocationName} ({t('routing.start')})</Text>
                       </View>
 
                       {waypoints.slice(0, 3).map((waypoint, index) => (
@@ -233,11 +234,11 @@ export default function MainMapScreen() {
                         <View style={[styles.stepNumber, styles.finalStep]}>
                           <Text style={styles.stepNumberText}>{waypoints.length + 2}</Text>
                         </View>
-                        <Text style={styles.stepText} numberOfLines={1}>{destination} (Hedef)</Text>
+                        <Text style={styles.stepText} numberOfLines={1}>{destination} ({t('routing.destination')})</Text>
                       </View>
 
                       {waypoints.length > 3 && (
-                        <Text style={styles.moreWaypointsText}>+{waypoints.length - 3} durak daha...</Text>
+                        <Text style={styles.moreWaypointsText}>+{waypoints.length - 3} {t('routing.moreWaypoints')}...</Text>
                       )}
                     </View>
                   </View>
@@ -249,7 +250,7 @@ export default function MainMapScreen() {
           <View style={styles.bottomButtonContainer}>
             <TouchableOpacity style={styles.completeRouteButton} onPress={handleCompleteRoute}>
               <FontAwesome name="star" size={20} color="#fff" style={styles.buttonIcon} />
-              <Text style={styles.completeRouteButtonText}>Rotamız üzerindeki ilginizi çekebilecek altın tavsiyelerimizi görmek ister misiniz?</Text>
+              <Text style={styles.completeRouteButtonText}>{t('routing.completeRoutePrompt')}</Text>
               <FontAwesome name="chevron-right" size={18} color="#fff" />
             </TouchableOpacity>
           </View>

@@ -25,9 +25,11 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'bio',
         'profile_photo',
         'auth_provider',
         'is_email_verified',
+        'has_completed_profile',
     ];
 
     /**
@@ -49,6 +51,10 @@ class User extends Authenticatable
         'isEmailVerified',
         'authProvider',
         'profilePhoto',
+        'hasCompletedProfile',
+        'hasCompletedTasteDna',
+        'hasSelectedExperiences',
+        'isOnboardingCompleted',
     ];
 
     /**
@@ -62,6 +68,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'is_email_verified' => 'boolean',
+            'has_completed_profile' => 'boolean',
             'created_at' => 'datetime',
         ];
     }
@@ -100,11 +107,44 @@ class User extends Authenticatable
     }
 
     /**
+     * Accessor for hasCompletedProfile (frontend compatibility)
+     */
+    public function getHasCompletedProfileAttribute(): bool
+    {
+        return (bool) ($this->attributes['has_completed_profile'] ?? false);
+    }
+
+    /**
+     * Accessor for hasCompletedTasteDna (frontend compatibility)
+     * User has completed taste DNA if they have explicitly completed the taste DNA step
+     */
+    public function getHasCompletedTasteDnaAttribute(): bool
+    {
+        return (bool) ($this->profile?->has_completed_taste_dna ?? false);
+    }
+
+    /**
+     * Accessor for hasSelectedExperiences (frontend compatibility)
+     */
+    public function getHasSelectedExperiencesAttribute(): bool
+    {
+        return $this->experienceCardWeights()->count() >= 4;
+    }
+
+    /**
+     * Accessor for isOnboardingCompleted (frontend compatibility)
+     */
+    public function getIsOnboardingCompletedAttribute(): bool
+    {
+        return $this->hasCompletedOnboarding();
+    }
+
+    /**
      * Check if user has completed onboarding (selected minimum experience cards)
      */
     public function hasCompletedOnboarding(): bool
     {
-        return $this->experienceCardWeights()->count() >= 4;
+        return $this->has_selected_experiences && $this->has_completed_profile;
     }
 
     /**
