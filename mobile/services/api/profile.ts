@@ -16,6 +16,7 @@ export interface TasteDNAProfile {
     budgetSensitivity: BudgetSensitivity;
     preferredGroupType: GroupType;
     stopIntensity: StopIntensity;
+    bio?: string; // Optional user biography
 }
 
 export interface ExperienceWeight {
