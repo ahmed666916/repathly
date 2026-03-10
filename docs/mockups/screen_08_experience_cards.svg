@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 375 812" width="375" height="812">
+  <!-- Phone Frame with Background -->
+  <rect x="0" y="0" width="375" height="812" fill="#1a1a1a"/>
+  <rect x="0" y="0" width="375" height="812" fill="rgba(0,0,0,0.6)"/>
+  
+  <!-- Status Bar -->
+  <text x="187" y="30" text-anchor="middle" font-family="Arial" font-size="14" fill="#fff">9:41</text>
+  
+  <!-- Header -->
+  <text x="24" y="75" font-family="Arial" font-size="12" fill="#8A9A94">Step 2 of 2</text>
+  <text x="330" y="75" font-family="Arial" font-size="14" fill="#8A9A94">Skip</text>
+  
+  <!-- Title -->
+  <text x="24" y="115" font-family="Arial" font-size="24" font-weight="bold" fill="#fff">Choose Your Experiences</text>
+  <text x="24" y="140" font-family="Arial" font-size="13" fill="#8A9A94">Select at least 4 interests to personalize your routes</text>
+  
+  <!-- Counter -->
+  <rect x="24" y="155" width="100" height="28" rx="14" fill="rgba(255,255,255,0.1)"/>
+  <text x="74" y="174" text-anchor="middle" font-family="Arial" font-size="12" fill="#8A9A94">✓ 2 / 4 minimum</text>
+  
+  <!-- Category: Food & Dining -->
+  <rect x="24" y="200" width="4" height="18" rx="2" fill="#FF6B6B"/>
+  <text x="36" y="215" font-family="Arial" font-size="16" font-weight="600" fill="#fff">Food &amp; Dining</text>
+  
+  <!-- Cards Row 1 -->
+  <rect x="24" y="230" width="160" height="100" rx="12" fill="rgba(255,255,255,0.95)" stroke="#FF6B6B" stroke-width="2"/>
+  <circle cx="52" cy="268" r="20" fill="rgba(255,107,107,0.2)"/>
+  <text x="52" y="273" text-anchor="middle" font-family="Arial" font-size="14">☕</text>
+  <text x="36" y="305" font-family="Arial" font-size="12" font-weight="600" fill="#333">Coffee Spots</text>
+  <text x="36" y="320" font-family="Arial" font-size="10" fill="#666">Local cafes &amp; roasters</text>
+  <circle cx="168" cy="246" r="10" fill="#FF6B6B"/>
+  <text x="168" y="250" text-anchor="middle" font-family="Arial" font-size="10" fill="#fff">✓</text>
+  
+  <rect x="191" y="230" width="160" height="100" rx="12" fill="rgba(255,255,255,0.95)"/>
+  <circle cx="219" cy="268" r="20" fill="rgba(255,107,107,0.2)"/>
+  <text x="219" y="273" text-anchor="middle" font-family="Arial" font-size="14">🍴</text>
+  <text x="203" y="305" font-family="Arial" font-size="12" font-weight="600" fill="#333">Fine Dining</text>
+  <text x="203" y="320" font-family="Arial" font-size="10" fill="#666">Premium restaurants</text>
+  
+  <!-- Cards Row 2 -->
+  <rect x="24" y="340" width="160" height="100" rx="12" fill="rgba(255,255,255,0.95)" stroke="#FF6B6B" stroke-width="2"/>
+  <circle cx="52" cy="378" r="20" fill="rgba(255,107,107,0.2)"/>
+  <text x="52" y="383" text-anchor="middle" font-family="Arial" font-size="14">🍔</text>
+  <text x="36" y="415" font-family="Arial" font-size="12" font-weight="600" fill="#333">Street Food</text>
+  <text x="36" y="430" font-family="Arial" font-size="10" fill="#666">Local street eats</text>
+  <circle cx="168" cy="356" r="10" fill="#FF6B6B"/>
+  <text x="168" y="360" text-anchor="middle" font-family="Arial" font-size="10" fill="#fff">✓</text>
+  
+  <rect x="191" y="340" width="160" height="100" rx="12" fill="rgba(255,255,255,0.95)"/>
+  <circle cx="219" cy="378" r="20" fill="rgba(255,107,107,0.2)"/>
+  <text x="219" y="383" text-anchor="middle" font-family="Arial" font-size="14">🍷</text>
+  <text x="203" y="415" font-family="Arial" font-size="12" font-weight="600" fill="#333">Wine &amp; Dine</text>
+  <text x="203" y="430" font-family="Arial" font-size="10" fill="#666">Wineries &amp; tastings</text>
+  
+  <!-- Category: Activities -->
+  <rect x="24" y="460" width="4" height="18" rx="2" fill="#4ECDC4"/>
+  <text x="36" y="475" font-family="Arial" font-size="16" font-weight="600" fill="#fff">Activities</text>
+  
+  <!-- Cards Row 3 -->
+  <rect x="24" y="490" width="160" height="100" rx="12" fill="rgba(255,255,255,0.95)"/>
+  <circle cx="52" cy="528" r="20" fill="rgba(78,205,196,0.2)"/>
+  <text x="52" y="533" text-anchor="middle" font-family="Arial" font-size="14">🏛️</text>
+  <text x="36" y="565" font-family="Arial" font-size="12" font-weight="600" fill="#333">Historical</text>
+  <text x="36" y="580" font-family="Arial" font-size="10" fill="#666">Museums &amp; landmarks</text>
+  
+  <rect x="191" y="490" width="160" height="100" rx="12" fill="rgba(255,255,255,0.95)"/>
+  <circle cx="219" cy="528" r="20" fill="rgba(78,205,196,0.2)"/>
+  <text x="219" y="533" text-anchor="middle" font-family="Arial" font-size="14">🌲</text>
+  <text x="203" y="565" font-family="Arial" font-size="12" font-weight="600" fill="#333">Nature</text>
+  <text x="203" y="580" font-family="Arial" font-size="10" fill="#666">Parks &amp; scenery</text>
+  
+  <!-- Continue Button -->
+  <rect x="20" y="720" width="335" height="52" rx="26" fill="#555"/>
+  <text x="170" y="752" text-anchor="middle" font-family="Arial" font-size="16" font-weight="bold" fill="#999">Continue (2)</text>
+  <text x="280" y="752" font-family="Arial" font-size="16" fill="#999">→</text>
+  
+  <!-- Screen Label -->
+  <rect x="10" y="770" width="355" height="30" fill="rgba(255,255,255,0.1)" rx="4"/>
+  <text x="187" y="790" text-anchor="middle" font-family="Arial" font-size="12" fill="#999">Screen 8: Experience Cards [CURRENT]</text>
+</svg>

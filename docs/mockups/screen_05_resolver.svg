@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 375 812" width="375" height="812">
+  <!-- Phone Frame -->
+  <rect x="0" y="0" width="375" height="812" fill="#1a1a1a"/>
+  
+  <!-- Status Bar -->
+  <text x="187" y="30" text-anchor="middle" font-family="Arial" font-size="14" fill="#fff">9:41</text>
+  
+  <!-- Center Content -->
+  <circle cx="187" cy="380" r="30" fill="none" stroke="#E91E63" stroke-width="3" stroke-dasharray="50 30"/>
+  
+  <text x="187" y="450" text-anchor="middle" font-family="Arial" font-size="14" fill="#666">Checking onboarding state...</text>
+  
+  <!-- Routing Options (for documentation) -->
+  <rect x="40" y="520" width="295" height="200" rx="8" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.1)"/>
+  <text x="187" y="545" text-anchor="middle" font-family="Arial" font-size="12" font-weight="bold" fill="#8A9A94">ROUTING LOGIC</text>
+  
+  <text x="60" y="580" font-family="Arial" font-size="11" fill="#666">→ !hasCompletedProfile</text>
+  <text x="200" y="580" font-family="Arial" font-size="11" fill="#4CAF50">→ basic-info</text>
+  
+  <text x="60" y="610" font-family="Arial" font-size="11" fill="#666">→ !hasCompletedTasteDna</text>
+  <text x="215" y="610" font-family="Arial" font-size="11" fill="#4CAF50">→ taste-dna</text>
+  
+  <text x="60" y="640" font-family="Arial" font-size="11" fill="#666">→ !hasSelectedExperiences</text>
+  <text x="225" y="640" font-family="Arial" font-size="11" fill="#4CAF50">→ experience-cards</text>
+  
+  <text x="60" y="670" font-family="Arial" font-size="11" fill="#666">→ All Complete</text>
+  <text x="165" y="670" font-family="Arial" font-size="11" fill="#4CAF50">→ (app) Home</text>
+  
+  <!-- Screen Label -->
+  <rect x="10" y="770" width="355" height="30" fill="rgba(255,255,255,0.1)" rx="4"/>
+  <text x="187" y="790" text-anchor="middle" font-family="Arial" font-size="12" fill="#999">Screen 5: Onboarding Resolver [CURRENT - Loading]</text>
+</svg>

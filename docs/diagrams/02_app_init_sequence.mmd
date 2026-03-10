@@ -1,0 +1,15 @@
+sequenceDiagram
+    participant App as RootLayout
+    participant i18n as i18n Service
+    participant AsyncStorage as AsyncStorage
+    participant Router as Expo Router
+
+    App->>App: Load fonts, request location
+    App->>i18n: initI18n()
+    App->>AsyncStorage: Check @user_language
+    
+    alt Language NOT selected
+        App->>Router: replace('/(auth)/language-selection')
+    else Language selected
+        App->>Router: Continue to auth flow
+    end

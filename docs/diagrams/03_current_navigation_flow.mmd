@@ -1,0 +1,80 @@
+flowchart TD
+    subgraph Launch["🚀 App Launch"]
+        START([App Start])
+        SPLASH[Splash Screen]
+        FONTS[Load Fonts]
+        LOCATION[Request Location]
+        I18N[Initialize i18n]
+    end
+
+    subgraph AuthCheck["🔐 Auth & Language Check"]
+        CHECK_LANG{Language Selected?}
+        LANG_SELECT[Language Selection Screen]
+        CHECK_AUTH{User Logged In?}
+    end
+
+    subgraph AuthFlow["🔑 Authentication Flow"]
+        LOGIN[Login Screen]
+        REGISTER[Register Screen]
+        FORGOT[Forgot Password]
+        RESET[Reset Password]
+    end
+
+    subgraph OnboardingResolver["⚙️ Onboarding Resolver"]
+        RESOLVER[onboarding-resolver.tsx]
+        GET_NEXT[getNextOnboardingStep]
+    end
+
+    subgraph OnboardingFlow["📋 Onboarding Flow"]
+        BASIC[basic-info.tsx]
+        TASTE[taste-dna.tsx]
+        CARDS[experience-cards.tsx]
+    end
+
+    subgraph MainApp["🏠 Main App"]
+        HOME[Home/Index]
+        WAYPOINTS[Waypoints]
+        ROUTE_PLANNER[Route Planner]
+        RECOMMENDATIONS[Recommendations]
+        ROUTE_PREVIEW[Route Preview]
+        MAP[Map View]
+        PROFILE[Profile]
+        SETTINGS[Settings]
+    end
+
+    START --> SPLASH --> FONTS --> LOCATION --> I18N --> CHECK_LANG
+    
+    CHECK_LANG -->|No| LANG_SELECT
+    LANG_SELECT -->|Select| LOGIN
+    CHECK_LANG -->|Yes| CHECK_AUTH
+    
+    CHECK_AUTH -->|No| LOGIN
+    CHECK_AUTH -->|Yes| RESOLVER
+    
+    LOGIN -->|Success| RESOLVER
+    LOGIN -->|Register| REGISTER
+    LOGIN -->|Forgot| FORGOT
+    REGISTER -->|Success| RESOLVER
+    FORGOT --> RESET
+    RESET -->|Success| LOGIN
+    
+    RESOLVER --> GET_NEXT
+    GET_NEXT -->|!hasCompletedProfile| BASIC
+    GET_NEXT -->|!hasCompletedTasteDna| TASTE
+    GET_NEXT -->|!hasSelectedExperiences| CARDS
+    GET_NEXT -->|All Complete| HOME
+    
+    BASIC -->|Next| TASTE
+    TASTE -->|Next| CARDS
+    CARDS -->|Complete| HOME
+    
+    HOME -->|Enter Destination| WAYPOINTS
+    WAYPOINTS --> ROUTE_PLANNER
+    ROUTE_PLANNER --> RECOMMENDATIONS
+    RECOMMENDATIONS --> ROUTE_PREVIEW
+    ROUTE_PREVIEW --> MAP
+    HOME -->|Profile Button| PROFILE
+    PROFILE --> SETTINGS
+
+    style RESOLVER fill:#f9f,stroke:#333,stroke-width:2px
+    style HOME fill:#9f9,stroke:#333,stroke-width:2px

@@ -1,0 +1,74 @@
+flowchart TD
+    subgraph Launch["🚀 First Launch"]
+        START([App Start])
+        SPLASH[Splash with Logo]
+    end
+
+    subgraph FirstTime["🌍 First Time Setup"]
+        LANG[Language Selection]
+        ONBOARD_INTRO[Onboarding Introduction]
+    end
+
+    subgraph Auth["🔐 Authentication"]
+        AUTH_CHOICE[Login / Sign Up Choice]
+        LOGIN[Login]
+        REGISTER[Register]
+        SOCIAL[Social Auth]
+    end
+
+    subgraph ProfileCreation["👤 Profile Creation Flow"]
+        P1[Basic Info - Name & Photo]
+        P2[Travel Preferences - Taste DNA]
+        P3[Experience Categories - Cards]
+        P_CONFIRM[Profile Summary / Confirm]
+    end
+
+    subgraph MainApp["🏠 Core App"]
+        subgraph BottomTabs["Bottom Navigation"]
+            TAB_HOME[🏠 Home / Dashboard]
+            TAB_DISCOVER[🔍 Discover / Search]
+            TAB_ROUTES[🛣️ My Routes]
+            TAB_PROFILE[👤 Profile]
+        end
+    end
+
+    subgraph RouteFlow["🗺️ Route Creation"]
+        R1[Enter Destination]
+        R2[Select Route Mode]
+        R3[Set Constraints]
+        R4[Select Route Experience Cards]
+        R5[Review Stops & Route]
+        R6[Confirm & Save Route]
+        R7[Active Navigation]
+    end
+
+    subgraph Supporting["📱 Supporting Screens"]
+        SETTINGS[Settings]
+        NOTIFICATIONS[Notifications]
+        HELP[Help / FAQ]
+    end
+
+    START --> SPLASH --> LANG
+    LANG --> AUTH_CHOICE
+    
+    AUTH_CHOICE --> LOGIN
+    AUTH_CHOICE --> REGISTER
+    AUTH_CHOICE --> SOCIAL
+    LOGIN --> ProfileCreation
+    REGISTER --> ProfileCreation
+    SOCIAL --> ProfileCreation
+    
+    P1 --> P2 --> P3 --> P_CONFIRM --> TAB_HOME
+    
+    TAB_HOME <--> TAB_DISCOVER
+    TAB_DISCOVER <--> TAB_ROUTES
+    TAB_ROUTES <--> TAB_PROFILE
+    TAB_PROFILE <--> TAB_HOME
+    
+    TAB_HOME --> R1 --> R2 --> R3 --> R4 --> R5 --> R6 --> R7
+    
+    TAB_PROFILE --> SETTINGS
+    TAB_HOME --> NOTIFICATIONS
+
+    style ProfileCreation fill:#e1f5fe,stroke:#0288d1
+    style RouteFlow fill:#fff3e0,stroke:#f57c00

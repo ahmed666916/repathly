@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 375 812" width="375" height="812">
+  <!-- Phone Frame -->
+  <rect x="0" y="0" width="375" height="812" fill="#1a1a1a"/>
+  
+  <!-- Status Bar -->
+  <text x="187" y="30" text-anchor="middle" font-family="Arial" font-size="14" fill="#fff">9:41</text>
+  
+  <!-- Header -->
+  <circle cx="35" cy="70" r="18" fill="rgba(255,255,255,0.1)"/>
+  <text x="35" y="75" text-anchor="middle" font-family="Arial" font-size="14" fill="#fff">←</text>
+  <text x="187" y="75" text-anchor="middle" font-family="Arial" font-size="18" font-weight="600" fill="#fff">Recommended Stops</text>
+  
+  <!-- Loading State Indicator -->
+  <text x="187" y="120" text-anchor="middle" font-family="Arial" font-size="12" fill="#4CAF50">✓ Based on your Taste DNA</text>
+  
+  <!-- Recommendation Card 1 -->
+  <rect x="20" y="140" width="335" height="140" rx="12" fill="rgba(255,255,255,0.05)"/>
+  <rect x="20" y="140" width="120" height="140" rx="12" fill="#3a4a5a"/>
+  <text x="80" y="218" text-anchor="middle" font-family="Arial" font-size="24">☕</text>
+  <text x="155" y="170" font-family="Arial" font-size="16" font-weight="600" fill="#fff">Kahve Durağı</text>
+  <text x="155" y="190" font-family="Arial" font-size="12" fill="#8A9A94">Specialty Coffee • Ankara</text>
+  <text x="155" y="215" font-family="Arial" font-size="12" fill="#FFD700">★★★★☆ (4.7)</text>
+  <text x="155" y="240" font-family="Arial" font-size="11" fill="#8A9A94">📍 5 min detour • 💰 Budget</text>
+  <rect x="155" y="250" width="60" height="24" rx="12" fill="rgba(233,30,99,0.2)"/>
+  <text x="185" y="266" text-anchor="middle" font-family="Arial" font-size="10" fill="#E91E63">+ Add</text>
+  <rect x="220" y="250" width="60" height="24" rx="12" fill="rgba(255,255,255,0.1)"/>
+  <text x="250" y="266" text-anchor="middle" font-family="Arial" font-size="10" fill="#8A9A94">Details</text>
+  
+  <!-- Recommendation Card 2 -->
+  <rect x="20" y="295" width="335" height="140" rx="12" fill="rgba(255,255,255,0.05)"/>
+  <rect x="20" y="295" width="120" height="140" rx="12" fill="#4a3a5a"/>
+  <text x="80" y="373" text-anchor="middle" font-family="Arial" font-size="24">🏛️</text>
+  <text x="155" y="325" font-family="Arial" font-size="16" font-weight="600" fill="#fff">Anıtkabir</text>
+  <text x="155" y="345" font-family="Arial" font-size="12" fill="#8A9A94">Historical Monument • Ankara</text>
+  <text x="155" y="370" font-family="Arial" font-size="12" fill="#FFD700">★★★★★ (4.9)</text>
+  <text x="155" y="395" font-family="Arial" font-size="11" fill="#8A9A94">📍 On route • 🆓 Free</text>
+  <rect x="155" y="405" width="60" height="24" rx="12" fill="#E91E63"/>
+  <text x="185" y="421" text-anchor="middle" font-family="Arial" font-size="10" fill="#fff">✓ Added</text>
+  <rect x="220" y="405" width="60" height="24" rx="12" fill="rgba(255,255,255,0.1)"/>
+  <text x="250" y="421" text-anchor="middle" font-family="Arial" font-size="10" fill="#8A9A94">Details</text>
+  
+  <!-- Recommendation Card 3 -->
+  <rect x="20" y="450" width="335" height="140" rx="12" fill="rgba(255,255,255,0.05)"/>
+  <rect x="20" y="450" width="120" height="140" rx="12" fill="#3a5a4a"/>
+  <text x="80" y="528" text-anchor="middle" font-family="Arial" font-size="24">🍔</text>
+  <text x="155" y="480" font-family="Arial" font-size="16" font-weight="600" fill="#fff">Köfteci Yusuf</text>
+  <text x="155" y="500" font-family="Arial" font-size="12" fill="#8A9A94">Traditional Food • Konya</text>
+  <text x="155" y="525" font-family="Arial" font-size="12" fill="#FFD700">★★★★☆ (4.5)</text>
+  <text x="155" y="550" font-family="Arial" font-size="11" fill="#8A9A94">📍 10 min detour • 💰 Budget</text>
+  <rect x="155" y="560" width="60" height="24" rx="12" fill="rgba(233,30,99,0.2)"/>
+  <text x="185" y="576" text-anchor="middle" font-family="Arial" font-size="10" fill="#E91E63">+ Add</text>
+  <rect x="220" y="560" width="60" height="24" rx="12" fill="rgba(255,255,255,0.1)"/>
+  <text x="250" y="576" text-anchor="middle" font-family="Arial" font-size="10" fill="#8A9A94">Details</text>
+  
+  <!-- Stats Bar -->
+  <rect x="20" y="650" width="335" height="50" rx="10" fill="rgba(255,255,255,0.05)"/>
+  <text x="100" y="680" text-anchor="middle" font-family="Arial" font-size="12" fill="#8A9A94">🛣️ 1 stops</text>
+  <text x="280" y="680" text-anchor="middle" font-family="Arial" font-size="12" fill="#8A9A94">⏱️ +30 min</text>
+  
+  <!-- Continue Button -->
+  <rect x="20" y="720" width="335" height="52" rx="16" fill="#E91E63"/>
+  <text x="187" y="753" text-anchor="middle" font-family="Arial" font-size="16" font-weight="bold" fill="#fff">Preview Route</text>
+  
+  <!-- Screen Label -->
+  <rect x="10" y="770" width="355" height="30" fill="rgba(255,255,255,0.1)" rx="4"/>
+  <text x="187" y="790" text-anchor="middle" font-family="Arial" font-size="12" fill="#999">Screen 12: Recommendations [CURRENT]</text>
+</svg>

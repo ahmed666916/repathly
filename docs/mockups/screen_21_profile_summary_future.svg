@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 375 812" width="375" height="812">
+  <!-- Phone Frame -->
+  <rect x="0" y="0" width="375" height="812" fill="#ffffff"/>
+  
+  <!-- Status Bar -->
+  <rect x="0" y="0" width="375" height="44" fill="#f5f5f5"/>
+  <text x="187" y="30" text-anchor="middle" font-family="Arial" font-size="14" fill="#333">9:41</text>
+  
+  <!-- Header -->
+  <circle cx="35" cy="70" r="18" fill="#f2f2f7"/>
+  <text x="35" y="75" text-anchor="middle" font-family="Arial" font-size="14" fill="#333">←</text>
+  <text x="187" y="75" text-anchor="middle" font-family="Arial" font-size="18" font-weight="600" fill="#333">Profile Summary</text>
+  
+  <!-- Profile Card -->
+  <rect x="20" y="100" width="335" height="140" rx="16" fill="#f8f8f8"/>
+  <circle cx="80" cy="170" r="40" fill="#e0e0e0"/>
+  <text x="80" y="180" text-anchor="middle" font-family="Arial" font-size="28" fill="#666">👤</text>
+  
+  <text x="140" y="145" font-family="Arial" font-size="18" font-weight="bold" fill="#333">John Doe</text>
+  <text x="140" y="170" font-family="Arial" font-size="14" fill="#666">Coffee lover | Road trip enthusiast 🚗</text>
+  <text x="140" y="200" font-family="Arial" font-size="12" fill="#4CAF50">✓ Profile Complete</text>
+  
+  <!-- Summary Sections -->
+  <text x="30" y="270" font-family="Arial" font-size="14" font-weight="600" fill="#333">Your Travel DNA</text>
+  <rect x="20" y="285" width="335" height="100" rx="12" fill="#f8f8f8"/>
+  
+  <text x="55" y="320" font-family="Arial" font-size="12" fill="#666">✈️ Style:</text>
+  <text x="105" y="320" font-family="Arial" font-size="12" font-weight="600" fill="#333">Balanced</text>
+  
+  <text x="200" y="320" font-family="Arial" font-size="12" fill="#666">💰 Budget:</text>
+  <text x="260" y="320" font-family="Arial" font-size="12" font-weight="600" fill="#333">Moderate</text>
+  
+  <text x="55" y="350" font-family="Arial" font-size="12" fill="#666">👥 Group:</text>
+  <text x="110" y="350" font-family="Arial" font-size="12" font-weight="600" fill="#333">Solo</text>
+  
+  <text x="200" y="350" font-family="Arial" font-size="12" fill="#666">☕ Stops:</text>
+  <text x="250" y="350" font-family="Arial" font-size="12" font-weight="600" fill="#333">Moderate</text>
+  
+  <rect x="35" y="365" width="60" height="8" rx="4" fill="#E91E63"/>
+  <text x="100" y="373" font-family="Arial" font-size="10" fill="#999">Edit</text>
+  
+  <!-- Experience Cards -->
+  <text x="30" y="420" font-family="Arial" font-size="14" font-weight="600" fill="#333">Your Experience Cards (4)</text>
+  <rect x="20" y="435" width="335" height="80" rx="12" fill="#f8f8f8"/>
+  
+  <circle cx="60" cy="475" r="25" fill="rgba(233,30,99,0.15)"/>
+  <text x="60" y="480" text-anchor="middle" font-family="Arial" font-size="16">☕</text>
+  
+  <circle cx="125" cy="475" r="25" fill="rgba(233,30,99,0.15)"/>
+  <text x="125" y="480" text-anchor="middle" font-family="Arial" font-size="16">🍔</text>
+  
+  <circle cx="190" cy="475" r="25" fill="rgba(233,30,99,0.15)"/>
+  <text x="190" y="480" text-anchor="middle" font-family="Arial" font-size="16">🏛️</text>
+  
+  <circle cx="255" cy="475" r="25" fill="rgba(233,30,99,0.15)"/>
+  <text x="255" y="480" text-anchor="middle" font-family="Arial" font-size="16">🌲</text>
+  
+  <text x="315" y="480" font-family="Arial" font-size="12" fill="#007AFF">Edit</text>
+  
+  <!-- Ready Message -->
+  <rect x="20" y="540" width="335" height="100" rx="16" fill="rgba(76,175,80,0.1)" stroke="#4CAF50" stroke-width="1"/>
+  <text x="187" y="580" text-anchor="middle" font-family="Arial" font-size="16" font-weight="600" fill="#4CAF50">🎉 You're all set!</text>
+  <text x="187" y="610" text-anchor="middle" font-family="Arial" font-size="13" fill="#666">Your profile is ready. Start creating</text>
+  <text x="187" y="630" text-anchor="middle" font-family="Arial" font-size="13" fill="#666">personalized routes tailored to your preferences.</text>
+  
+  <!-- CTA Button -->
+  <rect x="20" y="720" width="335" height="52" rx="16" fill="#007AFF"/>
+  <text x="187" y="753" text-anchor="middle" font-family="Arial" font-size="16" font-weight="bold" fill="#fff">Start Exploring →</text>
+  
+  <!-- FUTURE Badge -->
+  <rect x="285" y="10" width="80" height="24" rx="4" fill="#FF9800"/>
+  <text x="325" y="27" text-anchor="middle" font-family="Arial" font-size="10" font-weight="bold" fill="#fff">FUTURE</text>
+  
+  <!-- Screen Label -->
+  <rect x="10" y="770" width="355" height="30" fill="#f0f0f0" rx="4"/>
+  <text x="187" y="790" text-anchor="middle" font-family="Arial" font-size="12" fill="#666">Screen 21: Profile Summary [FUTURE]</text>
+</svg>

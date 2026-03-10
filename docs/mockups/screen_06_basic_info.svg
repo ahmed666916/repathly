@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 375 812" width="375" height="812">
+  <!-- Phone Frame -->
+  <rect x="0" y="0" width="375" height="812" fill="#ffffff"/>
+  
+  <!-- Status Bar -->
+  <rect x="0" y="0" width="375" height="44" fill="#f5f5f5"/>
+  <text x="187" y="30" text-anchor="middle" font-family="Arial" font-size="14" fill="#333">9:41</text>
+  
+  <!-- Title Section -->
+  <text x="24" y="90" font-family="Arial" font-size="26" font-weight="bold" fill="#333">Your Profile</text>
+  <text x="24" y="115" font-family="Arial" font-size="14" fill="#666">Tell us a bit about yourself</text>
+  
+  <!-- Profile Photo -->
+  <circle cx="187" cy="200" r="55" fill="#f2f2f7" stroke="#e5e5ea" stroke-width="2" stroke-dasharray="8 4"/>
+  <text x="187" y="195" text-anchor="middle" font-family="Arial" font-size="24" fill="#999">📷</text>
+  <text x="187" y="280" text-anchor="middle" font-family="Arial" font-size="14" font-weight="600" fill="#007AFF">Add Photo</text>
+  
+  <!-- Name Input -->
+  <text x="24" y="340" font-family="Arial" font-size="14" font-weight="600" fill="#333">Name</text>
+  <rect x="24" y="350" width="327" height="50" rx="12" fill="#f2f2f7"/>
+  <text x="40" y="382" font-family="Arial" font-size="14" fill="#999">Enter your name</text>
+  
+  <!-- Bio Input -->
+  <text x="24" y="430" font-family="Arial" font-size="14" font-weight="600" fill="#333">About (Optional)</text>
+  <rect x="24" y="445" width="327" height="100" rx="12" fill="#f2f2f7"/>
+  <text x="40" y="475" font-family="Arial" font-size="14" fill="#999">Hobbies, favorite travel spots...</text>
+  
+  <!-- Continue Button -->
+  <rect x="24" y="720" width="327" height="52" rx="16" fill="#007AFF"/>
+  <text x="187" y="753" text-anchor="middle" font-family="Arial" font-size="16" font-weight="bold" fill="#fff">Continue</text>
+  
+  <!-- Screen Label -->
+  <rect x="10" y="770" width="355" height="30" fill="#f0f0f0" rx="4"/>
+  <text x="187" y="790" text-anchor="middle" font-family="Arial" font-size="12" fill="#666">Screen 6: Basic Info [CURRENT]</text>
+</svg>

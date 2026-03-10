@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 375 812" width="375" height="812">
+  <!-- Phone Frame -->
+  <rect x="0" y="0" width="375" height="812" fill="#1a1a1a"/>
+  
+  <!-- Status Bar -->
+  <text x="187" y="30" text-anchor="middle" font-family="Arial" font-size="14" fill="#fff">9:41</text>
+  
+  <!-- Header -->
+  <circle cx="35" cy="70" r="18" fill="rgba(255,255,255,0.1)"/>
+  <text x="35" y="75" text-anchor="middle" font-family="Arial" font-size="14" fill="#fff">←</text>
+  <text x="187" y="75" text-anchor="middle" font-family="Arial" font-size="18" font-weight="600" fill="#fff">Route Experience Cards</text>
+  
+  <!-- Explanation -->
+  <rect x="20" y="100" width="335" height="60" rx="12" fill="rgba(233,30,99,0.1)"/>
+  <text x="40" y="125" font-family="Arial" font-size="12" fill="#E91E63">💡 Customize this specific route</text>
+  <text x="40" y="145" font-family="Arial" font-size="11" fill="#8A9A94">These override your profile preferences for this trip only</text>
+  
+  <!-- Profile Defaults Toggle -->
+  <rect x="20" y="175" width="335" height="50" rx="10" fill="rgba(255,255,255,0.05)"/>
+  <text x="40" y="207" font-family="Arial" font-size="14" fill="#fff">Use Profile Defaults</text>
+  <rect x="280" y="190" width="50" height="26" rx="13" fill="rgba(255,255,255,0.2)"/>
+  <circle cx="295" cy="203" r="10" fill="#fff"/>
+  
+  <!-- Selected Cards Section -->
+  <text x="20" y="255" font-family="Arial" font-size="12" font-weight="600" fill="#8A9A94">SELECTED FOR THIS ROUTE (3)</text>
+  
+  <rect x="20" y="270" width="105" height="100" rx="12" fill="rgba(255,255,255,0.95)" stroke="#E91E63" stroke-width="2"/>
+  <circle cx="72" cy="310" r="20" fill="rgba(233,30,99,0.2)"/>
+  <text x="72" y="315" text-anchor="middle" font-family="Arial" font-size="14">☕</text>
+  <text x="72" y="350" text-anchor="middle" font-family="Arial" font-size="11" font-weight="600" fill="#333">Coffee</text>
+  <circle cx="110" cy="285" r="10" fill="#E91E63"/>
+  <text x="110" y="289" text-anchor="middle" font-family="Arial" font-size="10" fill="#fff">✓</text>
+  
+  <rect x="135" y="270" width="105" height="100" rx="12" fill="rgba(255,255,255,0.95)" stroke="#E91E63" stroke-width="2"/>
+  <circle cx="187" cy="310" r="20" fill="rgba(233,30,99,0.2)"/>
+  <text x="187" y="315" text-anchor="middle" font-family="Arial" font-size="14">🍔</text>
+  <text x="187" y="350" text-anchor="middle" font-family="Arial" font-size="11" font-weight="600" fill="#333">Street Food</text>
+  <circle cx="225" cy="285" r="10" fill="#E91E63"/>
+  <text x="225" y="289" text-anchor="middle" font-family="Arial" font-size="10" fill="#fff">✓</text>
+  
+  <rect x="250" y="270" width="105" height="100" rx="12" fill="rgba(255,255,255,0.95)" stroke="#E91E63" stroke-width="2"/>
+  <circle cx="302" cy="310" r="20" fill="rgba(233,30,99,0.2)"/>
+  <text x="302" y="315" text-anchor="middle" font-family="Arial" font-size="14">🏛️</text>
+  <text x="302" y="350" text-anchor="middle" font-family="Arial" font-size="11" font-weight="600" fill="#333">Historical</text>
+  <circle cx="340" cy="285" r="10" fill="#E91E63"/>
+  <text x="340" y="289" text-anchor="middle" font-family="Arial" font-size="10" fill="#fff">✓</text>
+  
+  <!-- Available Cards Section -->
+  <text x="20" y="405" font-family="Arial" font-size="12" font-weight="600" fill="#8A9A94">AVAILABLE (tap to add)</text>
+  
+  <rect x="20" y="420" width="105" height="100" rx="12" fill="rgba(255,255,255,0.1)"/>
+  <circle cx="72" cy="460" r="20" fill="rgba(255,255,255,0.1)"/>
+  <text x="72" y="465" text-anchor="middle" font-family="Arial" font-size="14">🌲</text>
+  <text x="72" y="500" text-anchor="middle" font-family="Arial" font-size="11" font-weight="600" fill="#fff">Nature</text>
+  
+  <rect x="135" y="420" width="105" height="100" rx="12" fill="rgba(255,255,255,0.1)"/>
+  <circle cx="187" cy="460" r="20" fill="rgba(255,255,255,0.1)"/>
+  <text x="187" y="465" text-anchor="middle" font-family="Arial" font-size="14">🛍️</text>
+  <text x="187" y="500" text-anchor="middle" font-family="Arial" font-size="11" font-weight="600" fill="#fff">Shopping</text>
+  
+  <rect x="250" y="420" width="105" height="100" rx="12" fill="rgba(255,255,255,0.1)"/>
+  <circle cx="302" cy="460" r="20" fill="rgba(255,255,255,0.1)"/>
+  <text x="302" y="465" text-anchor="middle" font-family="Arial" font-size="14">🎭</text>
+  <text x="302" y="500" text-anchor="middle" font-family="Arial" font-size="11" font-weight="600" fill="#fff">Culture</text>
+  
+  <rect x="20" y="530" width="105" height="100" rx="12" fill="rgba(255,255,255,0.1)"/>
+  <circle cx="72" cy="570" r="20" fill="rgba(255,255,255,0.1)"/>
+  <text x="72" y="575" text-anchor="middle" font-family="Arial" font-size="14">🍷</text>
+  <text x="72" y="610" text-anchor="middle" font-family="Arial" font-size="11" font-weight="600" fill="#fff">Wine</text>
+  
+  <rect x="135" y="530" width="105" height="100" rx="12" fill="rgba(255,255,255,0.1)"/>
+  <circle cx="187" cy="570" r="20" fill="rgba(255,255,255,0.1)"/>
+  <text x="187" y="575" text-anchor="middle" font-family="Arial" font-size="14">⛱️</text>
+  <text x="187" y="610" text-anchor="middle" font-family="Arial" font-size="11" font-weight="600" fill="#fff">Beach</text>
+  
+  <rect x="250" y="530" width="105" height="100" rx="12" fill="rgba(255,255,255,0.1)"/>
+  <circle cx="302" cy="570" r="20" fill="rgba(255,255,255,0.1)"/>
+  <text x="302" y="575" text-anchor="middle" font-family="Arial" font-size="14">🎢</text>
+  <text x="302" y="610" text-anchor="middle" font-family="Arial" font-size="11" font-weight="600" fill="#fff">Adventure</text>
+  
+  <!-- Apply Button -->
+  <rect x="20" y="720" width="335" height="52" rx="16" fill="#E91E63"/>
+  <text x="187" y="753" text-anchor="middle" font-family="Arial" font-size="16" font-weight="bold" fill="#fff">Apply to Route</text>
+  
+  <!-- FUTURE Badge -->
+  <rect x="285" y="10" width="80" height="24" rx="4" fill="#FF9800"/>
+  <text x="325" y="27" text-anchor="middle" font-family="Arial" font-size="10" font-weight="bold" fill="#fff">FUTURE</text>
+  
+  <!-- Screen Label -->
+  <rect x="10" y="770" width="355" height="30" fill="rgba(255,255,255,0.1)" rx="4"/>
+  <text x="187" y="790" text-anchor="middle" font-family="Arial" font-size="12" fill="#999">Screen 19: Route Experience Cards [FUTURE]</text>
+</svg>

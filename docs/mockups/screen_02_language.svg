@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 375 812" width="375" height="812">
+  <!-- Phone Frame -->
+  <rect x="0" y="0" width="375" height="812" fill="#ffffff" stroke="#e0e0e0" stroke-width="2"/>
+  
+  <!-- Status Bar -->
+  <rect x="0" y="0" width="375" height="44" fill="#f5f5f5"/>
+  <text x="187" y="30" text-anchor="middle" font-family="Arial" font-size="14" fill="#333">9:41</text>
+  
+  <!-- App Logo -->
+  <circle cx="187" cy="150" r="40" fill="none" stroke="#333" stroke-width="2"/>
+  <text x="187" y="162" text-anchor="middle" font-family="Arial" font-size="32" font-weight="bold" fill="#E91E63">R</text>
+  
+  <!-- App Name -->
+  <text x="187" y="220" text-anchor="middle" font-family="Arial" font-size="24" font-weight="bold" fill="#007AFF">Repathly</text>
+  
+  <!-- Title -->
+  <text x="187" y="320" text-anchor="middle" font-family="Arial" font-size="22" font-weight="600" fill="#333">Choose your language</text>
+  <text x="187" y="350" text-anchor="middle" font-family="Arial" font-size="16" fill="#666">Dilinizi seçin</text>
+  
+  <!-- Turkish Button -->
+  <rect x="30" y="420" width="315" height="70" rx="16" fill="#f2f2f7" stroke="#e5e5ea" stroke-width="1"/>
+  <text x="70" y="465" font-family="Arial" font-size="28">🇹🇷</text>
+  <text x="120" y="462" font-family="Arial" font-size="18" font-weight="500" fill="#333">Türkçe</text>
+  
+  <!-- English Button -->
+  <rect x="30" y="510" width="315" height="70" rx="16" fill="#f2f2f7" stroke="#e5e5ea" stroke-width="1"/>
+  <text x="70" y="555" font-family="Arial" font-size="28">🇬🇧</text>
+  <text x="120" y="552" font-family="Arial" font-size="18" font-weight="500" fill="#333">English</text>
+  
+  <!-- Screen Label -->
+  <rect x="10" y="770" width="355" height="30" fill="#f0f0f0" rx="4"/>
+  <text x="187" y="790" text-anchor="middle" font-family="Arial" font-size="12" fill="#666">Screen 2: Language Selection [CURRENT]</text>
+</svg>

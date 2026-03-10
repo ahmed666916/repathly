@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 375 812" width="375" height="812">
+  <!-- Phone Frame -->
+  <rect x="0" y="0" width="375" height="812" fill="#1a1a1a"/>
+  
+  <!-- Status Bar -->
+  <text x="187" y="30" text-anchor="middle" font-family="Arial" font-size="14" fill="#fff">9:41</text>
+  
+  <!-- Header -->
+  <circle cx="35" cy="70" r="18" fill="rgba(255,255,255,0.1)"/>
+  <text x="35" y="75" text-anchor="middle" font-family="Arial" font-size="14" fill="#fff">←</text>
+  <text x="187" y="75" text-anchor="middle" font-family="Arial" font-size="18" font-weight="600" fill="#fff">Route Preview</text>
+  
+  <!-- Map Area -->
+  <rect x="0" y="100" width="375" height="350" fill="#2a3a4a"/>
+  <path d="M50,250 Q100,200 150,280 T250,230 T350,300" stroke="#E91E63" stroke-width="3" fill="none" stroke-dasharray="10 5"/>
+  <circle cx="50" cy="250" r="8" fill="#4CAF50"/>
+  <text x="50" y="235" text-anchor="middle" font-family="Arial" font-size="10" fill="#fff">Start</text>
+  <circle cx="150" cy="280" r="6" fill="#FF9800"/>
+  <circle cx="250" cy="230" r="6" fill="#FF9800"/>
+  <circle cx="350" cy="300" r="8" fill="#E91E63"/>
+  <text x="310" y="285" text-anchor="middle" font-family="Arial" font-size="10" fill="#fff">Destination</text>
+  
+  <!-- Route Summary Card -->
+  <rect x="20" y="465" width="335" height="90" rx="12" fill="rgba(255,255,255,0.1)"/>
+  <text x="40" y="495" font-family="Arial" font-size="16" font-weight="600" fill="#fff">İstanbul → Ankara → Konya</text>
+  <text x="40" y="520" font-family="Arial" font-size="13" fill="#8A9A94">🛣️ 720 km • ⏱️ 8h 30m • 🛑 3 stops</text>
+  <text x="40" y="545" font-family="Arial" font-size="13" fill="#8A9A94">💰 Est. ₺450 • ⛽ 2 fuel stops</text>
+  
+  <!-- Stop List -->
+  <rect x="20" y="570" width="335" height="130" rx="12" fill="rgba(255,255,255,0.05)"/>
+  <text x="40" y="595" font-family="Arial" font-size="12" font-weight="600" fill="#8A9A94">PLANNED STOPS</text>
+  
+  <circle cx="35" cy="620" r="4" fill="#4CAF50"/>
+  <text x="50" y="625" font-family="Arial" font-size="13" fill="#fff">Start: Your Location</text>
+  
+  <rect x="33" y="630" width="2" height="20" fill="rgba(255,255,255,0.2)"/>
+  
+  <circle cx="35" cy="655" r="4" fill="#FF9800"/>
+  <text x="50" y="660" font-family="Arial" font-size="13" fill="#fff">Anıtkabir - Ankara</text>
+  <text x="280" y="660" font-family="Arial" font-size="11" fill="#8A9A94">+30 min</text>
+  
+  <rect x="33" y="665" width="2" height="20" fill="rgba(255,255,255,0.2)"/>
+  
+  <circle cx="35" cy="690" r="4" fill="#E91E63"/>
+  <text x="50" y="695" font-family="Arial" font-size="13" fill="#fff">Destination: İstanbul</text>
+  
+  <!-- Action Buttons -->
+  <rect x="20" y="720" width="160" height="52" rx="16" fill="rgba(255,255,255,0.1)"/>
+  <text x="100" y="753" text-anchor="middle" font-family="Arial" font-size="14" font-weight="600" fill="#fff">Edit Route</text>
+  
+  <rect x="195" y="720" width="160" height="52" rx="16" fill="#E91E63"/>
+  <text x="275" y="753" text-anchor="middle" font-family="Arial" font-size="14" font-weight="bold" fill="#fff">Start Route</text>
+  
+  <!-- Screen Label -->
+  <rect x="10" y="770" width="355" height="30" fill="rgba(255,255,255,0.1)" rx="4"/>
+  <text x="187" y="790" text-anchor="middle" font-family="Arial" font-size="12" fill="#999">Screen 13: Route Preview [CURRENT]</text>
+</svg>

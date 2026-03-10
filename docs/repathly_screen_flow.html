@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Repathly Screen Flow & Mockups Document</title>
+  <style>
+    @page {
+      size: A4;
+      margin: 20mm 15mm;
+    }
+    
+    * {
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      max-width: 210mm;
+      margin: 0 auto;
+      padding: 20px;
+      background: #fff;
+    }
+    
+    h1 {
+      color: #E91E63;
+      border-bottom: 3px solid #E91E63;
+      padding-bottom: 10px;
+      page-break-after: avoid;
+    }
+    
+    h2 {
+      color: #1a1a1a;
+      border-bottom: 1px solid #e0e0e0;
+      padding-bottom: 8px;
+      margin-top: 40px;
+      page-break-after: avoid;
+    }
+    
+    h3 {
+      color: #333;
+      page-break-after: avoid;
+    }
+    
+    .header-block {
+      background: linear-gradient(135deg, #1a1a1a 0%, #333 100%);
+      color: white;
+      padding: 40px;
+      margin: -20px -20px 30px -20px;
+      text-align: center;
+    }
+    
+    .header-block h1 {
+      color: white;
+      border: none;
+      margin: 0;
+      font-size: 2.5em;
+    }
+    
+    .header-block .subtitle {
+      color: #E91E63;
+      font-size: 1.2em;
+      margin-top: 10px;
+    }
+    
+    .header-block .meta {
+      color: #999;
+      font-size: 0.9em;
+      margin-top: 20px;
+    }
+    
+    .toc {
+      background: #f8f8f8;
+      padding: 20px 30px;
+      border-radius: 8px;
+      margin-bottom: 30px;
+    }
+    
+    .toc h2 {
+      margin-top: 0;
+      border: none;
+    }
+    
+    .toc ol {
+      margin: 0;
+      padding-left: 20px;
+    }
+    
+    .toc li {
+      margin: 8px 0;
+    }
+    
+    .toc a {
+      color: #E91E63;
+      text-decoration: none;
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+      font-size: 0.9em;
+    }
+    
+    th, td {
+      border: 1px solid #e0e0e0;
+      padding: 10px 12px;
+      text-align: left;
+    }
+    
+    th {
+      background: #f5f5f5;
+      font-weight: 600;
+    }
+    
+    tr:nth-child(even) {
+      background: #fafafa;
+    }
+    
+    .screen-section {
+      page-break-inside: avoid;
+      margin-bottom: 40px;
+      border: 1px solid #e0e0e0;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    
+    .screen-header {
+      background: #1a1a1a;
+      color: white;
+      padding: 15px 20px;
+    }
+    
+    .screen-header h3 {
+      margin: 0;
+      color: white;
+      font-size: 1.3em;
+    }
+    
+    .screen-header .status {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 0.75em;
+      font-weight: bold;
+      margin-left: 10px;
+    }
+    
+    .screen-header .status.current {
+      background: #4CAF50;
+    }
+    
+    .screen-header .status.future {
+      background: #FF9800;
+    }
+    
+    .screen-body {
+      padding: 20px;
+    }
+    
+    .screen-meta {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+    
+    .screen-meta div {
+      background: #f8f8f8;
+      padding: 10px 15px;
+      border-radius: 6px;
+    }
+    
+    .screen-meta strong {
+      color: #E91E63;
+    }
+    
+    .screen-elements {
+      background: #f8f8f8;
+      padding: 15px;
+      border-radius: 6px;
+      margin-bottom: 20px;
+    }
+    
+    .screen-elements h4 {
+      margin: 0 0 10px 0;
+      color: #666;
+      font-size: 0.9em;
+      text-transform: uppercase;
+    }
+    
+    .screen-elements ul {
+      margin: 0;
+      padding-left: 20px;
+    }
+    
+    .screen-elements li {
+      margin: 5px 0;
+    }
+    
+    .mockup-container {
+      text-align: center;
+      background: #f0f0f0;
+      padding: 20px;
+      border-radius: 8px;
+    }
+    
+    .mockup-container img {
+      max-width: 280px;
+      height: auto;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    
+    .flow-diagram {
+      background: #1a1a1a;
+      color: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.8em;
+      overflow-x: auto;
+      white-space: pre;
+      line-height: 1.4;
+    }
+    
+    .warning-box {
+      background: #FFF3E0;
+      border-left: 4px solid #FF9800;
+      padding: 15px;
+      margin: 15px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    
+    .warning-box strong {
+      color: #E65100;
+    }
+    
+    .critical-box {
+      background: #FFEBEE;
+      border-left: 4px solid #F44336;
+      padding: 15px;
+      margin: 15px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    
+    .critical-box strong {
+      color: #C62828;
+    }
+    
+    .page-break {
+      page-break-before: always;
+    }
+    
+    @media print {
+      body {
+        padding: 0;
+      }
+      
+      .header-block {
+        margin: 0 0 30px 0;
+      }
+      
+      .screen-section {
+        page-break-inside: avoid;
+      }
+      
+      .mockup-container img {
+        max-width: 250px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="header-block">
+  <h1>Repathly Screen Flow & Mockups</h1>
+  <div class="subtitle">Product Blueprint | Design Handoff | Development Reference</div>
+  <div class="meta">Version 1.0 • February 2025</div>
+</div>
+
+<div class="toc">
+  <h2>📑 Table of Contents</h2>
+  <ol>
+    <li><a href="#overview">Screen Flow Overview</a></li>
+    <li><a href="#current">Current Screens (1-16)</a></li>
+    <li><a href="#future">Future/Planned Screens (17-21)</a></li>
+    <li><a href="#matrix">Screen Relationship Matrix</a></li>
+    <li><a href="#status">Implementation Status</a></li>
+  </ol>
+</div>
+
+<h2 id="overview">1. Screen Flow Overview</h2>
+
+<h3>Complete User Journey</h3>
+
+<div class="flow-diagram">
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                           FIRST-TIME USER FLOW                               │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│   Screen 1          Screen 2           Screen 3/4        Screen 5           │
+│   ┌───────┐         ┌───────┐         ┌───────┐         ┌───────┐          │
+│   │Splash │────────▶│Language│────────▶│Login/ │────────▶│Resolver│         │
+│   │       │         │Select  │         │Register│        │        │          │
+│   └───────┘         └───────┘         └───────┘         └───────┘          │
+│                                                              │               │
+│                          ┌───────────────────────────────────┘               │
+│                          ▼                                                   │
+│   Screen 6          Screen 7           Screen 8          Screen 9           │
+│   ┌───────┐         ┌───────┐         ┌───────┐         ┌───────┐          │
+│   │Basic  │────────▶│Taste  │────────▶│Exp.   │────────▶│ Home  │          │
+│   │Info   │         │DNA    │         │Cards  │         │       │           │
+│   └───────┘         └───────┘         └───────┘         └───────┘          │
+│                                                                              │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                           MAIN APP / ROUTE CREATION                          │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│   Screen 9          Screen 10          Screen 11         Screen 12          │
+│   ┌───────┐         ┌───────┐         ┌───────┐         ┌───────┐          │
+│   │ Home  │────────▶│Waypts │────────▶│Route  │────────▶│Recom-  │         │
+│   │       │         │       │         │Planner│         │mend.   │          │
+│   └───────┘         └───────┘         └───────┘         └───────┘          │
+│       │                                                      │               │
+│       │                     ┌────────────────────────────────┘               │
+│       ▼                     ▼                                                │
+│   Screen 15         Screen 13         Screen 14                              │
+│   ┌───────┐         ┌───────┐         ┌───────┐                              │
+│   │Profile│         │Route  │────────▶│ Map   │                              │
+│   │       │         │Preview│         │       │                              │
+│   └───────┘         └───────┘         └───────┘                              │
+│       │                                                                      │
+│       ▼                                                                      │
+│   Screen 16                                                                  │
+│   ┌───────┐                                                                  │
+│   │Settings                                                                  │
+│   └───────┘                                                                  │
+│                                                                              │
+└─────────────────────────────────────────────────────────────────────────────┘
+</div>
+
+<h3>Flow Logic Summary</h3>
+<table>
+  <tr>
+    <th>Stage</th>
+    <th>Screens</th>
+    <th>Condition</th>
+    <th>Mandatory</th>
+  </tr>
+  <tr>
+    <td><strong>Launch</strong></td>
+    <td>1</td>
+    <td>Always shown</td>
+    <td>✅</td>
+  </tr>
+  <tr>
+    <td><strong>Language</strong></td>
+    <td>2</td>
+    <td>First launch only</td>
+    <td>✅</td>
+  </tr>
+  <tr>
+    <td><strong>Auth</strong></td>
+    <td>3, 4</td>
+    <td>User not logged in</td>
+    <td>✅</td>
+  </tr>
+  <tr>
+    <td><strong>Onboarding</strong></td>
+    <td>5, 6, 7, 8</td>
+    <td>Profile incomplete</td>
+    <td>✅</td>
+  </tr>
+  <tr>
+    <td><strong>Main App</strong></td>
+    <td>9-16</td>
+    <td>Authenticated + complete</td>
+    <td>✅</td>
+  </tr>
+  <tr>
+    <td><strong>Future</strong></td>
+    <td>17-21</td>
+    <td>Planned features</td>
+    <td>❌</td>
+  </tr>
+</table>
+
+<div class="page-break"></div>
+
+<h2 id="current">2. Current Screens (1-16)</h2>
+
+<!-- Screen 1 -->
+<div class="screen-section">
+  <div class="screen-header">
+    <h3>Screen 1: Splash Screen <span class="status current">CURRENT</span></h3>
+  </div>
+  <div class="screen-body">
+    <div class="screen-meta">
+      <div><strong>Purpose:</strong> App initialization, branding, loading state</div>
+      <div><strong>Transition:</strong> Auto → Screen 2 (first launch) or Screen 9 (returning)</div>
+    </div>
+    <div class="screen-elements">
+      <h4>Key Elements</h4>
+      <ul>
+        <li>App logo (centered)</li>
+        <li>App name "Repathly"</li>
+        <li>Loading indicator</li>
+        <li>Background gradient</li>
+      </ul>
+    </div>
+    <div class="mockup-container">
+      <img src="mockups/screen_01_splash.svg" alt="Splash Screen Mockup">
+    </div>
+  </div>
+</div>
+
+<!-- Screen 2 -->
+<div class="screen-section">
+  <div class="screen-header">
+    <h3>Screen 2: Language Selection <span class="status current">CURRENT</span></h3>
+  </div>
+  <div class="screen-body">
+    <div class="screen-meta">
+      <div><strong>Purpose:</strong> Set app language (Turkish/English)</div>
+      <div><strong>Transition:</strong> → Screen 3 (Login)</div>
+    </div>
+    <div class="screen-elements">
+      <h4>Key Elements</h4>
+      <ul>
+        <li>App branding</li>
+        <li>Language title (bilingual)</li>
+        <li>🇹🇷 Türkçe button</li>
+        <li>🇬🇧 English button</li>
+      </ul>
+    </div>
+    <div class="mockup-container">
+      <img src="mockups/screen_02_language.svg" alt="Language Selection Mockup">
+    </div>
+  </div>
+</div>
+
+<!-- Screen 3 -->
+<div class="screen-section">
+  <div class="screen-header">
+    <h3>Screen 3: Login <span class="status current">CURRENT</span></h3>
+  </div>
+  <div class="screen-body">
+    <div class="screen-meta">
+      <div><strong>Purpose:</strong> User authentication</div>
+      <div><strong>Transitions:</strong> → Screen 4 (Register) | → Screen 5 (Success)</div>
+    </div>
+    <div class="screen-elements">
+      <h4>Key Elements</h4>
+      <ul>
+        <li>Logo + branding</li>
+        <li>Email input field</li>
+        <li>Password input (with toggle)</li>
+        <li>"Forgot Password?" link</li>
+        <li>Login button</li>
+        <li>Social login (Google, Apple)</li>
+        <li>Register link</li>
+      </ul>
+    </div>
+    <div class="mockup-container">
+      <img src="mockups/screen_03_login.svg" alt="Login Screen Mockup">
+    </div>
+  </div>
+</div>
+
+<!-- Screen 4 -->
+<div class="screen-section">
+  <div class="screen-header">
+    <h3>Screen 4: Register <span class="status current">CURRENT</span></h3>
+  </div>
+  <div class="screen-body">
+    <div class="screen-meta">
+      <div><strong>Purpose:</strong> New user account creation</div>
+      <div><strong>Transitions:</strong> → Screen 5 (Success) | → Screen 3 (Login)</div>
+    </div>
+    <div class="warning-box">
+      <strong>⚠️ Issue:</strong> Social signup bypasses onboarding flow!
+    </div>
+    <div class="screen-elements">
+      <h4>Key Elements</h4>
+      <ul>
+        <li>Back button</li>
+        <li>Name, Email, Password inputs</li>
+        <li>Confirm password input</li>
+        <li>Register button</li>
+        <li>Social signup buttons</li>
+      </ul>
+    </div>
+    <div class="mockup-container">
+      <img src="mockups/screen_04_register.svg" alt="Register Screen Mockup">
+    </div>
+  </div>
+</div>
+
+<!-- Screen 5 -->
+<div class="screen-section">
+  <div class="screen-header">
+    <h3>Screen 5: Onboarding Resolver <span class="status current">CURRENT</span></h3>
+  </div>
+  <div class="screen-body">
+    <div class="screen-meta">
+      <div><strong>Purpose:</strong> Determine next onboarding step</div>
+      <div><strong>Logic:</strong> Routes based on completion flags</div>
+    </div>
+    <div class="screen-elements">
+      <h4>Routing Logic</h4>
+      <ul>
+        <li>!hasCompletedProfile → Screen 6</li>
+        <li>!hasCompletedTasteDna → Screen 7</li>
+        <li>!hasSelectedExperiences → Screen 8</li>
+        <li>All complete → Screen 9 (Home)</li>
+      </ul>
+    </div>
+    <div class="mockup-container">
+      <img src="mockups/screen_05_resolver.svg" alt="Resolver Screen Mockup">
+    </div>
+  </div>
+</div>
+
+<!-- Screen 6 -->
+<div class="screen-section">
+  <div class="screen-header">
+    <h3>Screen 6: Basic Info (Onboarding 1/3) <span class="status current">CURRENT</span></h3>
+  </div>
+  <div class="screen-body">
+    <div class="screen-meta">
+      <div><strong>Purpose:</strong> Collect user name, photo, bio</div>
+      <div><strong>Transition:</strong> → Screen 7 (Taste DNA)</div>
+    </div>
+    <div class="warning-box">
+      <strong>⚠️ Issues:</strong> Photo upload not implemented. Bio not persisted.
+    </div>
+    <div class="screen-elements">
+      <h4>Key Elements</h4>
+      <ul>
+        <li>Profile photo placeholder</li>
+        <li>Name input (required)</li>
+        <li>Bio input (optional)</li>
+        <li>Continue button</li>
+      </ul>
+    </div>
+    <div class="mockup-container">
+      <img src="mockups/screen_06_basic_info.svg" alt="Basic Info Mockup">
+    </div>
+  </div>
+</div>
+
+<!-- Screen 7 -->
+<div class="screen-section">
+  <div class="screen-header">
+    <h3>Screen 7: Taste DNA (Onboarding 2/3) <span class="status current">CURRENT</span></h3>
+  </div>
+  <div class="screen-body">
+    <div class="screen-meta">
+      <div><strong>Purpose:</strong> Collect travel preferences</div>
+      <div><strong>Transition:</strong> → Screen 8 (Experience Cards)</div>
+    </div>
+    <div class="screen-elements">
+      <h4>Key Elements</h4>
+      <ul>
+        <li>Travel Style selector (Fast ↔ Experience)</li>
+        <li>Route Flexibility (Low/Medium/High)</li>
+        <li>Budget Preference (Budget/Moderate/Premium)</li>
+        <li>Travel Group (Solo/Couple/Friends/Family)</li>
+        <li>Stop Frequency (Minimal/Moderate/Maximum)</li>
+      </ul>
+    </div>
+    <div class="mockup-container">
+      <img src="mockups/screen_07_taste_dna.svg" alt="Taste DNA Mockup">
+    </div>
+  </div>
+</div>
+
+<!-- Screen 8 -->
+<div class="screen-section">
+  <div class="screen-header">
+    <h3>Screen 8: Experience Cards (Onboarding 3/3) <span class="status current">CURRENT</span></h3>
+  </div>
+  <div class="screen-body">
+    <div class="screen-meta">
+      <div><strong>Purpose:</strong> Select profile-level experience preferences</div>
+      <div><strong>Transition:</strong> → Screen 9 (Home)</div>
+    </div>
+    <div class="screen-elements">
+      <h4>Key Elements</h4>
+      <ul>
+        <li>Step indicator + Skip button</li>
+        <li>Selection counter (min 4 required)</li>
+        <li>Category sections (Food, Activities, etc.)</li>
+        <li>Selectable experience cards</li>
+        <li>Continue button</li>
+      </ul>
+    </div>
+    <div class="mockup-container">
+      <img src="mockups/screen_08_experience_cards.svg" alt="Experience Cards Mockup">
+    </div>
+  </div>
+</div>
+
+<div class="page-break"></div>
+
+<!-- Screen 9 -->
+<div class="screen-section">
+  <div class="screen-header">
+    <h3>Screen 9: Home / Dashboard <span class="status current">CURRENT</span></h3>
+  </div>
+  <div class="screen-body">
+    <div class="screen-meta">
+      <div><strong>Purpose:</strong> Main entry point, route creation start</div>
+      <div><strong>Transitions:</strong> → Screen 10 (Waypoints) | → Screen 15 (Profile)</div>
+    </div>
+    <div class="screen-elements">
+      <h4>Key Elements</h4>
+      <ul>
+        <li>Profile button (top right)</li>
+        <li>"Where to?" title</li>
+        <li>Destination search input</li>
+        <li>Google Places autocomplete</li>
+        <li>Continue button</li>
+      </ul>
+    </div>
+    <div class="mockup-container">
+      <img src="mockups/screen_09_home.svg" alt="Home Screen Mockup">
+    </div>
+  </div>
+</div>
+
+<!-- Screen 10 -->
+<div class="screen-section">
+  <div class="screen-header">
+    <h3>Screen 10: Waypoints <span class="status current">CURRENT</span></h3>
+  </div>
+  <div class="screen-body">
+    <div class="screen-meta">
+      <div><strong>Purpose:</strong> Add optional stops between origin and destination</div>
+      <div><strong>Transition:</strong> → Screen 11 (Route Planner)</div>
+    </div>
+    <div class="screen-elements">
+      <h4>Key Elements</h4>
+      <ul>
+        <li>Destination display (locked)</li>
+        <li>Waypoint input field</li>
+        <li>Reorderable/deletable waypoint list</li>
+        <li>Map preview</li>
+        <li>Continue button</li>
+      </ul>
+    </div>
+    <div class="mockup-container">
+      <img src="mockups/screen_10_waypoints.svg" alt="Waypoints Mockup">
+    </div>
+  </div>
+</div>
+
+<!-- Screen 11 -->
+<div class="screen-section">
+  <div class="screen-header">
+    <h3>Screen 11: Route Planner <span class="status current">CURRENT</span></h3>
+  </div>
+  <div class="screen-body">
+    <div class="screen-meta">
+      <div><strong>Purpose:</strong> Configure route settings</div>
+      <div><strong>Transition:</strong> → Screen 12 (Recommendations)</div>
+    </div>
+    <div class="screen-elements">
+      <h4>Key Elements</h4>
+      <ul>
+        <li>Route summary bar</li>
+        <li>Travel Mode: ⚡ Pass-Through | 🚗 Casual | 🌟 Flexible</li>
+        <li>Time Limit dropdown</li>
+        <li>Stops per Day slider</li>
+        <li>Budget Range selector</li>
+      </ul>
+    </div>
+    <div class="mockup-container">
+      <img src="mockups/screen_11_route_planner.svg" alt="Route Planner Mockup">
+    </div>
+  </div>
+</div>
+
+<!-- Screen 12 -->
+<div class="screen-section">
+  <div class="screen-header">
+    <h3>Screen 12: Recommendations <span class="status current">CURRENT</span></h3>
+  </div>
+  <div class="screen-body">
+    <div class="screen-meta">
+      <div><strong>Purpose:</strong> Display AI-generated stop recommendations</div>
+      <div><strong>Transition:</strong> → Screen 13 (Route Preview)</div>
+    </div>
+    <div class="screen-elements">
+      <h4>Key Elements</h4>
+      <ul>
+        <li>"Based on your Taste DNA" indicator</li>
+        <li>Recommendation cards with ratings</li>
+        <li>Add/Remove toggles</li>
+        <li>Stats bar (stops, added time)</li>
+        <li>Preview Route button</li>
+      </ul>
+    </div>
+    <div class="mockup-container">
+      <img src="mockups/screen_12_recommendations.svg" alt="Recommendations Mockup">
+    </div>
+  </div>
+</div>
+
+<!-- Screen 13 -->
+<div class="screen-section">
+  <div class="screen-header">
+    <h3>Screen 13: Route Preview <span class="status current">CURRENT</span></h3>
+  </div>
+  <div class="screen-body">
+    <div class="screen-meta">
+      <div><strong>Purpose:</strong> Review finalized route before starting</div>
+      <div><strong>Transitions:</strong> → Screen 14 (Map) | ← Screen 12 (Edit)</div>
+    </div>
+    <div class="screen-elements">
+      <h4>Key Elements</h4>
+      <ul>
+        <li>Map with route visualization</li>
+        <li>Route summary (distance, duration, stops)</li>
+        <li>Planned stops timeline</li>
+        <li>Edit Route / Start Route buttons</li>
+      </ul>
+    </div>
+    <div class="mockup-container">
+      <img src="mockups/screen_13_route_preview.svg" alt="Route Preview Mockup">
+    </div>
+  </div>
+</div>
+
+<!-- Screen 14 -->
+<div class="screen-section">
+  <div class="screen-header">
+    <h3>Screen 14: Map / Navigation <span class="status current">CURRENT</span></h3>
+  </div>
+  <div class="screen-body">
+    <div class="screen-meta">
+      <div><strong>Purpose:</strong> Active navigation with map view</div>
+      <div><strong>Transitions:</strong> Modal overlays for stop details</div>
+    </div>
+    <div class="screen-elements">
+      <h4>Key Elements</h4>
+      <ul>
+        <li>Full-screen map</li>
+        <li>Route path overlay</li>
+        <li>Current location + stop markers</li>
+        <li>Next stop info card</li>
+        <li>Bottom stats bar (ETA, distance, stops)</li>
+      </ul>
+    </div>
+    <div class="mockup-container">
+      <img src="mockups/screen_14_map.svg" alt="Map Mockup">
+    </div>
+  </div>
+</div>
+
+<!-- Screen 15 -->
+<div class="screen-section">
+  <div class="screen-header">
+    <h3>Screen 15: Profile <span class="status current">CURRENT</span></h3>
+  </div>
+  <div class="screen-body">
+    <div class="screen-meta">
+      <div><strong>Purpose:</strong> Display user profile, stats, favorites</div>
+      <div><strong>Transition:</strong> → Screen 16 (Settings)</div>
+    </div>
+    <div class="warning-box">
+      <strong>⚠️ Issue:</strong> Favorites and reviews use dummy data. Edit is placeholder only.
+    </div>
+    <div class="screen-elements">
+      <h4>Key Elements</h4>
+      <ul>
+        <li>Cover photo + profile photo</li>
+        <li>User name, username, bio</li>
+        <li>Stats row (routes, km, stops)</li>
+        <li>Favorites/Reviews tabs</li>
+      </ul>
+    </div>
+    <div class="mockup-container">
+      <img src="mockups/screen_15_profile.svg" alt="Profile Mockup">
+    </div>
+  </div>
+</div>
+
+<!-- Screen 16 -->
+<div class="screen-section">
+  <div class="screen-header">
+    <h3>Screen 16: Settings <span class="status current">CURRENT</span></h3>
+  </div>
+  <div class="screen-body">
+    <div class="screen-meta">
+      <div><strong>Purpose:</strong> App and account settings</div>
+      <div><strong>Transition:</strong> Back to Screen 15</div>
+    </div>
+    <div class="screen-elements">
+      <h4>Key Elements</h4>
+      <ul>
+        <li>Account: Edit Profile, Taste DNA, Experience Cards</li>
+        <li>App: Language, Notifications, Dark Mode</li>
+        <li>Support: Help, Terms</li>
+        <li>Logout button</li>
+      </ul>
+    </div>
+    <div class="mockup-container">
+      <img src="mockups/screen_16_settings.svg" alt="Settings Mockup">
+    </div>
+  </div>
+</div>
+
+<div class="page-break"></div>
+
+<h2 id="future">3. Future/Planned Screens (17-21)</h2>
+
+<!-- Screen 17 -->
+<div class="screen-section">
+  <div class="screen-header">
+    <h3>Screen 17: Discover <span class="status future">FUTURE</span></h3>
+  </div>
+  <div class="screen-body">
+    <div class="screen-meta">
+      <div><strong>Purpose:</strong> Browse places, experiences, community routes</div>
+      <div><strong>Navigation:</strong> Bottom tab "Discover"</div>
+    </div>
+    <div class="screen-elements">
+      <h4>Key Elements</h4>
+      <ul>
+        <li>Search bar with filters</li>
+        <li>Filter pills (All, Coffee, Food, etc.)</li>
+        <li>Trending Near You section</li>
+        <li>Community Routes section</li>
+        <li>Bottom tab bar</li>
+      </ul>
+    </div>
+    <div class="mockup-container">
+      <img src="mockups/screen_17_discover_future.svg" alt="Discover Mockup">
+    </div>
+  </div>
+</div>
+
+<!-- Screen 18 -->
+<div class="screen-section">
+  <div class="screen-header">
+    <h3>Screen 18: My Routes <span class="status future">FUTURE</span></h3>
+  </div>
+  <div class="screen-body">
+    <div class="screen-meta">
+      <div><strong>Purpose:</strong> Central hub for saved, in-progress, completed routes</div>
+      <div><strong>Navigation:</strong> Bottom tab "Routes"</div>
+    </div>
+    <div class="screen-elements">
+      <h4>Key Elements</h4>
+      <ul>
+        <li>Filter tabs (All, Saved, Completed)</li>
+        <li>Route cards with status badges</li>
+        <li>Continue/View actions</li>
+        <li>Create route FAB</li>
+      </ul>
+    </div>
+    <div class="mockup-container">
+      <img src="mockups/screen_18_my_routes_future.svg" alt="My Routes Mockup">
+    </div>
+  </div>
+</div>
+
+<!-- Screen 19 -->
+<div class="screen-section">
+  <div class="screen-header">
+    <h3>Screen 19: Route Experience Cards <span class="status future">FUTURE</span></h3>
+  </div>
+  <div class="screen-body">
+    <div class="screen-meta">
+      <div><strong>Purpose:</strong> Customize experience cards for a specific route</div>
+      <div><strong>Access:</strong> During route creation (between Screen 11 and 12)</div>
+    </div>
+    <div class="screen-elements">
+      <h4>Key Elements</h4>
+      <ul>
+        <li>"Use Profile Defaults" toggle</li>
+        <li>Selected cards section</li>
+        <li>Available cards section</li>
+        <li>Apply to Route button</li>
+      </ul>
+    </div>
+    <div class="mockup-container">
+      <img src="mockups/screen_19_route_exp_cards_future.svg" alt="Route Experience Cards Mockup">
+    </div>
+  </div>
+</div>
+
+<!-- Screen 20 -->
+<div class="screen-section">
+  <div class="screen-header">
+    <h3>Screen 20: Edit Profile <span class="status future">FUTURE</span></h3>
+  </div>
+  <div class="screen-body">
+    <div class="screen-meta">
+      <div><strong>Purpose:</strong> Full profile editing functionality</div>
+      <div><strong>Access:</strong> From Screen 15 or Screen 16</div>
+    </div>
+    <div class="screen-elements">
+      <h4>Key Elements</h4>
+      <ul>
+        <li>Profile photo with camera badge</li>
+        <li>Name, Username, Bio fields</li>
+        <li>Email (verified status)</li>
+        <li>Delete Account option</li>
+      </ul>
+    </div>
+    <div class="mockup-container">
+      <img src="mockups/screen_20_edit_profile_future.svg" alt="Edit Profile Mockup">
+    </div>
+  </div>
+</div>
+
+<!-- Screen 21 -->
+<div class="screen-section">
+  <div class="screen-header">
+    <h3>Screen 21: Profile Summary <span class="status future">FUTURE</span></h3>
+  </div>
+  <div class="screen-body">
+    <div class="screen-meta">
+      <div><strong>Purpose:</strong> Confirmation screen after onboarding</div>
+      <div><strong>Position:</strong> Between Screen 8 and Screen 9</div>
+    </div>
+    <div class="screen-elements">
+      <h4>Key Elements</h4>
+      <ul>
+        <li>Profile card preview</li>
+        <li>Travel DNA summary</li>
+        <li>Experience Cards preview</li>
+        <li>Success message</li>
+        <li>"Start Exploring" CTA</li>
+      </ul>
+    </div>
+    <div class="mockup-container">
+      <img src="mockups/screen_21_profile_summary_future.svg" alt="Profile Summary Mockup">
+    </div>
+  </div>
+</div>
+
+<div class="page-break"></div>
+
+<h2 id="matrix">4. Screen Relationship Matrix</h2>
+
+<table>
+  <tr>
+    <th>From Screen</th>
+    <th>To Screen(s)</th>
+    <th>Condition</th>
+    <th>UI Element</th>
+  </tr>
+  <tr><td>1 Splash</td><td>2 or 9</td><td>First launch vs returning</td><td>Auto</td></tr>
+  <tr><td>2 Language</td><td>3</td><td>Selection made</td><td>Card tap</td></tr>
+  <tr><td>3 Login</td><td>4, 5</td><td>Register / Success</td><td>Link / Button</td></tr>
+  <tr><td>4 Register</td><td>3, 5</td><td>Login / Success</td><td>Link / Button</td></tr>
+  <tr><td>5 Resolver</td><td>6, 7, 8, 9</td><td>Completion state</td><td>Auto</td></tr>
+  <tr><td>6 Basic Info</td><td>7</td><td>Continue</td><td>Button</td></tr>
+  <tr><td>7 Taste DNA</td><td>8</td><td>Continue</td><td>Button</td></tr>
+  <tr><td>8 Exp Cards</td><td>9</td><td>≥4 cards</td><td>Button</td></tr>
+  <tr><td>9 Home</td><td>10, 15</td><td>Destination / Profile</td><td>Input / Button</td></tr>
+  <tr><td>10 Waypoints</td><td>11</td><td>Continue</td><td>Button</td></tr>
+  <tr><td>11 Route Planner</td><td>12</td><td>Get Recommendations</td><td>Button</td></tr>
+  <tr><td>12 Recommendations</td><td>13</td><td>Preview Route</td><td>Button</td></tr>
+  <tr><td>13 Route Preview</td><td>14, 12</td><td>Start / Edit</td><td>Buttons</td></tr>
+  <tr><td>15 Profile</td><td>16</td><td>Settings</td><td>Button</td></tr>
+</table>
+
+<h2 id="status">5. Implementation Status</h2>
+
+<h3>Current Implementation (16 screens)</h3>
+
+<table>
+  <tr>
+    <th>#</th>
+    <th>Screen</th>
+    <th>Status</th>
+    <th>Issues</th>
+  </tr>
+  <tr><td>1</td><td>Splash</td><td>✅ Complete</td><td>-</td></tr>
+  <tr><td>2</td><td>Language Selection</td><td>✅ Complete</td><td>-</td></tr>
+  <tr><td>3</td><td>Login</td><td>✅ Complete</td><td>-</td></tr>
+  <tr><td>4</td><td>Register</td><td>⚠️ Partial</td><td>Social login bypass</td></tr>
+  <tr><td>5</td><td>Onboarding Resolver</td><td>✅ Complete</td><td>-</td></tr>
+  <tr><td>6</td><td>Basic Info</td><td>⚠️ Partial</td><td>Photo/bio not saved</td></tr>
+  <tr><td>7</td><td>Taste DNA</td><td>✅ Complete</td><td>-</td></tr>
+  <tr><td>8</td><td>Experience Cards</td><td>✅ Complete</td><td>-</td></tr>
+  <tr><td>9</td><td>Home</td><td>✅ Complete</td><td>Tab bar disabled</td></tr>
+  <tr><td>10-14</td><td>Route Flow</td><td>✅ Complete</td><td>-</td></tr>
+  <tr><td>15</td><td>Profile</td><td>⚠️ Partial</td><td>Dummy data</td></tr>
+  <tr><td>16</td><td>Settings</td><td>✅ Complete</td><td>-</td></tr>
+</table>
+
+<h3>Critical Fixes Required</h3>
+
+<div class="critical-box">
+  <strong>🔴 Priority 1:</strong>
+  <ol>
+    <li><strong>Enable Bottom Tab Bar</strong> - Currently returns null in (app)/_layout.tsx</li>
+    <li><strong>Fix Social Login Routing</strong> - Must go through onboarding resolver</li>
+    <li><strong>Persist Bio in Basic Info</strong> - Currently discarded</li>
+  </ol>
+</div>
+
+<div class="warning-box">
+  <strong>🟡 Priority 2:</strong>
+  <ol>
+    <li>Implement Profile Photo Upload</li>
+    <li>Create Edit Profile Screen (Screen 20)</li>
+    <li>Connect real data to Profile favorites/reviews</li>
+  </ol>
+</div>
+
+<hr>
+<p style="text-align: center; color: #999; font-size: 0.9em;">
+  <strong>Repathly Screen Flow & Mockups Document</strong><br>
+  Generated: February 2025 | All mockups: docs/mockups/
+</p>
+
+</body>
+</html>

@@ -1,0 +1,20 @@
+flowchart TD
+    subgraph ProfileLevel["👤 Profile-Level Experience Preferences"]
+        direction TB
+        P_DESC["Selected during onboarding"]
+        P_PURPOSE["Defines user's general travel interests"]
+        P_WHEN["Set once during profile creation"]
+        P_STORED["Stored in user profile / backend"]
+        P_USES["Used as baseline for all routes & recommendations"]
+    end
+
+    subgraph RouteLevel["🗺️ Route-Specific Experience Cards"]
+        direction TB
+        R_DESC["Selected during route creation"]
+        R_PURPOSE["Customizes THIS specific route"]
+        R_WHEN["Set per-route, can differ each time"]
+        R_STORED["Stored with route object"]
+        R_USES["Overrides or augments profile preferences for this route"]
+    end
+
+    ProfileLevel -.->|"Provides defaults"| RouteLevel

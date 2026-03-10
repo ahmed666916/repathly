@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 375 812" width="375" height="812">
+  <!-- Phone Frame with Background -->
+  <rect x="0" y="0" width="375" height="812" fill="#1a1a1a"/>
+  
+  <!-- Semi-transparent overlay -->
+  <rect x="0" y="0" width="375" height="812" fill="rgba(0,0,0,0.5)"/>
+  
+  <!-- Status Bar -->
+  <text x="187" y="30" text-anchor="middle" font-family="Arial" font-size="14" fill="#fff">9:41</text>
+  
+  <!-- Logo + Brand -->
+  <circle cx="160" cy="130" r="20" fill="none" stroke="#fff" stroke-width="1.5"/>
+  <text x="160" y="137" text-anchor="middle" font-family="Arial" font-size="14" font-weight="bold" fill="#E91E63">R</text>
+  <text x="200" y="137" font-family="Arial" font-size="16" font-weight="600" fill="#fff">Repathly</text>
+  
+  <!-- Welcome Title -->
+  <text x="187" y="200" text-anchor="middle" font-family="Arial" font-size="28" font-weight="bold" fill="#fff">Welcome Back</text>
+  <text x="187" y="235" text-anchor="middle" font-family="Arial" font-size="14" fill="#8A9A94">Sign in to continue your journey</text>
+  
+  <!-- Email Input -->
+  <rect x="24" y="290" width="327" height="52" rx="12" fill="rgba(255,255,255,0.1)" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
+  <text x="50" y="322" font-family="Arial" font-size="14" fill="#8A9A94">✉</text>
+  <text x="75" y="322" font-family="Arial" font-size="14" fill="#8A9A94">Email address</text>
+  
+  <!-- Password Input -->
+  <rect x="24" y="355" width="327" height="52" rx="12" fill="rgba(255,255,255,0.1)" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
+  <text x="50" y="387" font-family="Arial" font-size="14" fill="#8A9A94">🔒</text>
+  <text x="75" y="387" font-family="Arial" font-size="14" fill="#8A9A94">Password</text>
+  <text x="320" y="387" font-family="Arial" font-size="14" fill="#8A9A94">👁</text>
+  
+  <!-- Forgot Password -->
+  <text x="351" y="425" text-anchor="end" font-family="Arial" font-size="14" fill="#E91E63">Forgot Password?</text>
+  
+  <!-- Login Button -->
+  <rect x="24" y="460" width="327" height="52" rx="12" fill="#E91E63"/>
+  <text x="187" y="493" text-anchor="middle" font-family="Arial" font-size="16" font-weight="bold" fill="#fff">Login</text>
+  
+  <!-- Divider -->
+  <line x1="24" y1="540" x2="160" y2="540" stroke="rgba(255,255,255,0.3)" stroke-width="1"/>
+  <text x="187" y="545" text-anchor="middle" font-family="Arial" font-size="14" fill="#8A9A94">or</text>
+  <line x1="215" y1="540" x2="351" y2="540" stroke="rgba(255,255,255,0.3)" stroke-width="1"/>
+  
+  <!-- Social Buttons -->
+  <rect x="24" y="570" width="155" height="44" rx="22" fill="rgba(255,255,255,0.1)"/>
+  <text x="101" y="598" text-anchor="middle" font-family="Arial" font-size="14" fill="#fff">G  Google</text>
+  
+  <rect x="196" y="570" width="155" height="44" rx="22" fill="rgba(255,255,255,0.1)"/>
+  <text x="273" y="598" text-anchor="middle" font-family="Arial" font-size="14" fill="#fff">  Apple</text>
+  
+  <!-- Register Link -->
+  <text x="140" y="670" font-family="Arial" font-size="14" fill="#8A9A94">Don't have an account?</text>
+  <text x="295" y="670" font-family="Arial" font-size="14" font-weight="600" fill="#E91E63">Register</text>
+  
+  <!-- Footer -->
+  <text x="140" y="750" font-family="Arial" font-size="12" fill="#8A9A94">Terms of Service</text>
+  <text x="235" y="750" font-family="Arial" font-size="12" fill="#8A9A94">Privacy Policy</text>
+  
+  <!-- Screen Label -->
+  <rect x="10" y="770" width="355" height="30" fill="rgba(255,255,255,0.1)" rx="4"/>
+  <text x="187" y="790" text-anchor="middle" font-family="Arial" font-size="12" fill="#999">Screen 3: Login [CURRENT]</text>
+</svg>

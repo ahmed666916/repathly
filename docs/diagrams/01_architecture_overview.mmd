@@ -1,0 +1,17 @@
+flowchart TD
+    subgraph RootLayout["Root Layout (_layout.tsx)"]
+        SPLASH[App Launch / Splash Screen]
+        AUTH_PROVIDER[AuthProvider Context]
+        PROFILE_PROVIDER[ProfileProvider Context]
+        I18N[i18n Initialization]
+        LOCATION[Location Permission Request]
+    end
+
+    subgraph RouteGroups["Expo Router Groups"]
+        AUTH_GROUP["(auth) Group"]
+        ONBOARDING_GROUP["(onboarding) Group"]
+        APP_GROUP["(app) Group - Tabs"]
+    end
+
+    SPLASH --> I18N --> LOCATION --> AUTH_PROVIDER --> PROFILE_PROVIDER
+    PROFILE_PROVIDER --> RouteGroups

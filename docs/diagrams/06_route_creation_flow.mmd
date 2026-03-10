@@ -1,0 +1,33 @@
+flowchart LR
+    subgraph Input["📍 Route Input"]
+        DEST[Enter Destination]
+        WAYPOINTS[Add Waypoints - Optional]
+    end
+
+    subgraph Mode["🎯 Route Mode"]
+        MODE{Select Mode}
+        PASS[Pass-Through]
+        CASUAL[Casual]
+        FLEX[Flexible]
+    end
+
+    subgraph Constraints["⏱️ Constraints"]
+        TIME[Time Limits]
+        STOPS[Stop Intensity]
+    end
+
+    subgraph RouteCards["🎴 Route-Specific Cards"]
+        CARDS[Select Experience Cards for This Route]
+        OVERRIDE[Override Profile Defaults]
+    end
+
+    subgraph Review["📋 Review"]
+        PREVIEW[Route Preview]
+        STOPS_LIST[Suggested Stops]
+        CONFIRM[Confirm Route]
+    end
+
+    DEST --> WAYPOINTS --> MODE
+    MODE --> PASS & CASUAL & FLEX
+    PASS & CASUAL & FLEX --> TIME --> STOPS --> CARDS
+    CARDS --> OVERRIDE --> PREVIEW --> STOPS_LIST --> CONFIRM

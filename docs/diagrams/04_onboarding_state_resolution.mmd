@@ -1,0 +1,17 @@
+flowchart TD
+    START([getNextOnboardingStep])
+    
+    Q1{hasSelectedLanguage?}
+    Q2{hasCompletedProfile?}
+    Q3{hasCompletedTasteDna?}
+    Q4{hasSelectedExperiences?}
+    
+    START --> Q1
+    Q1 -->|No| LANG["/(auth)/language-selection"]
+    Q1 -->|Yes| Q2
+    Q2 -->|No| BASIC["/(onboarding)/basic-info"]
+    Q2 -->|Yes| Q3
+    Q3 -->|No| TASTE["/(onboarding)/taste-dna"]
+    Q3 -->|Yes| Q4
+    Q4 -->|No| CARDS["/(onboarding)/experience-cards"]
+    Q4 -->|Yes| APP["/(app)"]

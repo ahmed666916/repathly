@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 375 812" width="375" height="812">
+  <!-- Phone Frame -->
+  <rect x="0" y="0" width="375" height="812" fill="#1a1a1a"/>
+  
+  <!-- Status Bar -->
+  <text x="187" y="30" text-anchor="middle" font-family="Arial" font-size="14" fill="#fff">9:41</text>
+  
+  <!-- Header -->
+  <circle cx="35" cy="70" r="18" fill="rgba(255,255,255,0.1)"/>
+  <text x="35" y="75" text-anchor="middle" font-family="Arial" font-size="14" fill="#fff">←</text>
+  <text x="187" y="75" text-anchor="middle" font-family="Arial" font-size="18" font-weight="600" fill="#fff">Settings</text>
+  
+  <!-- Account Section -->
+  <text x="30" y="120" font-family="Arial" font-size="12" font-weight="600" fill="#8A9A94">ACCOUNT</text>
+  
+  <rect x="20" y="135" width="335" height="55" rx="12" fill="rgba(255,255,255,0.05)"/>
+  <text x="50" y="168" font-family="Arial" font-size="15" fill="#fff">👤  Edit Profile</text>
+  <text x="325" y="168" font-family="Arial" font-size="14" fill="#8A9A94">›</text>
+  
+  <rect x="20" y="195" width="335" height="55" rx="12" fill="rgba(255,255,255,0.05)"/>
+  <text x="50" y="228" font-family="Arial" font-size="15" fill="#fff">🎯  Update Taste DNA</text>
+  <text x="325" y="228" font-family="Arial" font-size="14" fill="#8A9A94">›</text>
+  
+  <rect x="20" y="255" width="335" height="55" rx="12" fill="rgba(255,255,255,0.05)"/>
+  <text x="50" y="288" font-family="Arial" font-size="15" fill="#fff">🎴  Experience Cards</text>
+  <text x="325" y="288" font-family="Arial" font-size="14" fill="#8A9A94">›</text>
+  
+  <!-- App Settings Section -->
+  <text x="30" y="345" font-family="Arial" font-size="12" font-weight="600" fill="#8A9A94">APP SETTINGS</text>
+  
+  <rect x="20" y="360" width="335" height="55" rx="12" fill="rgba(255,255,255,0.05)"/>
+  <text x="50" y="393" font-family="Arial" font-size="15" fill="#fff">🌐  Language</text>
+  <text x="280" y="393" font-family="Arial" font-size="14" fill="#8A9A94">English</text>
+  <text x="325" y="393" font-family="Arial" font-size="14" fill="#8A9A94">›</text>
+  
+  <rect x="20" y="420" width="335" height="55" rx="12" fill="rgba(255,255,255,0.05)"/>
+  <text x="50" y="453" font-family="Arial" font-size="15" fill="#fff">🔔  Notifications</text>
+  <rect x="290" y="438" width="44" height="24" rx="12" fill="#E91E63"/>
+  <circle cx="322" cy="450" r="10" fill="#fff"/>
+  
+  <rect x="20" y="480" width="335" height="55" rx="12" fill="rgba(255,255,255,0.05)"/>
+  <text x="50" y="513" font-family="Arial" font-size="15" fill="#fff">🌙  Dark Mode</text>
+  <rect x="290" y="498" width="44" height="24" rx="12" fill="#E91E63"/>
+  <circle cx="322" cy="510" r="10" fill="#fff"/>
+  
+  <!-- Support Section -->
+  <text x="30" y="570" font-family="Arial" font-size="12" font-weight="600" fill="#8A9A94">SUPPORT</text>
+  
+  <rect x="20" y="585" width="335" height="55" rx="12" fill="rgba(255,255,255,0.05)"/>
+  <text x="50" y="618" font-family="Arial" font-size="15" fill="#fff">❓  Help &amp; FAQ</text>
+  <text x="325" y="618" font-family="Arial" font-size="14" fill="#8A9A94">›</text>
+  
+  <rect x="20" y="645" width="335" height="55" rx="12" fill="rgba(255,255,255,0.05)"/>
+  <text x="50" y="678" font-family="Arial" font-size="15" fill="#fff">📝  Terms of Service</text>
+  <text x="325" y="678" font-family="Arial" font-size="14" fill="#8A9A94">›</text>
+  
+  <!-- Logout Button -->
+  <rect x="20" y="720" width="335" height="52" rx="16" fill="rgba(255,59,48,0.15)"/>
+  <text x="187" y="753" text-anchor="middle" font-family="Arial" font-size="16" font-weight="600" fill="#FF3B30">Logout</text>
+  
+  <!-- Screen Label -->
+  <rect x="10" y="770" width="355" height="30" fill="rgba(255,255,255,0.1)" rx="4"/>
+  <text x="187" y="790" text-anchor="middle" font-family="Arial" font-size="12" fill="#999">Screen 16: Settings [CURRENT]</text>
+</svg>

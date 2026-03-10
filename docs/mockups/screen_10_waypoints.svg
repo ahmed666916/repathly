@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 375 812" width="375" height="812">
+  <!-- Phone Frame -->
+  <rect x="0" y="0" width="375" height="812" fill="#1a1a1a"/>
+  
+  <!-- Status Bar -->
+  <text x="187" y="30" text-anchor="middle" font-family="Arial" font-size="14" fill="#fff">9:41</text>
+  
+  <!-- Header -->
+  <circle cx="35" cy="70" r="18" fill="rgba(255,255,255,0.1)"/>
+  <text x="35" y="75" text-anchor="middle" font-family="Arial" font-size="14" fill="#fff">←</text>
+  <text x="187" y="75" text-anchor="middle" font-family="Arial" font-size="18" font-weight="600" fill="#fff">Add Waypoints</text>
+  
+  <!-- Destination Shown -->
+  <rect x="20" y="100" width="335" height="50" rx="10" fill="rgba(233,30,99,0.15)" stroke="#E91E63" stroke-width="1"/>
+  <text x="40" y="130" font-family="Arial" font-size="14" fill="#E91E63">📍 Destination: İstanbul</text>
+  
+  <!-- Waypoint Input -->
+  <text x="20" y="180" font-family="Arial" font-size="14" font-weight="600" fill="#fff">Add a Stop (Optional)</text>
+  
+  <rect x="20" y="195" width="335" height="50" rx="10" fill="rgba(255,255,255,0.1)" stroke="rgba(255,255,255,0.2)"/>
+  <text x="40" y="225" font-family="Arial" font-size="14" fill="rgba(255,255,255,0.5)">+ Add waypoint...</text>
+  
+  <!-- Added Waypoints -->
+  <text x="20" y="280" font-family="Arial" font-size="12" fill="#8A9A94">YOUR WAYPOINTS</text>
+  
+  <rect x="20" y="295" width="335" height="60" rx="10" fill="rgba(255,255,255,0.05)"/>
+  <text x="40" y="330" font-family="Arial" font-size="16" fill="#fff">1. Ankara</text>
+  <text x="315" y="330" font-family="Arial" font-size="14" fill="#E91E63">✕</text>
+  
+  <rect x="20" y="365" width="335" height="60" rx="10" fill="rgba(255,255,255,0.05)"/>
+  <text x="40" y="400" font-family="Arial" font-size="16" fill="#fff">2. Konya</text>
+  <text x="315" y="400" font-family="Arial" font-size="14" fill="#E91E63">✕</text>
+  
+  <!-- Map Preview -->
+  <rect x="20" y="450" width="335" height="200" rx="10" fill="#2a3a4a"/>
+  <text x="187" y="555" text-anchor="middle" font-family="Arial" font-size="14" fill="#8A9A94">🗺️ Route Preview</text>
+  
+  <!-- Continue Button -->
+  <rect x="20" y="720" width="335" height="52" rx="16" fill="#E91E63"/>
+  <text x="187" y="753" text-anchor="middle" font-family="Arial" font-size="16" font-weight="bold" fill="#fff">Continue to Route Settings</text>
+  
+  <!-- Screen Label -->
+  <rect x="10" y="770" width="355" height="30" fill="rgba(255,255,255,0.1)" rx="4"/>
+  <text x="187" y="790" text-anchor="middle" font-family="Arial" font-size="12" fill="#999">Screen 10: Waypoints [CURRENT]</text>
+</svg>

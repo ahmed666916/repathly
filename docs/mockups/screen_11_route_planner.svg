@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 375 812" width="375" height="812">
+  <!-- Phone Frame -->
+  <rect x="0" y="0" width="375" height="812" fill="#1a1a1a"/>
+  
+  <!-- Status Bar -->
+  <text x="187" y="30" text-anchor="middle" font-family="Arial" font-size="14" fill="#fff">9:41</text>
+  
+  <!-- Header -->
+  <circle cx="35" cy="70" r="18" fill="rgba(255,255,255,0.1)"/>
+  <text x="35" y="75" text-anchor="middle" font-family="Arial" font-size="14" fill="#fff">←</text>
+  <text x="187" y="75" text-anchor="middle" font-family="Arial" font-size="18" font-weight="600" fill="#fff">Route Settings</text>
+  
+  <!-- Route Summary -->
+  <rect x="20" y="100" width="335" height="70" rx="10" fill="rgba(255,255,255,0.05)"/>
+  <text x="35" y="125" font-family="Arial" font-size="12" fill="#8A9A94">ROUTE</text>
+  <text x="35" y="150" font-family="Arial" font-size="16" font-weight="600" fill="#fff">📍 İstanbul ← Ankara ← Konya</text>
+  
+  <!-- Route Mode Section -->
+  <text x="20" y="200" font-family="Arial" font-size="14" font-weight="600" fill="#fff">Travel Mode</text>
+  
+  <rect x="20" y="215" width="105" height="80" rx="10" fill="rgba(255,255,255,0.1)" stroke="rgba(255,255,255,0.3)"/>
+  <text x="72" y="255" text-anchor="middle" font-family="Arial" font-size="20">⚡</text>
+  <text x="72" y="280" text-anchor="middle" font-family="Arial" font-size="12" fill="#fff">Pass-Through</text>
+  
+  <rect x="135" y="215" width="105" height="80" rx="10" fill="rgba(233,30,99,0.2)" stroke="#E91E63" stroke-width="2"/>
+  <text x="187" y="255" text-anchor="middle" font-family="Arial" font-size="20">🚗</text>
+  <text x="187" y="280" text-anchor="middle" font-family="Arial" font-size="12" fill="#fff">Casual</text>
+  
+  <rect x="250" y="215" width="105" height="80" rx="10" fill="rgba(255,255,255,0.1)" stroke="rgba(255,255,255,0.3)"/>
+  <text x="302" y="255" text-anchor="middle" font-family="Arial" font-size="20">🌟</text>
+  <text x="302" y="280" text-anchor="middle" font-family="Arial" font-size="12" fill="#fff">Flexible</text>
+  
+  <!-- Time Limit -->
+  <text x="20" y="330" font-family="Arial" font-size="14" font-weight="600" fill="#fff">Time Limit</text>
+  <rect x="20" y="345" width="335" height="50" rx="10" fill="rgba(255,255,255,0.1)"/>
+  <text x="40" y="377" font-family="Arial" font-size="16" fill="#fff">⏱️ 2-3 days</text>
+  <text x="320" y="377" font-family="Arial" font-size="14" fill="#8A9A94">▼</text>
+  
+  <!-- Stop Intensity -->
+  <text x="20" y="425" font-family="Arial" font-size="14" font-weight="600" fill="#fff">Stops per Day</text>
+  <rect x="20" y="440" width="335" height="50" rx="10" fill="rgba(255,255,255,0.1)"/>
+  <rect x="40" y="455" width="240" height="20" rx="10" fill="rgba(255,255,255,0.2)"/>
+  <rect x="40" y="455" width="120" height="20" rx="10" fill="#E91E63"/>
+  <circle cx="160" cy="465" r="10" fill="#fff"/>
+  <text x="300" y="470" font-family="Arial" font-size="14" fill="#8A9A94">2-3</text>
+  
+  <!-- Budget -->
+  <text x="20" y="520" font-family="Arial" font-size="14" font-weight="600" fill="#fff">Budget Range</text>
+  <rect x="20" y="535" width="105" height="40" rx="10" fill="rgba(255,255,255,0.1)"/>
+  <text x="72" y="562" text-anchor="middle" font-family="Arial" font-size="12" fill="#fff">💰 Budget</text>
+  <rect x="135" y="535" width="105" height="40" rx="10" fill="rgba(233,30,99,0.2)" stroke="#E91E63"/>
+  <text x="187" y="562" text-anchor="middle" font-family="Arial" font-size="12" fill="#fff">💳 Moderate</text>
+  <rect x="250" y="535" width="105" height="40" rx="10" fill="rgba(255,255,255,0.1)"/>
+  <text x="302" y="562" text-anchor="middle" font-family="Arial" font-size="12" fill="#fff">💎 Premium</text>
+  
+  <!-- Continue Button -->
+  <rect x="20" y="720" width="335" height="52" rx="16" fill="#E91E63"/>
+  <text x="187" y="753" text-anchor="middle" font-family="Arial" font-size="16" font-weight="bold" fill="#fff">Get Recommendations</text>
+  
+  <!-- Screen Label -->
+  <rect x="10" y="770" width="355" height="30" fill="rgba(255,255,255,0.1)" rx="4"/>
+  <text x="187" y="790" text-anchor="middle" font-family="Arial" font-size="12" fill="#999">Screen 11: Route Planner [CURRENT]</text>
+</svg>

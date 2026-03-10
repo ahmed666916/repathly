@@ -1,0 +1,108 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 375 812" width="375" height="812">
+  <!-- Phone Frame -->
+  <rect x="0" y="0" width="375" height="812" fill="#1a1a1a"/>
+  
+  <!-- Cover Photo -->
+  <rect x="0" y="0" width="375" height="180" fill="#3a5a7a"/>
+  
+  <!-- Status Bar -->
+  <rect x="0" y="0" width="375" height="44" fill="rgba(0,0,0,0.3)"/>
+  <text x="187" y="30" text-anchor="middle" font-family="Arial" font-size="14" fill="#fff">9:41</text>
+  
+  <!-- Back + Settings buttons -->
+  <circle cx="35" cy="70" r="18" fill="rgba(0,0,0,0.4)"/>
+  <text x="35" y="75" text-anchor="middle" font-family="Arial" font-size="14" fill="#fff">←</text>
+  
+  <circle cx="340" cy="70" r="18" fill="rgba(0,0,0,0.4)"/>
+  <text x="340" y="75" text-anchor="middle" font-family="Arial" font-size="14" fill="#fff">⚙️</text>
+  
+  <!-- Profile Photo -->
+  <circle cx="187" cy="180" r="55" fill="#1a1a1a" stroke="#1a1a1a" stroke-width="4"/>
+  <circle cx="187" cy="180" r="50" fill="#4a5a6a"/>
+  <text x="187" y="190" text-anchor="middle" font-family="Arial" font-size="32" fill="#fff">👤</text>
+  
+  <!-- Edit Button -->
+  <circle cx="225" cy="218" r="14" fill="#E91E63"/>
+  <text x="225" y="222" text-anchor="middle" font-family="Arial" font-size="10" fill="#fff">✏️</text>
+  
+  <!-- User Info -->
+  <text x="187" y="270" text-anchor="middle" font-family="Arial" font-size="22" font-weight="bold" fill="#fff">John Doe</text>
+  <text x="187" y="295" text-anchor="middle" font-family="Arial" font-size="14" fill="#8A9A94">@johndoe</text>
+  <text x="187" y="325" text-anchor="middle" font-family="Arial" font-size="13" fill="#ccc">Coffee lover | Road trip enthusiast 🚗</text>
+  
+  <!-- Stats Row -->
+  <rect x="30" y="350" width="315" height="70" rx="12" fill="rgba(255,255,255,0.05)"/>
+  
+  <text x="85" y="380" text-anchor="middle" font-family="Arial" font-size="20" font-weight="bold" fill="#fff">12</text>
+  <text x="85" y="400" text-anchor="middle" font-family="Arial" font-size="11" fill="#8A9A94">Routes</text>
+  
+  <line x1="145" y1="365" x2="145" y2="405" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
+  
+  <text x="187" y="380" text-anchor="middle" font-family="Arial" font-size="20" font-weight="bold" fill="#fff">2.4k</text>
+  <text x="187" y="400" text-anchor="middle" font-family="Arial" font-size="11" fill="#8A9A94">km traveled</text>
+  
+  <line x1="230" y1="365" x2="230" y2="405" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
+  
+  <text x="290" y="380" text-anchor="middle" font-family="Arial" font-size="20" font-weight="bold" fill="#fff">48</text>
+  <text x="290" y="400" text-anchor="middle" font-family="Arial" font-size="11" fill="#8A9A94">Stops visited</text>
+  
+  <!-- Tabs -->
+  <rect x="30" y="440" width="155" height="40" rx="8" fill="#E91E63"/>
+  <text x="107" y="466" text-anchor="middle" font-family="Arial" font-size="14" font-weight="600" fill="#fff">Favorites</text>
+  
+  <rect x="190" y="440" width="155" height="40" rx="8" fill="rgba(255,255,255,0.1)"/>
+  <text x="267" y="466" text-anchor="middle" font-family="Arial" font-size="14" fill="#8A9A94">Reviews</text>
+  
+  <!-- Favorite Items Row 1 -->
+  <rect x="30" y="500" width="155" height="110" rx="12" fill="rgba(255,255,255,0.05)"/>
+  <rect x="30" y="500" width="155" height="65" rx="12" fill="#4a5a6a"/>
+  <text x="107" y="540" text-anchor="middle" font-family="Arial" font-size="16">☕</text>
+  <text x="45" y="588" font-family="Arial" font-size="12" font-weight="600" fill="#fff">Coffee Central</text>
+  <text x="45" y="603" font-family="Arial" font-size="10" fill="#8A9A94">4.8 ★ • Coffee</text>
+  
+  <rect x="195" y="500" width="150" height="110" rx="12" fill="rgba(255,255,255,0.05)"/>
+  <rect x="195" y="500" width="150" height="65" rx="12" fill="#5a4a6a"/>
+  <text x="270" y="540" text-anchor="middle" font-family="Arial" font-size="16">🏛️</text>
+  <text x="210" y="588" font-family="Arial" font-size="12" font-weight="600" fill="#fff">Anıtkabir</text>
+  <text x="210" y="603" font-family="Arial" font-size="10" fill="#8A9A94">4.9 ★ • Historical</text>
+  
+  <!-- Favorite Items Row 2 -->
+  <rect x="30" y="620" width="155" height="85" rx="12" fill="rgba(255,255,255,0.05)"/>
+  <rect x="30" y="620" width="155" height="50" rx="12" fill="#6a5a4a"/>
+  <text x="107" y="650" text-anchor="middle" font-family="Arial" font-size="14">🍔</text>
+  <text x="45" y="690" font-family="Arial" font-size="11" font-weight="600" fill="#fff">Köfteci Yusuf</text>
+  
+  <rect x="195" y="620" width="150" height="85" rx="12" fill="rgba(255,255,255,0.05)"/>
+  <rect x="195" y="620" width="150" height="50" rx="12" fill="#5a6a5a"/>
+  <text x="270" y="650" text-anchor="middle" font-family="Arial" font-size="14">🌲</text>
+  <text x="210" y="690" font-family="Arial" font-size="11" font-weight="600" fill="#fff">Belgrad Forest</text>
+  
+  <!-- ========== 3-TAB BOTTOM NAVIGATION ========== -->
+  <!-- Floating pill container -->
+  <rect x="30" y="720" width="315" height="70" rx="35" fill="rgba(30,30,30,0.95)"/>
+  
+  <!-- My Profile Tab (ACTIVE - blue pill) -->
+  <g>
+    <rect x="40" y="725" width="85" height="40" rx="20" fill="#007AFF"/>
+    <text x="82" y="742" text-anchor="middle" font-family="Arial" font-size="18" fill="#fff">👤</text>
+    <text x="82" y="770" text-anchor="middle" font-family="Arial" font-size="9" font-weight="bold" fill="#007AFF">My Profile</text>
+  </g>
+  
+  <!-- Search Tab (inactive) -->
+  <g>
+    <circle cx="187" cy="745" r="18" fill="transparent"/>
+    <text x="187" y="742" text-anchor="middle" font-family="Arial" font-size="18" fill="#8A9A94">🔍</text>
+    <text x="187" y="770" text-anchor="middle" font-family="Arial" font-size="9" fill="#8A9A94">Search</text>
+  </g>
+  
+  <!-- New Route Tab (inactive) -->
+  <g>
+    <circle cx="285" cy="745" r="18" fill="transparent"/>
+    <text x="285" y="742" text-anchor="middle" font-family="Arial" font-size="18" fill="#8A9A94">🗺️</text>
+    <text x="285" y="770" text-anchor="middle" font-family="Arial" font-size="9" fill="#8A9A94">New Route</text>
+  </g>
+  
+  <!-- Screen Label -->
+  <rect x="10" y="795" width="355" height="15" fill="transparent"/>
+  <text x="187" y="806" text-anchor="middle" font-family="Arial" font-size="9" fill="#666">Screen 15: Profile [CURRENT]</text>
+</svg>
