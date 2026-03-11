@@ -11,9 +11,11 @@ import {
 } from 'react-native';
 import { FontAwesome5 } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { useLanguage } from '../../../contexts/LanguageContext';
 
 export default function ProfileSettingsScreen() {
   const router = useRouter();
+  const { t } = useLanguage();
   const [settings, setSettings] = useState({
     notifications: true,
     locationSharing: false,
@@ -34,26 +36,26 @@ export default function ProfileSettingsScreen() {
 
   const settingsOptions = [
     {
-      title: 'Bildirimler',
-      subtitle: 'Uygulama bildirimlerini al',
+      title: t('settings.notifications'),
+      subtitle: t('settings.notificationsDesc'),
       key: 'notifications' as keyof typeof settings,
       icon: 'bell',
     },
     {
-      title: 'Konum Paylaşımı',
-      subtitle: 'Konumunu diğer kullanıcılarla paylaş',
+      title: t('settings.locationSharing'),
+      subtitle: t('settings.locationSharingDesc'),
       key: 'locationSharing' as keyof typeof settings,
       icon: 'map-marker-alt',
     },
     {
-      title: 'Herkese Açık Profil',
-      subtitle: 'Profilini herkese görünür yap',
+      title: t('settings.publicProfile'),
+      subtitle: t('settings.publicProfileDesc'),
       key: 'publicProfile' as keyof typeof settings,
       icon: 'globe',
     },
     {
-      title: 'Otomatik Senkronizasyon',
-      subtitle: 'Verilerini otomatik olarak senkronize et',
+      title: t('settings.autoSync'),
+      subtitle: t('settings.autoSyncDesc'),
       key: 'autoSync' as keyof typeof settings,
       icon: 'sync',
     },
@@ -68,7 +70,7 @@ export default function ProfileSettingsScreen() {
         <TouchableOpacity onPress={handleBack} style={styles.backButton}>
           <FontAwesome5 name="arrow-left" size={20} color="#333" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Profil Ayarları</Text>
+        <Text style={styles.headerTitle}>{t('settings.profileSettings')}</Text>
         <View style={styles.headerSpacer} />
       </View>
 
@@ -96,10 +98,10 @@ export default function ProfileSettingsScreen() {
           ))}
 
           <View style={styles.dangerZone}>
-            <Text style={styles.dangerZoneTitle}>Tehlikeli Bölge</Text>
+            <Text style={styles.dangerZoneTitle}>{t('settings.dangerZone')}</Text>
             <TouchableOpacity style={styles.dangerButton}>
               <FontAwesome5 name="trash" size={16} color="#FF4444" />
-              <Text style={styles.dangerButtonText}>Hesabı Sil</Text>
+              <Text style={styles.dangerButtonText}>{t('settings.deleteAccount')}</Text>
             </TouchableOpacity>
           </View>
         </View>

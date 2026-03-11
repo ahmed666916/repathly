@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 import { FontAwesome5 } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { t } from '../../services/api/i18n';
+import { useLanguage } from '../../contexts/LanguageContext';
 import { useAuthContext } from '../../contexts/AuthContext';
 import { useProfileContext } from '../../contexts/ProfileContext';
 
@@ -24,6 +24,7 @@ export default function ProfileScreen() {
   const router = useRouter();
   const { user } = useAuthContext();
   const { profile, isLoading, fetchProfile, error } = useProfileContext();
+  const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState<'favorites' | 'reviews'>('favorites');
 
   useEffect(() => {
@@ -37,12 +38,12 @@ export default function ProfileScreen() {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.centerContainer}>
-          <Text style={styles.errorText}>Kullanıcı bulunamadı</Text>
+          <Text style={styles.errorText}>{t('profile.userNotFound')}</Text>
           <TouchableOpacity 
             style={styles.primaryButton}
             onPress={() => router.back()}
           >
-            <Text style={styles.buttonText}>Geri Dön</Text>
+            <Text style={styles.buttonText}>{t('profile.back')}</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -70,7 +71,7 @@ export default function ProfileScreen() {
             style={styles.primaryButton}
             onPress={() => fetchProfile()}
           >
-            <Text style={styles.buttonText}>Tekrar Dene</Text>
+            <Text style={styles.buttonText}>{t('common.retry')}</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -119,7 +120,7 @@ export default function ProfileScreen() {
   };
 
   const handleEditProfile = () => {
-    Alert.alert('Profil Düzenle', 'Profil düzenleme sayfası yakında eklenecek!');
+    router.push('/(app)/settings/personal-info');
   };
 
   const handleSettings = () => {
@@ -184,7 +185,7 @@ export default function ProfileScreen() {
 
           <TouchableOpacity style={styles.editButton} onPress={handleEditProfile}>
             <FontAwesome5 name="edit" size={14} color="white" />
-            <Text style={styles.editButtonText}>Profili Düzenle</Text>
+            <Text style={styles.editButtonText}>{t('profile.editProfile')}</Text>
           </TouchableOpacity>
         </View>
 
@@ -270,7 +271,7 @@ export default function ProfileScreen() {
             ))}
             {currentUser.recentReviews.length === 0 && (
               <View style={styles.emptyState}>
-                <Text style={styles.emptyText}>Henüz yorum yok.</Text>
+                <Text style={styles.emptyText}>{t('profile.noReviewsYet')}</Text>
               </View>
             )}
           </View>

@@ -391,6 +391,81 @@ export async function changePassword(
     return apiCall<null>('/auth/change-password', 'POST', { currentPassword, newPassword }, token);
 }
 
+// UPLOAD PROFILE PHOTO
+export async function uploadProfilePhoto(
+    token: string,
+    imageUri: string
+): Promise<ApiResponse<{ profilePhoto: string }>> {
+    try {
+        const formData = new FormData();
+        
+        // Get file name and type from URI
+        const uriParts = imageUri.split('/');
+        const fileName = uriParts[uriParts.length - 1];
+        const fileExtension = fileName.split('.').pop()?.toLowerCase() || 'jpg';
+        const mimeType = `image/${fileExtension === 'jpg' ? 'jpeg' : fileExtension}`;
+
+        formData.append('photo', {
+            uri: imageUri,
+            name: fileName,
+            type: mimeType,
+        } as any);
+
+        console.log('📤 Uploading photo:', { uri: imageUri, name: fileName, type: mimeType });
+
+        const response = await fetch(`${API_BASE_URL}/auth/upload-photo`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Accept': 'application/json',
+                // Do NOT set Content-Type for FormData — fetch sets it automatically with boundary
+            },
+            body: formData,
+        });
+
+        console.log(`📥 Upload response status: ${response.status}`);
+
+        const responseText = await response.text();
+
+        if (!response.ok) {
+            console.error('❌ Upload error:', responseText);
+            try {
+                const errorData = JSON.parse(responseText);
+                return {
+                    success: false,
+                    message: errorData.message || 'Fotoğraf yüklenemedi.',
+                    error: errorData.error || responseText,
+                };
+            } catch {
+                return {
+                    success: false,
+                    message: 'Sunucu hatası oluştu.',
+                    error: responseText.substring(0, 200),
+                };
+            }
+        }
+
+        try {
+            const data = JSON.parse(responseText);
+            console.log('✅ Upload response:', data);
+            return data;
+        } catch {
+            return {
+                success: false,
+                message: 'Sunucu geçersiz yanıt döndürdü.',
+                error: 'Response is not valid JSON',
+            };
+        }
+    } catch (error) {
+        console.error('❌ Upload error:', error);
+        return {
+            success: false,
+            message: 'Fotoğraf yüklenirken bir hata oluştu.',
+            error: error instanceof Error ? error.message : 'Unknown error',
+        };
+    }
+}
+
 export default {
     login,
     register,
@@ -402,4 +477,6 @@ export default {
     getProfile,
     updateProfile,
     changePassword,
+    uploadProfilePhoto,
 };
+

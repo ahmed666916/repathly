@@ -81,6 +81,7 @@ class ProfileController extends Controller
             // Mark taste DNA as completed when user explicitly updates it
             $profile->has_completed_taste_dna = true;
             $profile->save();
+            $profile->refresh();
 
             return $this->success([
                 'travelStyle' => $profile->travel_style->value,

@@ -12,8 +12,7 @@ import { Alert } from 'react-native';
 import { useColorScheme } from '@/components/useColorScheme';
 import { AuthProvider, useAuthContext } from '../contexts/AuthContext';
 import { ProfileProvider } from '../contexts/ProfileContext';
-import { initI18n } from '../services/api/i18n';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { LanguageProvider, useLanguage } from '../contexts/LanguageContext';
 import { useRouter } from 'expo-router';
 
 export {
@@ -103,35 +102,38 @@ export default function RootLayout() {
   }
 
   return (
-    <AuthProvider>
-      <ProfileProvider>
-        <RootLayoutNav />
-      </ProfileProvider>
-    </AuthProvider>
+    <LanguageProvider>
+      <AuthProvider>
+        <ProfileProvider>
+          <RootLayoutNav />
+        </ProfileProvider>
+      </AuthProvider>
+    </LanguageProvider>
   );
 }
 
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
   const { languageSelected, setLanguageSelected, isLoading } = useAuthContext();
-  const [isI18nReady, setIsI18nReady] = useState(false);
+  const { isReady: isI18nReady } = useLanguage();
   const router = useRouter();
 
   useEffect(() => {
-    async function prepare() {
+    async function checkLanguageSelected() {
       try {
-        await initI18n();
+        const AsyncStorage = (await import('@react-native-async-storage/async-storage')).default;
         const savedLanguage = await AsyncStorage.getItem('@user_language');
         if (savedLanguage) {
           setLanguageSelected(true);
         }
-        setIsI18nReady(true);
       } catch (e) {
         console.warn(e);
       }
     }
-    prepare();
-  }, []);
+    if (isI18nReady) {
+      checkLanguageSelected();
+    }
+  }, [isI18nReady]);
 
   useEffect(() => {
     if (isI18nReady && !isLoading) {

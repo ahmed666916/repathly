@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class AuthController extends Controller
 {
@@ -276,7 +277,9 @@ class AuthController extends Controller
                 'id' => (string) $user->id,
                 'name' => $user->name,
                 'email' => $user->email,
-                'profilePhoto' => $user->profile_photo,
+                'phone' => $user->phone,
+                'bio' => $user->bio,
+                'profilePhoto' => $user->profile_photo ? url('storage/' . $user->profile_photo) : null,
                 'isEmailVerified' => $user->is_email_verified,
                 'authProvider' => $user->auth_provider,
                 'hasCompletedProfile' => $user->has_completed_profile,
@@ -303,14 +306,10 @@ class AuthController extends Controller
             $user = $request->user();
 
             // Update only provided fields
-            if ($request->has('name')) {
-                $user->name = $request->name;
-            }
-
             if ($request->has('name')) $user->name = $request->name;
             if ($request->has('bio')) $user->bio = $request->bio;
+            if ($request->has('phone')) $user->phone = $request->phone;
             if ($request->has('hasCompletedProfile')) $user->has_completed_profile = $request->hasCompletedProfile;
-            if ($request->has('profilePhoto')) $user->profile_photo = $request->profilePhoto;
 
             $user->save();
 
@@ -319,10 +318,11 @@ class AuthController extends Controller
                     'id' => (string) $user->id,
                     'name' => $user->name,
                     'email' => $user->email,
+                    'phone' => $user->phone,
                     'bio' => $user->bio,
                     'isEmailVerified' => $user->is_email_verified,
                     'authProvider' => $user->auth_provider,
-                    'profilePhoto' => $user->profile_photo,
+                    'profilePhoto' => $user->profile_photo ? url('storage/' . $user->profile_photo) : null,
                     'hasCompletedProfile' => $user->has_completed_profile,
                     'hasCompletedTasteDna' => $user->has_completed_taste_dna,
                     'hasSelectedExperiences' => $user->has_selected_experiences,
@@ -333,6 +333,47 @@ class AuthController extends Controller
 
         } catch (\Exception $e) {
             return $this->error('Profil güncellenirken bir hata oluştu.', 500, $e->getMessage());
+        }
+    }
+
+    /**
+     * Upload user profile photo
+     *
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function uploadPhoto(Request $request): JsonResponse
+    {
+        try {
+            $request->validate([
+                'photo' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+            ], [
+                'photo.required' => 'Fotoğraf seçilmedi.',
+                'photo.image' => 'Dosya bir resim olmalıdır.',
+                'photo.mimes' => 'Fotoğraf jpeg, png, jpg veya gif formatında olmalıdır.',
+                'photo.max' => 'Fotoğraf maksimum 2MB olmalıdır.',
+            ]);
+
+            $user = $request->user();
+
+            // Delete old photo if exists
+            if ($user->profile_photo && Storage::disk('public')->exists($user->profile_photo)) {
+                Storage::disk('public')->delete($user->profile_photo);
+            }
+
+            // Store new photo
+            $path = $request->file('photo')->store('profile-photos', 'public');
+            $user->profile_photo = $path;
+            $user->save();
+
+            return $this->success([
+                'profilePhoto' => url('storage/' . $path),
+            ], 'Fotoğraf başarıyla yüklendi.');
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return $this->error($e->getMessage(), 422);
+        } catch (\Exception $e) {
+            return $this->error('Fotoğraf yüklenirken bir hata oluştu.', 500, $e->getMessage());
         }
     }
 

@@ -1,12 +1,13 @@
 import React from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, Image, SafeAreaView } from 'react-native';
 import { router } from 'expo-router';
-import { setLanguage, t } from '../../services/api/i18n';
+import { useLanguage } from '../../contexts/LanguageContext';
 import { setLanguageSelected as setLanguageSelectedInStorage } from '../../utils/onboardingManager';
 import { useAuthContext } from '../../contexts/AuthContext';
 
 export default function LanguageSelectionScreen() {
     const { setLanguageSelected } = useAuthContext();
+    const { setLanguage } = useLanguage();
 
     const handleLanguageSelect = async (lang: 'tr' | 'en') => {
         await setLanguage(lang);

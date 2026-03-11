@@ -31,47 +31,12 @@ class UserProfile extends Model
         'has_completed_taste_dna' => 'boolean',
     ];
 
-    protected $appends = [
-        'travelStyle',
-        'detourTolerance',
-        'budgetSensitivity',
-        'preferredGroupType',
-        'stopIntensity',
-    ];
-
     /**
      * The user this profile belongs to.
      */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
-    }
-
-    // Accessors for camelCase (frontend compatibility)
-
-    public function getTravelStyleAttribute(): string
-    {
-        return $this->attributes['travel_style'];
-    }
-
-    public function getDetourToleranceAttribute(): string
-    {
-        return $this->attributes['detour_tolerance'];
-    }
-
-    public function getBudgetSensitivityAttribute(): string
-    {
-        return $this->attributes['budget_sensitivity'];
-    }
-
-    public function getPreferredGroupTypeAttribute(): string
-    {
-        return $this->attributes['preferred_group_type'];
-    }
-
-    public function getStopIntensityAttribute(): string
-    {
-        return $this->attributes['stop_intensity'];
     }
 
     /**

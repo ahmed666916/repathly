@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   StyleSheet,
   View,
@@ -8,27 +8,142 @@ import {
   StatusBar,
   ScrollView,
   TextInput,
+  Image,
+  Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { FontAwesome5 } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import * as ImagePicker from 'expo-image-picker';
+import { useAuthContext } from '../../../contexts/AuthContext';
+import { useLanguage } from '../../../contexts/LanguageContext';
+import * as authApi from '../../../services/api/auth';
+import * as secureStorage from '../../../utils/secureStorage';
 
 export default function PersonalInfoScreen() {
   const router = useRouter();
-  const [userInfo, setUserInfo] = useState({
-    name: 'Kullanıcı Adı',
-    email: 'kullanici@email.com',
-    phone: '+90 555 123 4567',
-    birthDate: '01/01/1990',
-  });
+  const { user, updateUser } = useAuthContext();
+  const { t } = useLanguage();
+
+  const [name, setName] = useState(user?.name || '');
+  const [email] = useState(user?.email || '');
+  const [phone, setPhone] = useState('');
+  const [bio, setBio] = useState('');
+  const [profilePhoto, setProfilePhoto] = useState<string | null>(user?.profilePhoto || null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+
+  // Fetch current profile from server
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const token = await secureStorage.getToken();
+        if (!token) return;
+
+        const response = await authApi.getProfile(token);
+        if (response.success && response.data) {
+          setName(response.data.name || '');
+          setPhone((response.data as any).phone || '');
+          setBio((response.data as any).bio || '');
+          if (response.data.profilePhoto) {
+            setProfilePhoto(response.data.profilePhoto);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching profile:', error);
+      }
+    };
+    fetchProfile();
+  }, []);
 
   const handleBack = () => {
     router.back();
   };
 
-  const handleSave = () => {
-    // Burada bilgileri kaydetme işlemi yapılacak
-    console.log('Bilgiler kaydedildi:', userInfo);
+  const handleSave = async () => {
+    try {
+      setIsLoading(true);
+      const token = await secureStorage.getToken();
+      if (!token) {
+        Alert.alert(t('common.error'), t('settings.sessionExpired'));
+        return;
+      }
+
+      const updates: any = { name };
+      if (phone) updates.phone = phone;
+      if (bio) updates.bio = bio;
+
+      const response = await authApi.updateProfile(token, updates);
+
+      if (response.success && response.data) {
+        // The backend wraps it in { user: ... }
+        const userData = (response.data as any).user || response.data;
+        await updateUser({
+          name: userData.name,
+          profilePhoto: userData.profilePhoto,
+        });
+        Alert.alert(t('common.success'), t('settings.profileUpdated'));
+      } else {
+        Alert.alert(t('common.error'), response.message || t('settings.profileUpdateFailed'));
+      }
+    } catch (error) {
+      console.error('Error saving profile:', error);
+      Alert.alert(t('common.error'), t('settings.profileUpdateFailed'));
+    } finally {
+      setIsLoading(false);
+    }
   };
+
+  const handlePhotoUpload = async () => {
+    try {
+      // Request permission
+      const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!permissionResult.granted) {
+        Alert.alert(t('common.error'), t('settings.photoPermissionDenied'));
+        return;
+      }
+
+      // Launch image picker
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8,
+      });
+
+      if (result.canceled || !result.assets?.[0]) return;
+
+      const imageUri = result.assets[0].uri;
+      setProfilePhoto(imageUri); // Show preview immediately
+
+      setIsUploading(true);
+      const token = await secureStorage.getToken();
+      if (!token) {
+        Alert.alert(t('common.error'), t('settings.sessionExpired'));
+        return;
+      }
+
+      const response = await authApi.uploadProfilePhoto(token, imageUri);
+      if (response.success && response.data) {
+        const photoUrl = response.data.profilePhoto;
+        setProfilePhoto(photoUrl);
+        await updateUser({ profilePhoto: photoUrl });
+        Alert.alert(t('common.success'), t('settings.photoUploaded'));
+      } else {
+        Alert.alert(t('common.error'), response.message || t('settings.photoUploadFailed'));
+        // Revert preview
+        setProfilePhoto(user?.profilePhoto || null);
+      }
+    } catch (error) {
+      console.error('Error uploading photo:', error);
+      Alert.alert(t('common.error'), t('settings.photoUploadFailed'));
+      setProfilePhoto(user?.profilePhoto || null);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const defaultAvatar = 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y';
 
   return (
     <SafeAreaView style={styles.container}>
@@ -39,54 +154,82 @@ export default function PersonalInfoScreen() {
         <TouchableOpacity onPress={handleBack} style={styles.backButton}>
           <FontAwesome5 name="arrow-left" size={20} color="#333" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Kişi Bilgileri</Text>
-        <TouchableOpacity onPress={handleSave} style={styles.saveButton}>
-          <Text style={styles.saveButtonText}>Kaydet</Text>
+        <Text style={styles.headerTitle}>{t('settings.personalInfo')}</Text>
+        <TouchableOpacity 
+          onPress={handleSave} 
+          style={[styles.saveButton, isLoading && styles.saveButtonDisabled]}
+          disabled={isLoading}
+        >
+          {isLoading ? (
+            <ActivityIndicator size="small" color="#fff" />
+          ) : (
+            <Text style={styles.saveButtonText}>{t('common.save')}</Text>
+          )}
         </TouchableOpacity>
       </View>
 
       {/* Content */}
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        {/* Profile Photo */}
+        <TouchableOpacity style={styles.photoContainer} onPress={handlePhotoUpload} disabled={isUploading}>
+          <Image 
+            source={{ uri: profilePhoto || defaultAvatar }} 
+            style={styles.profilePhoto} 
+          />
+          <View style={styles.cameraOverlay}>
+            {isUploading ? (
+              <ActivityIndicator size="small" color="#fff" />
+            ) : (
+              <FontAwesome5 name="camera" size={16} color="#fff" />
+            )}
+          </View>
+          <Text style={styles.changePhotoText}>{t('settings.changePhoto')}</Text>
+        </TouchableOpacity>
+
         <View style={styles.formContainer}>
           <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Ad Soyad</Text>
+            <Text style={styles.inputLabel}>{t('settings.fullName')}</Text>
             <TextInput
               style={styles.textInput}
-              value={userInfo.name}
-              onChangeText={(text) => setUserInfo({...userInfo, name: text})}
-              placeholder="Adınızı ve soyadınızı girin"
+              value={name}
+              onChangeText={setName}
+              placeholder={t('settings.fullNamePlaceholder')}
             />
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>E-posta</Text>
+            <Text style={styles.inputLabel}>{t('auth.email')}</Text>
             <TextInput
-              style={styles.textInput}
-              value={userInfo.email}
-              onChangeText={(text) => setUserInfo({...userInfo, email: text})}
-              placeholder="E-posta adresinizi girin"
+              style={[styles.textInput, styles.readOnlyInput]}
+              value={email}
+              editable={false}
+              placeholder={t('settings.emailPlaceholder')}
               keyboardType="email-address"
             />
+            <Text style={styles.helperText}>{t('settings.emailReadOnly')}</Text>
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Telefon</Text>
+            <Text style={styles.inputLabel}>{t('settings.phone')}</Text>
             <TextInput
               style={styles.textInput}
-              value={userInfo.phone}
-              onChangeText={(text) => setUserInfo({...userInfo, phone: text})}
-              placeholder="Telefon numaranızı girin"
+              value={phone}
+              onChangeText={setPhone}
+              placeholder={t('settings.phonePlaceholder')}
               keyboardType="phone-pad"
             />
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Doğum Tarihi</Text>
+            <Text style={styles.inputLabel}>{t('settings.bio')}</Text>
             <TextInput
-              style={styles.textInput}
-              value={userInfo.birthDate}
-              onChangeText={(text) => setUserInfo({...userInfo, birthDate: text})}
-              placeholder="DD/MM/YYYY"
+              style={[styles.textInput, styles.bioInput]}
+              value={bio}
+              onChangeText={setBio}
+              placeholder={t('settings.bioPlaceholder')}
+              multiline
+              numberOfLines={3}
+              textAlignVertical="top"
             />
           </View>
         </View>
@@ -128,6 +271,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
+    minWidth: 70,
+    alignItems: 'center',
+  },
+  saveButtonDisabled: {
+    opacity: 0.7,
   },
   saveButtonText: {
     color: '#fff',
@@ -136,6 +284,36 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+  },
+  photoContainer: {
+    alignItems: 'center',
+    paddingVertical: 24,
+  },
+  profilePhoto: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    borderWidth: 3,
+    borderColor: '#E91E63',
+  },
+  cameraOverlay: {
+    position: 'absolute',
+    top: 90,
+    right: '38%',
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#E91E63',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#fff',
+  },
+  changePhotoText: {
+    marginTop: 12,
+    color: '#E91E63',
+    fontSize: 14,
+    fontWeight: '500',
   },
   formContainer: {
     padding: 20,
@@ -157,5 +335,19 @@ const styles = StyleSheet.create({
     color: '#333',
     borderWidth: 1,
     borderColor: '#e9ecef',
+  },
+  readOnlyInput: {
+    backgroundColor: '#e9ecef',
+    color: '#999',
+  },
+  bioInput: {
+    minHeight: 80,
+    paddingTop: 16,
+  },
+  helperText: {
+    fontSize: 12,
+    color: '#999',
+    marginTop: 4,
+    marginLeft: 4,
   },
 });
