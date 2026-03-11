@@ -1,6 +1,6 @@
 import { getToken } from '../../utils/secureStorage';
 
-const API_BASE_URL = 'http://192.168.100.23:8000/api';
+const API_BASE_URL = 'http://37.60.245.127:8080/api';
 
 const USE_MOCK = false;
 

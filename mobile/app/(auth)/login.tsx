@@ -65,9 +65,9 @@ export default function LoginScreen() {
   // TEST BACKEND CONNECTION - ADD THIS
   const testBackendConnection = async () => {
     try {
-      console.log('🔧 Testing connection to: http://192.168.100.23:8000/api/test');
+      console.log('🔧 Testing connection to: http://37.60.245.127:8080/api/test');
 
-      const response = await fetch('http://192.168.100.23:8000/api/test', {
+      const response = await fetch('http://37.60.245.127:8080/api/test', {
         method: 'GET',
         headers: {
           'Accept': 'application/json',
