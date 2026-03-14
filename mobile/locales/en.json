@@ -139,8 +139,17 @@
         "profileUpdated": "Profile preferences updated."
     },
     "routing": {
+        "home": "Home",
+        "interests": "Discover",
+        "add": "Add",
+        "favorites": "Favorites",
+        "map": "Map",
+        "recommendations": "Recommendations",
+        "routePlanner": "Route Planner",
+        "waypoints": "Waypoints",
+        "fullscreenMap": "Map",
         "planRoute": "Plan Route",
-        "savedRoutes": "Saved Routes",
+        "savedRoutes": "My Routes",
         "searchPlaces": "Search Places",
         "startLocation": "Starting Point",
         "destination": "Destination",
@@ -154,5 +163,13 @@
         "routeOrder": "Route Order",
         "moreWaypoints": "more stops",
         "completeRoutePrompt": "Would you like to see our golden recommendations that might interest you along our route?"
+    },
+    "profileSummary": {
+        "title": "You're All Set!",
+        "subtitle": "Your travel profile is ready. Repathly will now build routes that match who you are.",
+        "experiencesLabel": "Your Experiences",
+        "tasteDnaLabel": "Travel Style",
+        "startExploring": "Start Exploring",
+        "cardCount": "{{count}} experience cards selected"
     }
 }

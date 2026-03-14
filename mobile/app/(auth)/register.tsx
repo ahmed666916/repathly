@@ -84,13 +84,13 @@ export default function RegisterScreen() {
     };
 
     const handleGoogleSignUp = () => {
-        // Keep existing social login for now
-        router.replace('/(app)');
+        // Social auth not yet integrated — route through onboarding resolver
+        router.replace('/(auth)/onboarding-resolver');
     };
 
     const handleAppleSignUp = () => {
-        // Keep existing social login for now
-        router.replace('/(app)');
+        // Social auth not yet integrated — route through onboarding resolver
+        router.replace('/(auth)/onboarding-resolver');
     };
 
     return (

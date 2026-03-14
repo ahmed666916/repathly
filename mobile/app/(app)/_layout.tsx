@@ -17,9 +17,6 @@ function CustomTabBar({ state, descriptors, navigation }: CustomTabBarProps) {
     router.push('/(app)/add');
   };
 
-  // Tab bar'ı tamamen kaldır
-  return null;
-
   return (
     <View style={styles.tabBarContainer}>
       <View style={styles.tabBar}>
@@ -53,13 +50,12 @@ function CustomTabBar({ state, descriptors, navigation }: CustomTabBarProps) {
             });
           };
 
-          const Icon = ({ color }: { color: string }) => {
-            let iconName;
-            if (label === t('routing.home')) iconName = 'home';
-            else if (label === t('routing.interests')) iconName = 'bell';
-            else if (label === t('routing.favorites')) iconName = 'bookmark';
-            else if (label === t('routing.map')) iconName = 'map-marked-alt';
-            return <FontAwesome5 name={iconName} size={24} color={color} solid={isFocused} />;
+          const getIconName = (tabLabel: string): string => {
+            if (tabLabel === t('routing.home')) return 'home';
+            if (tabLabel === t('routing.interests')) return 'compass';
+            if (tabLabel === t('routing.savedRoutes')) return 'route';
+            if (tabLabel === t('profile.title')) return 'user';
+            return 'circle';
           };
 
           return (
@@ -74,7 +70,12 @@ function CustomTabBar({ state, descriptors, navigation }: CustomTabBarProps) {
               style={styles.tabItem}
             >
               <View style={isFocused ? styles.activeTab : null}>
-                <Icon color={isFocused ? '#fff' : '#8A95A0'} />
+                <FontAwesome5
+                  name={getIconName(label)}
+                  size={22}
+                  color={isFocused ? '#fff' : '#8A95A0'}
+                  solid={isFocused}
+                />
               </View>
             </TouchableOpacity>
           );
@@ -96,74 +97,27 @@ export default function TabLayout() {
         headerShown: false,
       }}
     >
+      {/* Visible tabs */}
       <Tabs.Screen name="index" options={{ title: t('routing.home') }} />
       <Tabs.Screen name="interests" options={{ title: t('routing.interests') }} />
       <Tabs.Screen name="add" options={{ title: t('routing.add') }} />
-      <Tabs.Screen name="favorites" options={{ title: t('routing.favorites') }} />
-      <Tabs.Screen name="map" options={{ title: t('routing.map') }} />
-      <Tabs.Screen
-        name="recommendations"
-        options={{
-          title: t('routing.recommendations'),
-          href: null, // Tab bar'da gösterme
-        }}
-      />
-      <Tabs.Screen
-        name="route-planner"
-        options={{
-          title: t('routing.routePlanner'),
-          href: null, // Tab bar'da gösterme
-        }}
-      />
-      <Tabs.Screen
-        name="profile"
-        options={{
-          title: t('profile.title'),
-          href: null, // Tab bar'da gösterme
-        }}
-      />
-      <Tabs.Screen
-        name="user-profile"
-        options={{
-          title: t('profile.userProfile'),
-          href: null, // Tab bar'da gösterme
-        }}
-      />
-      <Tabs.Screen
-        name="chats"
-        options={{
-          title: t('chat.chats'),
-          href: null, // Tab bar'da gösterme
-        }}
-      />
-      <Tabs.Screen
-        name="chat"
-        options={{
-          title: t('chat.chat'),
-          href: null, // Tab bar'da gösterme
-        }}
-      />
-      <Tabs.Screen
-        name="route-preview"
-        options={{
-          title: t('routing.routePreview'),
-          href: null, // Tab bar'da gösterme
-        }}
-      />
-      <Tabs.Screen
-        name="waypoints"
-        options={{
-          title: t('routing.waypoints'),
-          href: null, // Tab bar'da gösterme
-        }}
-      />
-      <Tabs.Screen
-        name="fullscreen-map"
-        options={{
-          title: t('routing.fullscreenMap'),
-          href: null, // Tab bar'da gösterme
-        }}
-      />
+      <Tabs.Screen name="saved-routes" options={{ title: t('routing.savedRoutes') }} />
+      <Tabs.Screen name="profile" options={{ title: t('profile.title') }} />
+
+      {/* Hidden screens — navigable but not in tab bar */}
+      <Tabs.Screen name="map" options={{ title: t('routing.map'), href: null }} />
+      <Tabs.Screen name="favorites" options={{ title: t('routing.favorites'), href: null }} />
+      <Tabs.Screen name="settings" options={{ title: t('settings.title'), href: null }} />
+      <Tabs.Screen name="recommendations" options={{ title: t('routing.recommendations'), href: null }} />
+      <Tabs.Screen name="route-planner" options={{ title: t('routing.routePlanner'), href: null }} />
+      <Tabs.Screen name="user-profile" options={{ title: t('profile.userProfile') ?? 'Profile', href: null }} />
+      <Tabs.Screen name="chats" options={{ title: t('chat.chats'), href: null }} />
+      <Tabs.Screen name="chat" options={{ title: t('chat.chat'), href: null }} />
+      <Tabs.Screen name="route-preview" options={{ title: t('routing.routePreview'), href: null }} />
+      <Tabs.Screen name="waypoints" options={{ title: t('routing.waypoints'), href: null }} />
+      <Tabs.Screen name="fullscreen-map" options={{ title: t('routing.fullscreenMap'), href: null }} />
+      <Tabs.Screen name="place-detail" options={{ title: 'Place', href: null }} />
+      <Tabs.Screen name="following" options={{ title: t('settings.following'), href: null }} />
     </Tabs>
   );
 }

@@ -8,8 +8,6 @@ import {
   StatusBar,
   ScrollView,
   Image,
-  Alert,
-  Dimensions,
   ActivityIndicator,
 } from 'react-native';
 import { FontAwesome5 } from '@expo/vector-icons';
@@ -18,21 +16,19 @@ import { useLanguage } from '../../contexts/LanguageContext';
 import { useAuthContext } from '../../contexts/AuthContext';
 import { useProfileContext } from '../../contexts/ProfileContext';
 
-const { width } = Dimensions.get('window');
-
 export default function ProfileScreen() {
   const router = useRouter();
   const { user } = useAuthContext();
-  const { profile, isLoading, fetchProfile, error } = useProfileContext();
+  const { profile, experienceWeights, isLoading, fetchProfile, fetchExperienceWeights, error } = useProfileContext();
   const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState<'favorites' | 'reviews'>('favorites');
 
   useEffect(() => {
-    // Fetch profile data when component mounts
     if (user) {
       fetchProfile();
+      fetchExperienceWeights();
     }
-  }, [user, fetchProfile]);
+  }, [user, fetchProfile, fetchExperienceWeights]);
 
   if (!user) {
     return (
@@ -85,7 +81,7 @@ export default function ProfileScreen() {
     username: user.email?.split('@')[0] || 'user',
     profilePhoto: user.profilePhoto || 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y',
     coverPhoto: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=400&fit=crop',
-    bio: profile?.bio || 'Yeni Repathly gezgini!',
+    bio: (user as any).bio || profile?.bio || 'Yeni Repathly gezgini!',
     stats: {
       reviewCount: 0,
       placesVisited: 0,
@@ -93,26 +89,15 @@ export default function ProfileScreen() {
       following: 0,
     },
     joinDate: user.createdAt ? new Date(user.createdAt).toLocaleDateString() : '2024',
-    stories: [],
-    favoriteExperiences: [
-      {
-        id: '1',
-        name: 'Galata Kulesi',
-        city: 'İstanbul',
-        image: 'https://images.unsplash.com/photo-1524231757912-21f4fe3a7200?w=300&h=300&fit=crop',
-        rating: 4.8,
-        description: 'İstanbul\'un simgesi, 528 yılında inşa edilen tarihi kule'
-      },
-      {
-        id: '2',
-        name: 'Anıtkabir',
-        city: 'Ankara',
-        image: 'https://images.unsplash.com/photo-1589308078059-be1415eab4c3?w=300&h=300&fit=crop',
-        rating: 4.9,
-        description: 'Mustafa Kemal Atatürk\'ün anıt mezarı, Türkiye\'nin en önemli simgesi'
-      }
-    ],
-    recentReviews: []
+    recentReviews: [],
+  };
+
+  const getWeightColor = (weight: number): string => {
+    if (weight >= 5) return '#10B981';
+    if (weight >= 4) return '#3B82F6';
+    if (weight >= 3) return '#F59E0B';
+    if (weight >= 2) return '#EF4444';
+    return '#9CA3AF';
   };
 
   const handleBack = () => {
@@ -234,21 +219,45 @@ export default function ProfileScreen() {
 
         {/* Tab Content */}
         {activeTab === 'favorites' ? (
-          <View style={styles.favoritesGrid}>
-            {currentUser.favoriteExperiences.map((experience) => (
-              <View key={experience.id} style={styles.favoriteItem}>
-                <Image source={{ uri: experience.image }} style={styles.favoriteImage} />
-                <View style={styles.favoriteOverlay}>
-                  <View style={styles.favoriteRating}>
-                    <FontAwesome5 name="star" size={12} color="#FFD700" />
-                    <Text style={styles.favoriteRatingText}>{experience.rating}</Text>
+          <View style={styles.experienceWeightsContainer}>
+            {experienceWeights.length === 0 ? (
+              <View style={styles.emptyState}>
+                <FontAwesome5 name="compass" size={40} color="#ccc" />
+                <Text style={styles.emptyText}>
+                  {t('onboarding.selectCards')}
+                </Text>
+                <TouchableOpacity
+                  style={styles.addExperiencesButton}
+                  onPress={() => router.push('/(app)/settings/experience-weights')}
+                >
+                  <Text style={styles.addExperiencesText}>{t('taste_dna.editExperienceWeights')}</Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              experienceWeights.map((weight) => (
+                <View key={weight.cardId} style={styles.experienceWeightItem}>
+                  <View style={styles.experienceWeightInfo}>
+                    <Text style={styles.experienceWeightName}>
+                      {weight.cardNameTr || weight.cardName || weight.cardSlug}
+                    </Text>
+                    <View style={styles.weightDots}>
+                      {[1, 2, 3, 4, 5].map((dot) => (
+                        <View
+                          key={dot}
+                          style={[
+                            styles.weightDot,
+                            dot <= weight.weight && styles.weightDotActive,
+                          ]}
+                        />
+                      ))}
+                    </View>
+                  </View>
+                  <View style={[styles.weightBadge, { backgroundColor: getWeightColor(weight.weight) }]}>
+                    <Text style={styles.weightBadgeText}>{weight.weight}/5</Text>
                   </View>
                 </View>
-                <Text style={styles.favoriteName}>{experience.name}</Text>
-                <Text style={styles.favoriteCity}>{experience.city}</Text>
-                <Text style={styles.favoriteDescription}>{experience.description}</Text>
-              </View>
-            ))}
+              ))
+            )}
           </View>
         ) : (
           <View style={styles.reviewsList}>
@@ -462,57 +471,6 @@ const styles = StyleSheet.create({
     color: '#007AFF',
     fontWeight: '600',
   },
-  favoritesGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    paddingHorizontal: 10,
-    gap: 8,
-  },
-  favoriteItem: {
-    width: (width - 36) / 2,
-    marginBottom: 15,
-  },
-  favoriteImage: {
-    width: '100%',
-    height: (width - 36) / 2,
-    borderRadius: 12,
-    marginBottom: 8,
-  },
-  favoriteOverlay: {
-    position: 'absolute',
-    top: 8,
-    right: 8,
-  },
-  favoriteRating: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.7)',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 10,
-    gap: 4,
-  },
-  favoriteRatingText: {
-    fontSize: 10,
-    color: 'white',
-    fontWeight: '600',
-  },
-  favoriteName: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 2,
-  },
-  favoriteCity: {
-    fontSize: 10,
-    color: '#666',
-  },
-  favoriteDescription: {
-    fontSize: 12,
-    color: '#555',
-    marginTop: 4,
-    lineHeight: 16,
-  },
   reviewsList: {
     paddingHorizontal: 20,
   },
@@ -575,6 +533,67 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     color: '#999',
-    fontSize: 16,
-  }
+    fontSize: 15,
+    textAlign: 'center',
+    marginTop: 12,
+    lineHeight: 22,
+  },
+  addExperiencesButton: {
+    marginTop: 16,
+    backgroundColor: '#007AFF',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 20,
+  },
+  addExperiencesText: {
+    color: '#fff',
+    fontWeight: '600',
+    fontSize: 14,
+  },
+  experienceWeightsContainer: {
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+  },
+  experienceWeightItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  experienceWeightInfo: {
+    flex: 1,
+    marginRight: 12,
+  },
+  experienceWeightName: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 6,
+    textTransform: 'capitalize',
+  },
+  weightDots: {
+    flexDirection: 'row',
+    gap: 4,
+  },
+  weightDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#E5E7EB',
+  },
+  weightDotActive: {
+    backgroundColor: '#007AFF',
+  },
+  weightBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  weightBadgeText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '700',
+  },
 });

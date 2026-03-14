@@ -139,8 +139,17 @@
         "profileUpdated": "Profil tercihleri güncellendi."
     },
     "routing": {
+        "home": "Ana Sayfa",
+        "interests": "Keşfet",
+        "add": "Ekle",
+        "favorites": "Favoriler",
+        "map": "Harita",
+        "recommendations": "Öneriler",
+        "routePlanner": "Rota Planlayıcı",
+        "waypoints": "Ara Duraklar",
+        "fullscreenMap": "Harita",
         "planRoute": "Rota Planla",
-        "savedRoutes": "Kaydedilen Rotalar",
+        "savedRoutes": "Rotalarım",
         "searchPlaces": "Yer Ara",
         "startLocation": "Başlangıç Noktası",
         "destination": "Varış Noktası",
@@ -154,5 +163,13 @@
         "routeOrder": "Rota Sırası",
         "moreWaypoints": "durak daha",
         "completeRoutePrompt": "Rotamız üzerindeki ilginizi çekebilecek altın tavsiyelerimizi görmek ister misiniz?"
+    },
+    "profileSummary": {
+        "title": "Hazırsınız!",
+        "subtitle": "Seyahat profiliniz oluşturuldu. Repathly artık size özel rotalar oluşturacak.",
+        "experiencesLabel": "Deneyimleriniz",
+        "tasteDnaLabel": "Seyahat Stili",
+        "startExploring": "Keşfetmeye Başla",
+        "cardCount": "{{count}} deneyim kartı seçildi"
     }
 }

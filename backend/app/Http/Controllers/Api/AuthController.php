@@ -19,6 +19,9 @@ use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\ResetPasswordMail;
+use App\Mail\VerifyEmailMail;
 
 class AuthController extends Controller
 {
@@ -43,6 +46,25 @@ class AuthController extends Controller
 
             // Create default taste DNA profile
             UserProfile::createDefault($user->id);
+
+            // Generate and store email verification token
+            $verificationToken = Str::random(6);
+            DB::table('email_verification_tokens')->updateOrInsert(
+                ['email' => $user->email],
+                [
+                    'email' => $user->email,
+                    'token' => Hash::make($verificationToken),
+                    'created_at' => now(),
+                ]
+            );
+
+            // Send verification email (uses MAIL_MAILER driver from .env — 'log' in dev)
+            try {
+                Mail::to($user->email)->send(new VerifyEmailMail($verificationToken, $user->name));
+            } catch (\Exception $mailEx) {
+                // Non-fatal: log but don't fail registration
+                \Log::warning('Verification email failed to send: ' . $mailEx->getMessage());
+            }
 
             // Create Sanctum token
             $token = $user->createToken('mobile-app')->plainTextToken;
@@ -158,11 +180,10 @@ class AuthController extends Controller
                 ]
             );
 
-            // TODO: Send email with token
-            // For now, we'll return success
-            // In production, send email: Mail::to($user)->send(new ResetPasswordMail($token));
+            // Send password reset email
+            Mail::to($user->email)->send(new ResetPasswordMail($token, $user->email));
 
-            return $this->success(null, 'Şifre sıfırlama bağlantısı email adresinize gönderildi.');
+            return $this->success(null, 'Şifre sıfırlama kodu email adresinize gönderildi.');
 
         } catch (\Exception $e) {
             return $this->error('Şifre sıfırlama isteği sırasında bir hata oluştu.', 500, $e->getMessage());
@@ -225,13 +246,37 @@ class AuthController extends Controller
         try {
             $request->validate([
                 'token' => 'required|string',
+                'email' => 'required|email|exists:users,email',
             ]);
 
-            // TODO: Implement email verification logic
-            // For now, we'll return success
-            // In production: verify token and update user's is_email_verified
+            // Find verification record for this email
+            $records = DB::table('email_verification_tokens')
+                ->where('email', $request->email)
+                ->get();
 
-            return $this->success(null, 'Email adresiniz doğrulandı!');
+            $matched = null;
+            foreach ($records as $record) {
+                if (Hash::check($request->token, $record->token)) {
+                    $matched = $record;
+                    break;
+                }
+            }
+
+            if (!$matched) {
+                return $this->error('Geçersiz doğrulama kodu.', 400);
+            }
+
+            // Check token is not older than 24 hours
+            if (now()->diffInHours($matched->created_at) > 24) {
+                DB::table('email_verification_tokens')->where('email', $request->email)->delete();
+                return $this->error('Doğrulama kodunun süresi dolmuş. Lütfen yeni bir kod isteyin.', 400);
+            }
+
+            // Mark user as verified
+            User::where('email', $request->email)->update(['is_email_verified' => true]);
+            DB::table('email_verification_tokens')->where('email', $request->email)->delete();
+
+            return $this->success(null, 'Email adresiniz başarıyla doğrulandı!');
 
         } catch (\Exception $e) {
             return $this->error('Email doğrulama sırasında bir hata oluştu.', 500, $e->getMessage());
@@ -251,11 +296,26 @@ class AuthController extends Controller
                 'email' => 'required|email|exists:users,email',
             ]);
 
-            // TODO: Send verification email
-            // For now, we'll return success
-            // In production: Mail::to($user)->send(new VerifyEmailMail($token));
+            $user = User::where('email', $request->email)->first();
 
-            return $this->success(null, 'Doğrulama emaili tekrar gönderildi.');
+            if ($user->is_email_verified) {
+                return $this->success(null, 'Email adresiniz zaten doğrulanmış.');
+            }
+
+            // Generate new 6-digit verification token
+            $verificationToken = Str::random(6);
+            DB::table('email_verification_tokens')->updateOrInsert(
+                ['email' => $user->email],
+                [
+                    'email' => $user->email,
+                    'token' => Hash::make($verificationToken),
+                    'created_at' => now(),
+                ]
+            );
+
+            Mail::to($user->email)->send(new VerifyEmailMail($verificationToken, $user->name));
+
+            return $this->success(null, 'Doğrulama kodu email adresinize tekrar gönderildi.');
 
         } catch (\Exception $e) {
             return $this->error('Email gönderimi sırasında bir hata oluştu.', 500, $e->getMessage());

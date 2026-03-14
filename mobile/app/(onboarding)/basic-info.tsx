@@ -13,8 +13,11 @@ import {
 } from 'react-native';
 import { FontAwesome5 } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import * as ImagePicker from 'expo-image-picker';
 import { useAuthContext } from '../../contexts/AuthContext';
 import { setProfileCompleted, getNextOnboardingStep } from '../../utils/onboardingManager';
+import * as authApi from '../../services/api/auth';
+import * as secureStorage from '../../utils/secureStorage';
 import { t } from '../../services/api/i18n';
 
 export default function BasicInfoScreen() {
@@ -22,8 +25,51 @@ export default function BasicInfoScreen() {
     const { user, updateUser } = useAuthContext();
 
     const [name, setName] = useState(user?.name || '');
-    const [bio, setBio] = useState('');
+    const [bio, setBio] = useState(user?.bio || '');
+    const [profilePhoto, setProfilePhoto] = useState<string | null>(user?.profilePhoto || null);
     const [isLoading, setIsLoading] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
+
+    const handlePhotoUpload = async () => {
+        try {
+            const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+            if (!permissionResult.granted) {
+                Alert.alert(t('common.error'), t('settings.photoPermissionDenied'));
+                return;
+            }
+
+            const result = await ImagePicker.launchImageLibraryAsync({
+                mediaTypes: ['images'],
+                allowsEditing: true,
+                aspect: [1, 1],
+                quality: 0.8,
+            });
+
+            if (result.canceled || !result.assets?.[0]) return;
+
+            const imageUri = result.assets[0].uri;
+            setProfilePhoto(imageUri);
+
+            setIsUploading(true);
+            const token = await secureStorage.getToken();
+            if (!token) return;
+
+            const response = await authApi.uploadProfilePhoto(token, imageUri);
+            if (response.success && response.data) {
+                const photoUrl = response.data.profilePhoto;
+                setProfilePhoto(photoUrl);
+                await updateUser({ profilePhoto: photoUrl });
+            } else {
+                setProfilePhoto(user?.profilePhoto || null);
+                Alert.alert(t('common.error'), response.message || t('settings.photoUploadFailed'));
+            }
+        } catch (error) {
+            setProfilePhoto(user?.profilePhoto || null);
+            Alert.alert(t('common.error'), t('settings.photoUploadFailed'));
+        } finally {
+            setIsUploading(false);
+        }
+    };
 
     const handleContinue = async () => {
         if (!name.trim()) {
@@ -33,17 +79,36 @@ export default function BasicInfoScreen() {
 
         try {
             setIsLoading(true);
-            // In a real app, this would call an API to update the profile
-            // For now, we update local state which simulates persistence
-            await updateUser({
-                name: name.trim(),
-                hasCompletedProfile: true, // Mark step as done
-            });
 
-            // Mark profile completion in persistent storage
+            const token = await secureStorage.getToken();
+            if (!token) {
+                Alert.alert(t('common.error'), t('settings.sessionExpired'));
+                return;
+            }
+
+            const updates: any = {
+                name: name.trim(),
+                hasCompletedProfile: true,
+            };
+            if (bio.trim()) updates.bio = bio.trim();
+
+            const response = await authApi.updateProfile(token, updates);
+
+            if (response.success && response.data) {
+                const userData = (response.data as any).user || response.data;
+                await updateUser({
+                    name: userData.name,
+                    bio: userData.bio,
+                    profilePhoto: userData.profilePhoto || user?.profilePhoto,
+                    hasCompletedProfile: true,
+                });
+            } else {
+                // Still mark profile as completed even if API had a non-critical error
+                await updateUser({ name: name.trim(), bio: bio.trim() || undefined, hasCompletedProfile: true });
+            }
+
             await setProfileCompleted(true);
 
-            // Redirect to next onboarding step using async storage-based check
             const nextStep = await getNextOnboardingStep();
             router.replace(nextStep as any);
         } catch (error) {
@@ -53,19 +118,33 @@ export default function BasicInfoScreen() {
         }
     };
 
+    const defaultAvatar = 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y';
+
     return (
         <SafeAreaView style={styles.container}>
             <ScrollView contentContainerStyle={styles.scrollContent}>
                 <View style={styles.header}>
-                    <Text style={styles.title}>{t('profile.userProfile')}</Text>
+                    <Text style={styles.title}>{t('profile.myProfile')}</Text>
                     <Text style={styles.subtitle}>Bize biraz kendinden bahset</Text>
                 </View>
 
-                <TouchableOpacity style={styles.photoContainer}>
-                    <View style={styles.photoPlaceholder}>
-                        <FontAwesome5 name="camera" size={32} color="#999" />
+                <TouchableOpacity style={styles.photoContainer} onPress={handlePhotoUpload} disabled={isUploading}>
+                    <View style={styles.photoWrapper}>
+                        <Image
+                            source={{ uri: profilePhoto || defaultAvatar }}
+                            style={styles.profilePhoto}
+                        />
+                        <View style={styles.cameraOverlay}>
+                            {isUploading ? (
+                                <ActivityIndicator size="small" color="#fff" />
+                            ) : (
+                                <FontAwesome5 name="camera" size={14} color="#fff" />
+                            )}
+                        </View>
                     </View>
-                    <Text style={styles.photoText}>Fotoğraf Ekle</Text>
+                    <Text style={styles.photoText}>
+                        {profilePhoto ? 'Fotoğrafı Değiştir' : 'Fotoğraf Ekle'}
+                    </Text>
                 </TouchableOpacity>
 
                 <View style={styles.form}>
@@ -76,16 +155,18 @@ export default function BasicInfoScreen() {
                             value={name}
                             onChangeText={setName}
                             placeholder={t('auth.name')}
+                            placeholderTextColor="#999"
                         />
                     </View>
 
                     <View style={styles.inputGroup}>
-                        <Text style={styles.label}>Hakkımda (Opsiyonel)</Text>
+                        <Text style={styles.label}>{t('settings.bio')} <Text style={styles.optional}>(Opsiyonel)</Text></Text>
                         <TextInput
                             style={[styles.input, styles.textArea]}
                             value={bio}
                             onChangeText={setBio}
-                            placeholder="Hobilerin, sevdiğin seyahat rotaları..."
+                            placeholder={t('settings.bioPlaceholder')}
+                            placeholderTextColor="#999"
                             multiline
                             numberOfLines={4}
                         />
@@ -93,7 +174,7 @@ export default function BasicInfoScreen() {
                 </View>
 
                 <TouchableOpacity
-                    style={styles.button}
+                    style={[styles.button, isLoading && styles.buttonDisabled]}
                     onPress={handleContinue}
                     disabled={isLoading}
                 >
@@ -134,21 +215,34 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginBottom: 32,
     },
-    photoPlaceholder: {
+    photoWrapper: {
+        position: 'relative',
+        marginBottom: 12,
+    },
+    profilePhoto: {
         width: 120,
         height: 120,
         borderRadius: 60,
-        backgroundColor: '#F2F2F7',
+        borderWidth: 3,
+        borderColor: '#007AFF',
+    },
+    cameraOverlay: {
+        position: 'absolute',
+        bottom: 4,
+        right: 4,
+        width: 32,
+        height: 32,
+        borderRadius: 16,
+        backgroundColor: '#007AFF',
         justifyContent: 'center',
         alignItems: 'center',
-        marginBottom: 12,
-        borderWidth: 1,
-        borderColor: '#E5E5EA',
-        borderStyle: 'dashed',
+        borderWidth: 2,
+        borderColor: '#fff',
     },
     photoText: {
         color: '#007AFF',
         fontWeight: '600',
+        fontSize: 15,
     },
     form: {
         flex: 1,
@@ -162,6 +256,11 @@ const styles = StyleSheet.create({
         color: '#333',
         marginBottom: 8,
     },
+    optional: {
+        fontWeight: '400',
+        color: '#999',
+        fontSize: 14,
+    },
     input: {
         backgroundColor: '#F2F2F7',
         borderRadius: 12,
@@ -172,6 +271,7 @@ const styles = StyleSheet.create({
     textArea: {
         height: 120,
         textAlignVertical: 'top',
+        paddingTop: 16,
     },
     button: {
         backgroundColor: '#007AFF',
@@ -179,6 +279,9 @@ const styles = StyleSheet.create({
         padding: 18,
         alignItems: 'center',
         marginTop: 24,
+    },
+    buttonDisabled: {
+        opacity: 0.7,
     },
     buttonText: {
         color: '#fff',

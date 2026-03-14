@@ -22,7 +22,7 @@ import * as secureStorage from '../../../utils/secureStorage';
 
 export default function PersonalInfoScreen() {
   const router = useRouter();
-  const { user, updateUser } = useAuthContext();
+  const { user, updateUser, refreshUser } = useAuthContext();
   const { t } = useLanguage();
 
   const [name, setName] = useState(user?.name || '');
@@ -76,12 +76,15 @@ export default function PersonalInfoScreen() {
       const response = await authApi.updateProfile(token, updates);
 
       if (response.success && response.data) {
-        // The backend wraps it in { user: ... }
         const userData = (response.data as any).user || response.data;
         await updateUser({
           name: userData.name,
+          bio: userData.bio,
+          phone: userData.phone,
           profilePhoto: userData.profilePhoto,
         });
+        // Refresh full user object from backend to ensure bio/phone are in local cache
+        await refreshUser();
         Alert.alert(t('common.success'), t('settings.profileUpdated'));
       } else {
         Alert.alert(t('common.error'), response.message || t('settings.profileUpdateFailed'));

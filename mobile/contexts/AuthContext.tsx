@@ -14,6 +14,7 @@ interface AuthContextType {
     logout: () => Promise<void>;
     checkAuth: () => Promise<void>;
     updateUser: (updates: Partial<User>) => Promise<void>;
+    refreshUser: () => Promise<void>;
     resendVerificationEmail: () => Promise<{ success: boolean; message: string }>;
     languageSelected: boolean;
     setLanguageSelected: (selected: boolean) => void;
@@ -158,7 +159,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         }
     }, []);
 
-    // Update user locally
+    // Update user locally and persist to backend if backend fields are included
     const updateUser = useCallback(async (updates: Partial<User>) => {
         if (user) {
             const updatedUser = { ...user, ...updates };
@@ -166,6 +167,22 @@ export function AuthProvider({ children }: AuthProviderProps) {
             setUser(updatedUser);
         }
     }, [user]);
+
+    // Refresh user from backend and update local cache
+    const refreshUser = useCallback(async () => {
+        try {
+            const token = await secureStorage.getToken();
+            if (!token) return;
+            const response = await authApi.getProfile(token);
+            if (response.success && response.data) {
+                const freshUser = response.data as User;
+                await secureStorage.saveUser(freshUser);
+                setUser(freshUser);
+            }
+        } catch (error) {
+            console.error('Error refreshing user:', error);
+        }
+    }, []);
 
     // Resend verification email
     const resendVerificationEmail = useCallback(async () => {
@@ -202,6 +219,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         logout,
         checkAuth,
         updateUser,
+        refreshUser,
         resendVerificationEmail,
         languageSelected,
         setLanguageSelected,

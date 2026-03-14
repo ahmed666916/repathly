@@ -7,6 +7,7 @@ export default function OnboardingLayout() {
             <Stack.Screen name="basic-info" />
             <Stack.Screen name="taste-dna" />
             <Stack.Screen name="experience-cards" />
+            <Stack.Screen name="profile-summary" />
         </Stack>
     );
 }

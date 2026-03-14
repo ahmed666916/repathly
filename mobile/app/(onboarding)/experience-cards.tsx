@@ -130,16 +130,8 @@ export default function ExperienceCardsOnboarding() {
             // Mark experiences as selected in persistent storage
             await setExperiencesSelected(true);
 
-            Alert.alert(
-                t('onboarding.saveSuccessTitle'),
-                t('onboarding.saveSuccessMessage'),
-                [
-                    {
-                        text: t('onboarding.letsStart'),
-                        onPress: () => router.replace('/(app)'),
-                    },
-                ]
-            );
+            // Navigate to profile summary instead of directly to app
+            router.replace('/(onboarding)/profile-summary');
         } else {
             Alert.alert(t('common.error'), result.message || t('onboarding.saveError'));
         }
@@ -153,7 +145,7 @@ export default function ExperienceCardsOnboarding() {
                 { text: t('common.cancel'), style: 'cancel' },
                 {
                     text: t('common.next'),
-                    onPress: () => router.replace('/(app)'),
+                    onPress: () => router.replace('/(onboarding)/profile-summary'),
                 },
             ]
         );
