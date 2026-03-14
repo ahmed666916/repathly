@@ -112,7 +112,7 @@ export default function BasicInfoScreen() {
             const nextStep = await getNextOnboardingStep();
             router.replace(nextStep as any);
         } catch (error) {
-            Alert.alert(t('common.error'), 'Profil güncellenirken bir hata oluştu.');
+            Alert.alert(t('common.error'), t('settings.profileUpdateFailed'));
         } finally {
             setIsLoading(false);
         }
@@ -125,7 +125,7 @@ export default function BasicInfoScreen() {
             <ScrollView contentContainerStyle={styles.scrollContent}>
                 <View style={styles.header}>
                     <Text style={styles.title}>{t('profile.myProfile')}</Text>
-                    <Text style={styles.subtitle}>Bize biraz kendinden bahset</Text>
+                    <Text style={styles.subtitle}>{t('onboarding.basicInfoSubtitle')}</Text>
                 </View>
 
                 <TouchableOpacity style={styles.photoContainer} onPress={handlePhotoUpload} disabled={isUploading}>
@@ -143,7 +143,7 @@ export default function BasicInfoScreen() {
                         </View>
                     </View>
                     <Text style={styles.photoText}>
-                        {profilePhoto ? 'Fotoğrafı Değiştir' : 'Fotoğraf Ekle'}
+                        {profilePhoto ? t('settings.changePhoto') : t('onboarding.addPhoto')}
                     </Text>
                 </TouchableOpacity>
 
@@ -160,7 +160,7 @@ export default function BasicInfoScreen() {
                     </View>
 
                     <View style={styles.inputGroup}>
-                        <Text style={styles.label}>{t('settings.bio')} <Text style={styles.optional}>(Opsiyonel)</Text></Text>
+                        <Text style={styles.label}>{t('settings.bio')} <Text style={styles.optional}>({t('common.optional')})</Text></Text>
                         <TextInput
                             style={[styles.input, styles.textArea]}
                             value={bio}

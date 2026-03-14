@@ -17,6 +17,7 @@ import { useRouter } from 'expo-router';
 import { getToken } from '../../utils/secureStorage';
 import { setExperiencesSelected } from '../../utils/onboardingManager';
 import { t } from '../../services/api/i18n';
+import { useLanguage } from '../../contexts/LanguageContext';
 import {
     ExperienceCard,
     getExperienceCards,
@@ -58,15 +59,10 @@ const CATEGORY_COLORS: { [key: string]: string } = {
     'special_interest': '#F39C12',
 };
 
-const CATEGORY_TITLES: { [key: string]: string } = {
-    'food_dining': 'Yeme & Icme',
-    'activities': 'Aktiviteler',
-    'lifestyle': 'Yasam Tarzi',
-    'special_interest': 'Ozel Ilgi',
-};
 
 export default function ExperienceCardsOnboarding() {
     const router = useRouter();
+    const { locale } = useLanguage();
     const [cards, setCards] = useState<ExperienceCard[]>([]);
     const [selectedCardIds, setSelectedCardIds] = useState<number[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -117,7 +113,7 @@ export default function ExperienceCardsOnboarding() {
 
         const token = await getToken();
         if (!token) {
-            Alert.alert('Oturum Hatasi', 'Lutfen tekrar giris yapin.');
+            Alert.alert(t('common.error'), t('onboarding.sessionError'));
             router.replace('/(auth)/login');
             return;
         }
@@ -248,7 +244,7 @@ export default function ExperienceCardsOnboarding() {
                                 <View style={styles.categoryHeader}>
                                     <View style={[styles.categoryIndicator, { backgroundColor: CATEGORY_COLORS[category] || '#E91E63' }]} />
                                     <Text style={styles.categoryTitle}>
-                                        {CATEGORY_TITLES[category] || category}
+                                        {t(`onboarding.categories.${category}`) || category}
                                     </Text>
                                 </View>
                                 <View style={styles.cardsGrid}>
@@ -272,10 +268,14 @@ export default function ExperienceCardsOnboarding() {
                                                 {renderIcon(card.icon, CATEGORY_COLORS[card.category] || '#E91E63', 28)}
                                             </View>
                                             <Text style={styles.cardTitle} numberOfLines={2}>
-                                                {card.nameTr || card.name_tr}
+                                                {locale === 'tr'
+                                                    ? (card.nameTr || card.name_tr)
+                                                    : (card.nameEn || card.name_en || card.nameTr || card.name_tr)}
                                             </Text>
                                             <Text style={styles.cardDescription} numberOfLines={2}>
-                                                {card.descriptionTr || card.description_tr}
+                                                {locale === 'tr'
+                                                    ? (card.descriptionTr || card.description_tr)
+                                                    : (card.descriptionEn || card.description_en || card.descriptionTr || card.description_tr)}
                                             </Text>
                                         </TouchableOpacity>
                                     ))}

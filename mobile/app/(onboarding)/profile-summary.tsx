@@ -126,7 +126,9 @@ export default function ProfileSummaryScreen() {
                         {experienceWeights.map((weight) => (
                             <View key={weight.cardId} style={styles.cardChip}>
                                 <Text style={styles.cardChipText}>
-                                    {weight.cardNameTr || weight.cardName || weight.cardSlug}
+                                    {locale === 'tr'
+                                        ? (weight.cardNameTr || weight.cardName || weight.cardSlug)
+                                        : (weight.cardName || weight.cardNameTr || weight.cardSlug)}
                                 </Text>
                                 <View style={styles.cardWeightDots}>
                                     {[1, 2, 3, 4, 5].map((dot) => (

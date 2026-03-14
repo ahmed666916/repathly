@@ -15,6 +15,7 @@ import {
 import { FontAwesome } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router';
 import GOOGLE_MAPS_KEY from '../../constants/googleMapsKey';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 interface PlaceSuggestion {
   place_id: string;
@@ -27,6 +28,7 @@ interface PlaceSuggestion {
 
 export default function WaypointsScreen() {
   const router = useRouter();
+  const { t } = useLanguage();
   const params = useLocalSearchParams();
   const destination = params.destination as string;
 
@@ -191,9 +193,9 @@ export default function WaypointsScreen() {
           >
             <FontAwesome name="arrow-left" size={20} color="#fff" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Ara Duraklar</Text>
+          <Text style={styles.headerTitle}>{t('routing.waypoints')}</Text>
           <TouchableOpacity style={styles.skipButton} onPress={handleSkip}>
-            <Text style={styles.skipButtonText}>Atla</Text>
+            <Text style={styles.skipButtonText}>{t('onboarding.skip')}</Text>
           </TouchableOpacity>
         </View>
 
@@ -203,7 +205,7 @@ export default function WaypointsScreen() {
               <FontAwesome name="flag" size={16} color="#E91E63" /> {destination}
             </Text>
             <Text style={styles.infoText}>
-              Başka nerelere uğramak istersiniz? (İsteğe bağlı)
+              {t('routing.addWaypointOptional')}
             </Text>
           </View>
 
@@ -212,7 +214,7 @@ export default function WaypointsScreen() {
               <FontAwesome name="plus" size={20} color="#4CAF50" style={styles.inputIcon} />
               <TextInput
                 style={styles.textInput}
-                placeholder="Ara durak ekle..."
+                placeholder={t('routing.addWaypointPlaceholder')}
                 placeholderTextColor="rgba(255, 255, 255, 0.6)"
                 value={currentWaypoint}
                 onChangeText={handleWaypointChange}
@@ -267,7 +269,7 @@ export default function WaypointsScreen() {
 
           {waypoints.length > 0 && (
             <View style={styles.waypointsSection}>
-              <Text style={styles.waypointsTitle}>Ara Duraklar ({waypoints.length})</Text>
+              <Text style={styles.waypointsTitle}>{t('routing.waypointsCount', { count: waypoints.length })}</Text>
               {waypoints.map((waypoint, index) => (
                 <View key={index} style={styles.waypointItem}>
                   <View style={styles.waypointInfo}>
@@ -288,7 +290,7 @@ export default function WaypointsScreen() {
 
         <View style={styles.bottomSection}>
           <TouchableOpacity style={styles.continueButton} onPress={handleContinue}>
-            <Text style={styles.continueButtonText}>Rotayı Önizle</Text>
+            <Text style={styles.continueButtonText}>{t('routing.previewRoute')}</Text>
             <FontAwesome name="map" size={20} color="#fff" />
           </TouchableOpacity>
         </View>

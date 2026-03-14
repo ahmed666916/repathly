@@ -7,7 +7,10 @@
         "loading": "Loading...",
         "error": "Error",
         "success": "Success",
-        "retry": "Retry"
+        "retry": "Retry",
+        "warning": "Warning",
+        "ok": "OK",
+        "optional": "Optional"
     },
     "home": {
         "welcome": "Welcome!",
@@ -63,7 +66,17 @@
         "letsStart": "Let's Start!",
         "saveError": "Preferences could not be saved",
         "skipConfirmTitle": "Are you sure you want to skip?",
-        "skipConfirmMessage": "If you continue without selecting experience cards, you will not receive personalized recommendations. You can select them later in settings."
+        "skipConfirmMessage": "If you continue without selecting experience cards, you will not receive personalized recommendations. You can select them later in settings.",
+        "basicInfoSubtitle": "Tell us a bit about yourself",
+        "addPhoto": "Add Photo",
+        "sessionError": "Session expired. Please login again.",
+        "loginAgain": "Please login again.",
+        "categories": {
+            "food_dining": "Food & Drinks",
+            "activities": "Activities",
+            "lifestyle": "Lifestyle",
+            "special_interest": "Special Interest"
+        }
     },
     "profile": {
         "title": "Profile",
@@ -160,9 +173,54 @@
         "currentLocation": "Current Location",
         "mapLoading": "Map loading...",
         "routeError": "Route could not be calculated. Please check destination and waypoints.",
-        "routeOrder": "Route Order",
+        "routeOrder": "Route Order:",
         "moreWaypoints": "more stops",
-        "completeRoutePrompt": "Would you like to see our golden recommendations that might interest you along our route?"
+        "completeRoutePrompt": "Would you like to see our golden recommendations that might interest you along our route?",
+        "addWaypointPrompt": "Where else would you like to stop?",
+        "addWaypointPlaceholder": "Add a waypoint...",
+        "waypointsList": "Waypoints:",
+        "viewRoute": "View Route",
+        "enterWaypointWarning": "Please enter a place you want to stop.",
+        "invalidInput": "Invalid Input",
+        "invalidWaypointMessage": "Please enter a valid waypoint name.\n\nExamples: New York, Central Park",
+        "addWaypointOptional": "Where else would you like to stop? (Optional)",
+        "waypointsCount": "Waypoints ({count})",
+        "previewRoute": "Preview Route",
+        "startSuffix": "(Start)",
+        "destinationSuffix": "(Destination)",
+        "selectInterests": "Select Interests",
+        "routeErrorTitle": "Route Error"
+    },
+    "savedRoutes": {
+        "title": "My Saved Routes",
+        "loading": "Loading routes...",
+        "sessionNotFound": "Session not found.",
+        "loadFailed": "Routes could not be loaded.",
+        "loadError": "An error occurred while loading routes.",
+        "deleteTitle": "Delete Route",
+        "deleteMessage": "Are you sure you want to archive this route?",
+        "archive": "Archive",
+        "deleteError": "An error occurred while deleting the route.",
+        "unnamed": "Unnamed Route",
+        "distance": "distance",
+        "stops": "stops",
+        "empty": "No saved routes yet",
+        "emptyDesc": "Use route planner to create and save new routes.",
+        "createRoute": "Create New Route"
+    },
+    "forgotPassword": {
+        "title": "Forgot Password",
+        "subtitle": "Enter your email address and we'll send you a password reset link.",
+        "emailPlaceholder": "Email Address",
+        "sendButton": "Send Reset Link",
+        "connectionError": "Connection error. Please try again.",
+        "resentSuccess": "Password reset link was resent.",
+        "successTitle": "Email Sent!",
+        "successMessage": "Password reset link has been sent to {{email}}.",
+        "successHint": "Check your email and click the link to reset your password.",
+        "resend": "Resend",
+        "backToLogin": "Back to Login",
+        "backToLoginLink": "Back to login page"
     },
     "profileSummary": {
         "title": "You're All Set!",

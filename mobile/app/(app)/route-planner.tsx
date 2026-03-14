@@ -14,9 +14,11 @@ import {
 import { FontAwesome } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router';
 import { useCallback } from 'react';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 export default function RoutePlannerScreen() {
   const router = useRouter();
+  const { t } = useLanguage();
   const { destination } = useLocalSearchParams();
   const [waypoints, setWaypoints] = useState<string[]>([]);
   const [currentWaypoint, setCurrentWaypoint] = useState('');
@@ -74,20 +76,20 @@ export default function RoutePlannerScreen() {
 
   const addWaypoint = async () => {
     if (currentWaypoint.trim() === '') {
-      Alert.alert('Uyarı', 'Lütfen uğramak istediğiniz yeri girin.');
+      Alert.alert(t('common.warning'), t('routing.enterWaypointWarning'));
       return;
     }
 
     // Basit validasyon yap
     const validation = await validatePlace(currentWaypoint.trim());
-    
+
     if (!validation.isValid) {
       Alert.alert(
-        'Geçersiz Giriş',
-        'Lütfen geçerli bir ara durak adı girin.\n\nÖrnekler: Taksim, Kadıköy, Central Park',
+        t('routing.invalidInput'),
+        t('routing.invalidWaypointMessage'),
         [
           {
-            text: 'Tamam',
+            text: t('common.ok'),
             style: 'default'
           }
         ]
@@ -139,13 +141,13 @@ export default function RoutePlannerScreen() {
               >
                 <FontAwesome name="arrow-left" size={20} color="#fff" />
               </TouchableOpacity>
-              <Text style={styles.headerTitle}>Rota Planlama</Text>
+              <Text style={styles.headerTitle}>{t('routing.planRoute')}</Text>
               <View style={styles.placeholder} />
             </View>
 
             {/* Destination Display */}
             <View style={styles.destinationContainer}>
-              <Text style={styles.destinationLabel}>Hedef:</Text>
+              <Text style={styles.destinationLabel}>{t('routing.destination')}:</Text>
               <View style={styles.destinationDisplay}>
                 <FontAwesome name="map-marker" size={18} color="#E91E63" />
                 <Text style={styles.destinationText}>{destination}</Text>
@@ -154,13 +156,13 @@ export default function RoutePlannerScreen() {
 
             {/* Waypoints Input */}
             <View style={styles.waypointsSection}>
-              <Text style={styles.sectionTitle}>Başka nerelere uğramak istersiniz?</Text>
+              <Text style={styles.sectionTitle}>{t('routing.addWaypointPrompt')}</Text>
               
               <View style={styles.inputContainer}>
                 <FontAwesome name="plus-circle" size={20} color="#E91E63" style={styles.inputIcon} />
                 <TextInput
                   style={styles.waypointInput}
-                  placeholder="Ara durak ekleyin..."
+                  placeholder={t('routing.addWaypointPlaceholder')}
                   placeholderTextColor="rgba(255, 255, 255, 0.7)"
                   value={currentWaypoint}
                   onChangeText={(text) => {
@@ -189,7 +191,7 @@ export default function RoutePlannerScreen() {
               {/* Waypoints List */}
               {waypoints.length > 0 && (
                 <View style={styles.waypointsList}>
-                  <Text style={styles.waypointsListTitle}>Ara Duraklar:</Text>
+                  <Text style={styles.waypointsListTitle}>{t('routing.waypointsList')}</Text>
                   {waypoints.map((waypoint, index) => (
                     <View key={index} style={styles.waypointItem}>
                       <FontAwesome name="location-arrow" size={16} color="#4CAF50" />
@@ -214,7 +216,7 @@ export default function RoutePlannerScreen() {
               onPress={handleViewRoute}
             >
               <FontAwesome name="map" size={20} color="#fff" style={styles.buttonIcon} />
-              <Text style={styles.viewRouteButtonText}>Rotayı Gör</Text>
+              <Text style={styles.viewRouteButtonText}>{t('routing.viewRoute')}</Text>
               <FontAwesome name="chevron-right" size={18} color="#fff" />
             </TouchableOpacity>
           </ScrollView>

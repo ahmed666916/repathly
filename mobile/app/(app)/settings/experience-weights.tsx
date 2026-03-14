@@ -14,9 +14,11 @@ import { FontAwesome5 } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useProfileContext } from '../../../contexts/ProfileContext';
 import { weightLabels } from '../../../services/api/profile';
+import { useLanguage } from '../../../contexts/LanguageContext';
 
 export default function ExperienceWeightsScreen() {
   const router = useRouter();
+  const { locale } = useLanguage();
   const {
     experienceWeights,
     isLoading,
@@ -179,7 +181,11 @@ export default function ExperienceWeightsScreen() {
               return (
                 <View key={item.cardId} style={styles.cardItem}>
                   <View style={styles.cardHeader}>
-                    <Text style={styles.cardName}>{item.cardNameTr || item.cardName}</Text>
+                    <Text style={styles.cardName}>
+                      {locale === 'tr'
+                        ? (item.cardNameTr || item.cardName)
+                        : (item.cardName || item.cardNameTr)}
+                    </Text>
                   </View>
                   <Text style={styles.weightLabel}>{getWeightLabel(weight)}</Text>
                   <View style={styles.weightButtons}>

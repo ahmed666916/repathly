@@ -16,9 +16,11 @@ import { useRouter } from 'expo-router';
 import * as routesApi from '../../services/api/routes';
 import { RouteListItem, routeModeLabels, routeStatusLabels } from '../../services/api/routes';
 import * as secureStorage from '../../utils/secureStorage';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 export default function SavedRoutesScreen() {
   const router = useRouter();
+  const { t, locale } = useLanguage();
   const [routes, setRoutes] = useState<RouteListItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -27,7 +29,7 @@ export default function SavedRoutesScreen() {
     try {
       const token = await secureStorage.getToken();
       if (!token) {
-        Alert.alert('Hata', 'Oturum bulunamadi.');
+        Alert.alert(t('common.error'), t('savedRoutes.sessionNotFound'));
         return;
       }
 
@@ -36,11 +38,11 @@ export default function SavedRoutesScreen() {
       if (response.success && response.data) {
         setRoutes(response.data.routes);
       } else {
-        Alert.alert('Hata', response.message || 'Rotalar yuklenemedi.');
+        Alert.alert(t('common.error'), response.message || t('savedRoutes.loadFailed'));
       }
     } catch (error) {
       console.error('Error fetching routes:', error);
-      Alert.alert('Hata', 'Rotalar yuklenirken bir hata olustu.');
+      Alert.alert(t('common.error'), t('savedRoutes.loadError'));
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
@@ -67,12 +69,12 @@ export default function SavedRoutesScreen() {
 
   const handleDeleteRoute = async (uuid: string) => {
     Alert.alert(
-      'Rotayi Sil',
-      'Bu rotayi arsivlemek istediginize emin misiniz?',
+      t('savedRoutes.deleteTitle'),
+      t('savedRoutes.deleteMessage'),
       [
-        { text: 'Iptal', style: 'cancel' },
+        { text: t('common.cancel'), style: 'cancel' },
         {
-          text: 'Arsivle',
+          text: t('savedRoutes.archive'),
           style: 'destructive',
           onPress: async () => {
             try {
@@ -84,10 +86,10 @@ export default function SavedRoutesScreen() {
               if (response.success) {
                 setRoutes(prev => prev.filter(r => r.uuid !== uuid));
               } else {
-                Alert.alert('Hata', response.message);
+                Alert.alert(t('common.error'), response.message);
               }
             } catch (error) {
-              Alert.alert('Hata', 'Rota silinirken bir hata olustu.');
+              Alert.alert(t('common.error'), t('savedRoutes.deleteError'));
             }
           },
         },
@@ -138,15 +140,15 @@ export default function SavedRoutesScreen() {
         </View>
         <View style={styles.routeInfo}>
           <Text style={styles.routeName} numberOfLines={1}>
-            {item.name || 'Isimsiz Rota'}
+            {item.name || t('savedRoutes.unnamed')}
           </Text>
           <Text style={styles.routeMode}>
-            {routeModeLabels[item.routeMode]?.tr || item.routeMode}
+            {(locale === 'tr' ? routeModeLabels[item.routeMode]?.tr : routeModeLabels[item.routeMode]?.en) || item.routeMode}
           </Text>
         </View>
         <View style={styles.routeStats}>
           <Text style={styles.statValue}>{formatDistance(item.totalDistanceMeters)}</Text>
-          <Text style={styles.statLabel}>mesafe</Text>
+          <Text style={styles.statLabel}>{t('savedRoutes.distance')}</Text>
         </View>
       </View>
 
@@ -177,11 +179,11 @@ export default function SavedRoutesScreen() {
         </View>
         <View style={styles.footerItem}>
           <FontAwesome5 name="map-pin" size={12} color="#666" />
-          <Text style={styles.footerText}>{item.stopsCount} durak</Text>
+          <Text style={styles.footerText}>{item.stopsCount} {t('savedRoutes.stops')}</Text>
         </View>
         <View style={[styles.statusBadge, { backgroundColor: getStatusColor(item.status) }]}>
           <Text style={styles.statusText}>
-            {routeStatusLabels[item.status]?.tr || item.status}
+            {(locale === 'tr' ? routeStatusLabels[item.status]?.tr : routeStatusLabels[item.status]?.en) || item.status}
           </Text>
         </View>
       </View>
@@ -206,7 +208,7 @@ export default function SavedRoutesScreen() {
       <SafeAreaView style={styles.container}>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#E91E63" />
-          <Text style={styles.loadingText}>Rotalar yukleniyor...</Text>
+          <Text style={styles.loadingText}>{t('savedRoutes.loading')}</Text>
         </View>
       </SafeAreaView>
     );
@@ -221,7 +223,7 @@ export default function SavedRoutesScreen() {
         <TouchableOpacity onPress={handleBack} style={styles.backButton}>
           <FontAwesome5 name="arrow-left" size={20} color="#333" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Kayitli Rotalarim</Text>
+        <Text style={styles.headerTitle}>{t('savedRoutes.title')}</Text>
         <View style={styles.headerRight} />
       </View>
 
@@ -229,16 +231,14 @@ export default function SavedRoutesScreen() {
       {routes.length === 0 ? (
         <View style={styles.emptyContainer}>
           <FontAwesome5 name="route" size={64} color="#ccc" />
-          <Text style={styles.emptyTitle}>Henuz kayitli rotaniz yok</Text>
-          <Text style={styles.emptyText}>
-            Rota planlayiciyi kullanarak yeni rotalar olusturun ve kaydedin.
-          </Text>
+          <Text style={styles.emptyTitle}>{t('savedRoutes.empty')}</Text>
+          <Text style={styles.emptyText}>{t('savedRoutes.emptyDesc')}</Text>
           <TouchableOpacity
             style={styles.createButton}
             onPress={() => router.push('/(app)/route-planner')}
           >
             <FontAwesome5 name="plus" size={16} color="#fff" />
-            <Text style={styles.createButtonText}>Yeni Rota Olustur</Text>
+            <Text style={styles.createButtonText}>{t('savedRoutes.createRoute')}</Text>
           </TouchableOpacity>
         </View>
       ) : (

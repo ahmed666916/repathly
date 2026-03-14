@@ -14,7 +14,8 @@ import { FontAwesome5 } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useAuthContext } from '../../contexts/AuthContext';
 import { useProfileContext } from '../../contexts/ProfileContext';
-import { t, getLanguage } from '../../services/api/i18n';
+import { t } from '../../services/api/i18n';
+import { useLanguage } from '../../contexts/LanguageContext';
 import { setTasteDnaCompleted, getNextOnboardingStep } from '../../utils/onboardingManager';
 import {
     travelStyleLabels,
@@ -33,9 +34,8 @@ export default function TasteDNAOnboardingScreen() {
     const router = useRouter();
     const { updateUser } = useAuthContext();
     const { profile, fetchProfile, updateProfile } = useProfileContext();
-
-    // Use a fallback for getLanguage if it doesn't exist, or just use 'tr' as default
-    const lang = (typeof getLanguage === 'function' ? getLanguage() : 'tr') as 'tr' | 'en';
+    const { locale } = useLanguage();
+    const lang = locale as 'tr' | 'en';
 
     const [localProfile, setLocalProfile] = useState({
         travelStyle: 'balanced' as TravelStyle,
@@ -129,42 +129,42 @@ export default function TasteDNAOnboardingScreen() {
         <SafeAreaView style={styles.container}>
             <ScrollView contentContainerStyle={styles.scrollContent}>
                 <View style={styles.header}>
-                    <Text style={styles.title}>Seyahat DNA'n</Text>
-                    <Text style={styles.subtitle}>Sana en uygun rotaları oluşturmamız için tercihlerini belirle.</Text>
+                    <Text style={styles.title}>{t('taste_dna.travelDna')}</Text>
+                    <Text style={styles.subtitle}>{t('taste_dna.description')}</Text>
                 </View>
 
                 {renderOptions(
                     'travelStyle',
                     travelStyleLabels,
-                    'Seyahat Tarzı',
+                    t('taste_dna.travelStyle'),
                     'plane'
                 )}
 
                 {renderOptions(
                     'detourTolerance',
                     detourToleranceLabels,
-                    'Rota Esnekliği',
+                    t('taste_dna.detourTolerance'),
                     'route'
                 )}
 
                 {renderOptions(
                     'budgetSensitivity',
                     budgetSensitivityLabels,
-                    'Bütçe Tercihi',
+                    t('taste_dna.budgetPreference'),
                     'wallet'
                 )}
 
                 {renderOptions(
                     'preferredGroupType',
                     groupTypeLabels,
-                    'Seyahat Grubu',
+                    t('taste_dna.groupType'),
                     'users'
                 )}
 
                 {renderOptions(
                     'stopIntensity',
                     stopIntensityLabels,
-                    'Mola Sıklığı',
+                    t('taste_dna.stopIntensity'),
                     'coffee'
                 )}
 

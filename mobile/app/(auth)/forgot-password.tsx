@@ -16,9 +16,11 @@ import {
 import { FontAwesome } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import * as authApi from '../../services/api/auth';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 export default function ForgotPasswordScreen() {
     const router = useRouter();
+    const { t } = useLanguage();
     const [email, setEmail] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [isEmailSent, setIsEmailSent] = useState(false);
@@ -26,11 +28,11 @@ export default function ForgotPasswordScreen() {
 
     const validateEmail = () => {
         if (!email.trim()) {
-            setError('Email adresi gereklidir.');
+            setError(t('auth.emailRequired'));
             return false;
         }
         if (!/\S+@\S+\.\S+/.test(email)) {
-            setError('Geçerli bir email adresi girin.');
+            setError(t('auth.invalidEmail'));
             return false;
         }
         setError('');
@@ -47,10 +49,10 @@ export default function ForgotPasswordScreen() {
             if (response.success) {
                 setIsEmailSent(true);
             } else {
-                Alert.alert('Hata', response.message);
+                Alert.alert(t('common.error'), response.message);
             }
         } catch (err) {
-            Alert.alert('Hata', 'Bağlantı hatası. Lütfen tekrar deneyin.');
+            Alert.alert(t('common.error'), t('forgotPassword.connectionError'));
         } finally {
             setIsLoading(false);
         }
@@ -61,10 +63,10 @@ export default function ForgotPasswordScreen() {
         try {
             const response = await authApi.forgotPassword(email.trim());
             if (response.success) {
-                Alert.alert('Başarılı', 'Şifre sıfırlama bağlantısı tekrar gönderildi.');
+                Alert.alert(t('common.success'), t('forgotPassword.resentSuccess'));
             }
         } catch (err) {
-            Alert.alert('Hata', 'Bağlantı hatası.');
+            Alert.alert(t('common.error'), t('forgotPassword.connectionError'));
         } finally {
             setIsLoading(false);
         }
@@ -83,14 +85,12 @@ export default function ForgotPasswordScreen() {
                         <View style={styles.successIconContainer}>
                             <FontAwesome name="envelope-o" size={60} color="#E91E63" />
                         </View>
-                        <Text style={styles.successTitle}>Email Gönderildi!</Text>
+                        <Text style={styles.successTitle}>{t('forgotPassword.successTitle')}</Text>
                         <Text style={styles.successMessage}>
-                            Şifre sıfırlama bağlantısı{'\n'}
-                            <Text style={styles.emailHighlight}>{email}</Text>
-                            {'\n'}adresine gönderildi.
+                            {t('forgotPassword.successMessage', { email })}
                         </Text>
                         <Text style={styles.successHint}>
-                            Email'inizi kontrol edin ve şifrenizi sıfırlamak için bağlantıya tıklayın.
+                            {t('forgotPassword.successHint')}
                         </Text>
 
                         <TouchableOpacity
@@ -101,7 +101,7 @@ export default function ForgotPasswordScreen() {
                             {isLoading ? (
                                 <ActivityIndicator color="#E91E63" />
                             ) : (
-                                <Text style={styles.resendButtonText}>Tekrar Gönder</Text>
+                                <Text style={styles.resendButtonText}>{t('forgotPassword.resend')}</Text>
                             )}
                         </TouchableOpacity>
 
@@ -109,7 +109,7 @@ export default function ForgotPasswordScreen() {
                             style={styles.backToLoginButton}
                             onPress={() => router.push('/(auth)/login')}
                         >
-                            <Text style={styles.backToLoginText}>Giriş Sayfasına Dön</Text>
+                            <Text style={styles.backToLoginText}>{t('forgotPassword.backToLogin')}</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
@@ -146,9 +146,9 @@ export default function ForgotPasswordScreen() {
                             <View style={styles.iconContainer}>
                                 <FontAwesome name="lock" size={40} color="#E91E63" />
                             </View>
-                            <Text style={styles.title}>Şifremi Unuttum</Text>
+                            <Text style={styles.title}>{t('forgotPassword.title')}</Text>
                             <Text style={styles.subtitle}>
-                                Email adresinizi girin, size şifre sıfırlama bağlantısı gönderelim.
+                                {t('forgotPassword.subtitle')}
                             </Text>
                         </View>
 
@@ -158,7 +158,7 @@ export default function ForgotPasswordScreen() {
                                 <FontAwesome name="envelope" size={16} color="#8A9A94" style={styles.inputIcon} />
                                 <TextInput
                                     style={styles.input}
-                                    placeholder="Email Adresi"
+                                    placeholder={t('forgotPassword.emailPlaceholder')}
                                     placeholderTextColor="#8A9A94"
                                     value={email}
                                     onChangeText={(text) => {
@@ -180,7 +180,7 @@ export default function ForgotPasswordScreen() {
                                 {isLoading ? (
                                     <ActivityIndicator color="#fff" />
                                 ) : (
-                                    <Text style={styles.submitButtonText}>Sıfırlama Bağlantısı Gönder</Text>
+                                    <Text style={styles.submitButtonText}>{t('forgotPassword.sendButton')}</Text>
                                 )}
                             </TouchableOpacity>
                         </View>
@@ -191,7 +191,7 @@ export default function ForgotPasswordScreen() {
                             onPress={() => router.push('/(auth)/login')}
                         >
                             <FontAwesome name="arrow-left" size={14} color="#8A9A94" />
-                            <Text style={styles.loginLinkText}>Giriş sayfasına dön</Text>
+                            <Text style={styles.loginLinkText}>{t('forgotPassword.backToLoginLink')}</Text>
                         </TouchableOpacity>
                     </ScrollView>
                 </KeyboardAvoidingView>

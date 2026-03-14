@@ -20,7 +20,7 @@ export default function ProfileScreen() {
   const router = useRouter();
   const { user } = useAuthContext();
   const { profile, experienceWeights, isLoading, fetchProfile, fetchExperienceWeights, error } = useProfileContext();
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const [activeTab, setActiveTab] = useState<'favorites' | 'reviews'>('favorites');
 
   useEffect(() => {
@@ -238,7 +238,9 @@ export default function ProfileScreen() {
                 <View key={weight.cardId} style={styles.experienceWeightItem}>
                   <View style={styles.experienceWeightInfo}>
                     <Text style={styles.experienceWeightName}>
-                      {weight.cardNameTr || weight.cardName || weight.cardSlug}
+                      {locale === 'tr'
+                        ? (weight.cardNameTr || weight.cardName || weight.cardSlug)
+                        : (weight.cardName || weight.cardNameTr || weight.cardSlug)}
                     </Text>
                     <View style={styles.weightDots}>
                       {[1, 2, 3, 4, 5].map((dot) => (

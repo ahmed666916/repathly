@@ -7,7 +7,10 @@
         "loading": "Yükleniyor...",
         "error": "Hata",
         "success": "Başarılı",
-        "retry": "Tekrar Dene"
+        "retry": "Tekrar Dene",
+        "warning": "Uyarı",
+        "ok": "Tamam",
+        "optional": "Opsiyonel"
     },
     "home": {
         "welcome": "Hoş Geldiniz!",
@@ -63,7 +66,17 @@
         "letsStart": "Başlayalım!",
         "saveError": "Tercihler kaydedilemedi",
         "skipConfirmTitle": "Atlamak istediğinizden emin misiniz?",
-        "skipConfirmMessage": "Deneyim kartları seçmeden devam ederseniz, size özel öneriler alamayacaksınız. Daha sonra ayarlardan seçebilirsiniz."
+        "skipConfirmMessage": "Deneyim kartları seçmeden devam ederseniz, size özel öneriler alamayacaksınız. Daha sonra ayarlardan seçebilirsiniz.",
+        "basicInfoSubtitle": "Bize biraz kendinden bahset",
+        "addPhoto": "Fotoğraf Ekle",
+        "sessionError": "Oturum süresi doldu. Lütfen tekrar giriş yapın.",
+        "loginAgain": "Lütfen tekrar giriş yapın.",
+        "categories": {
+            "food_dining": "Yeme & İçme",
+            "activities": "Aktiviteler",
+            "lifestyle": "Yaşam Tarzı",
+            "special_interest": "Özel İlgi"
+        }
     },
     "profile": {
         "title": "Profil",
@@ -160,9 +173,54 @@
         "currentLocation": "Mevcut Konumunuz",
         "mapLoading": "Harita yükleniyor...",
         "routeError": "Rota hesaplanamadı. Lütfen hedef ve ara durakları kontrol edin.",
-        "routeOrder": "Rota Sırası",
+        "routeOrder": "Rota Sırası:",
         "moreWaypoints": "durak daha",
-        "completeRoutePrompt": "Rotamız üzerindeki ilginizi çekebilecek altın tavsiyelerimizi görmek ister misiniz?"
+        "completeRoutePrompt": "Rotamız üzerindeki ilginizi çekebilecek altın tavsiyelerimizi görmek ister misiniz?",
+        "addWaypointPrompt": "Başka nerelere uğramak istersiniz?",
+        "addWaypointPlaceholder": "Ara durak ekleyin...",
+        "waypointsList": "Ara Duraklar:",
+        "viewRoute": "Rotayı Gör",
+        "enterWaypointWarning": "Lütfen uğramak istediğiniz yeri girin.",
+        "invalidInput": "Geçersiz Giriş",
+        "invalidWaypointMessage": "Lütfen geçerli bir ara durak adı girin.\n\nÖrnekler: Taksim, Kadıköy, Central Park",
+        "addWaypointOptional": "Başka nerelere uğramak istersiniz? (İsteğe bağlı)",
+        "waypointsCount": "Ara Duraklar ({count})",
+        "previewRoute": "Rotayı Önizle",
+        "startSuffix": "(Başlangıç)",
+        "destinationSuffix": "(Hedef)",
+        "selectInterests": "İlgi Alanlarını Seç",
+        "routeErrorTitle": "Rota Hatası"
+    },
+    "savedRoutes": {
+        "title": "Kayıtlı Rotalarım",
+        "loading": "Rotalar yükleniyor...",
+        "sessionNotFound": "Oturum bulunamadı.",
+        "loadFailed": "Rotalar yüklenemedi.",
+        "loadError": "Rotalar yüklenirken bir hata oluştu.",
+        "deleteTitle": "Rotayı Sil",
+        "deleteMessage": "Bu rotayı arşivlemek istediğinize emin misiniz?",
+        "archive": "Arşivle",
+        "deleteError": "Rota silinirken bir hata oluştu.",
+        "unnamed": "İsimsiz Rota",
+        "distance": "mesafe",
+        "stops": "durak",
+        "empty": "Henüz kayıtlı rotanız yok",
+        "emptyDesc": "Rota planlayıcıyı kullanarak yeni rotalar oluşturun ve kaydedin.",
+        "createRoute": "Yeni Rota Oluştur"
+    },
+    "forgotPassword": {
+        "title": "Şifremi Unuttum",
+        "subtitle": "Email adresinizi girin, size şifre sıfırlama bağlantısı gönderelim.",
+        "emailPlaceholder": "Email Adresi",
+        "sendButton": "Sıfırlama Bağlantısı Gönder",
+        "connectionError": "Bağlantı hatası. Lütfen tekrar deneyin.",
+        "resentSuccess": "Şifre sıfırlama bağlantısı tekrar gönderildi.",
+        "successTitle": "Email Gönderildi!",
+        "successMessage": "Şifre sıfırlama bağlantısı {{email}} adresine gönderildi.",
+        "successHint": "Email'inizi kontrol edin ve şifrenizi sıfırlamak için bağlantıya tıklayın.",
+        "resend": "Tekrar Gönder",
+        "backToLogin": "Giriş Sayfasına Dön",
+        "backToLoginLink": "Giriş sayfasına dön"
     },
     "profileSummary": {
         "title": "Hazırsınız!",
