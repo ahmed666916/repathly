@@ -158,7 +158,30 @@ export async function getExperienceCards(): Promise<ApiResponse<ExperienceCard[]
         };
     }
 
-    return apiCall<ExperienceCard[]>('/experience-cards', 'GET');
+    const result = await apiCall<ExperienceCard[]>('/experience-cards', 'GET');
+
+    // Fallback: if API succeeds but returns empty array, use built-in cards
+    // This keeps the app working while the server DB is being seeded
+    if (result.success && Array.isArray(result.data) && result.data.length === 0) {
+        console.warn('[ExperienceCards] API returned empty array — using built-in card list');
+        return {
+            success: true,
+            message: 'Deneyim kartlari yuklendi',
+            data: MOCK_CARDS,
+        };
+    }
+
+    // Fallback: if API call fails entirely, use built-in cards
+    if (!result.success) {
+        console.warn('[ExperienceCards] API call failed — using built-in card list. Error:', result.message);
+        return {
+            success: true,
+            message: 'Deneyim kartlari yuklendi',
+            data: MOCK_CARDS,
+        };
+    }
+
+    return result;
 }
 
 /**
