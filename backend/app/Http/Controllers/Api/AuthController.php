@@ -116,7 +116,7 @@ class AuthController extends Controller
                     'id' => (string) $user->id,
                     'name' => $user->name,
                     'email' => $user->email,
-                    'profilePhoto' => $user->profile_photo,
+                    'profilePhoto' => $user->profile_photo ? url('storage/' . $user->profile_photo) : null,
                     'isEmailVerified' => $user->is_email_verified,
                     'authProvider' => $user->auth_provider,
                     'hasCompletedProfile' => $user->has_completed_profile,
