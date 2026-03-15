@@ -158,6 +158,8 @@
     },
     "routing": {
         "home": "Home",
+        "newRoute": "New Route",
+        "search": "Search",
         "interests": "Discover",
         "add": "Add",
         "favorites": "Favorites",

@@ -158,6 +158,8 @@
     },
     "routing": {
         "home": "Ana Sayfa",
+        "newRoute": "Yeni Rota",
+        "search": "Ara",
         "interests": "Keşfet",
         "add": "Ekle",
         "favorites": "Favoriler",

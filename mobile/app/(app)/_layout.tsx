@@ -1,8 +1,8 @@
 import React from 'react';
-import { View, TouchableOpacity, StyleSheet } from 'react-native';
-import { Tabs, useRouter } from 'expo-router';
+import { View, TouchableOpacity, StyleSheet, Text } from 'react-native';
+import { Tabs } from 'expo-router';
 import { FontAwesome5 } from '@expo/vector-icons';
-import { t } from '../../services/api/i18n';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 interface CustomTabBarProps {
   state: any;
@@ -11,24 +11,21 @@ interface CustomTabBarProps {
 }
 
 function CustomTabBar({ state, descriptors, navigation }: CustomTabBarProps) {
-  const router = useRouter();
+  const { t } = useLanguage();
 
-  const fabAction = () => {
-    router.push('/(app)/add');
+  const TAB_CONFIG: Record<string, { icon: string; label: () => string }> = {
+    index:    { icon: 'route',  label: () => t('routing.newRoute') },
+    interests:{ icon: 'search', label: () => t('routing.search') },
+    profile:  { icon: 'user',   label: () => t('profile.title') },
   };
 
   return (
     <View style={styles.tabBarContainer}>
       <View style={styles.tabBar}>
         {state.routes.map((route: any, index: number) => {
-          if (route.name === 'add') {
-            return (
-              <View key={index} style={styles.fabPlaceholder} />
-            );
-          }
+          const config = TAB_CONFIG[route.name];
+          if (!config) return null;
 
-          const { options } = descriptors[route.key];
-          const label = options.title !== undefined ? options.title : route.name;
           const isFocused = state.index === index;
 
           const onPress = () => {
@@ -37,25 +34,13 @@ function CustomTabBar({ state, descriptors, navigation }: CustomTabBarProps) {
               target: route.key,
               canPreventDefault: true,
             });
-
             if (!isFocused && !event.defaultPrevented) {
               navigation.navigate(route.name, route.params);
             }
           };
 
           const onLongPress = () => {
-            navigation.emit({
-              type: 'tabLongPress',
-              target: route.key,
-            });
-          };
-
-          const getIconName = (tabLabel: string): string => {
-            if (tabLabel === t('routing.home')) return 'home';
-            if (tabLabel === t('routing.interests')) return 'compass';
-            if (tabLabel === t('routing.savedRoutes')) return 'route';
-            if (tabLabel === t('profile.title')) return 'user';
-            return 'circle';
+            navigation.emit({ type: 'tabLongPress', target: route.key });
           };
 
           return (
@@ -63,27 +48,25 @@ function CustomTabBar({ state, descriptors, navigation }: CustomTabBarProps) {
               key={route.key}
               accessibilityRole="button"
               accessibilityState={isFocused ? { selected: true } : {}}
-              accessibilityLabel={options.tabBarAccessibilityLabel}
-              testID={options.tabBarTestID}
               onPress={onPress}
               onLongPress={onLongPress}
               style={styles.tabItem}
             >
-              <View style={isFocused ? styles.activeTab : null}>
+              <View style={isFocused ? styles.activeTabPill : styles.inactiveTab}>
                 <FontAwesome5
-                  name={getIconName(label)}
-                  size={22}
+                  name={config.icon}
+                  size={18}
                   color={isFocused ? '#fff' : '#8A95A0'}
                   solid={isFocused}
                 />
+                {isFocused && (
+                  <Text style={styles.activeTabLabel}>{config.label()}</Text>
+                )}
               </View>
             </TouchableOpacity>
           );
         })}
       </View>
-      <TouchableOpacity onPress={fabAction} style={styles.fab}>
-        <FontAwesome5 name="plus" size={24} color="#fff" />
-      </TouchableOpacity>
     </View>
   );
 }
@@ -93,31 +76,29 @@ export default function TabLayout() {
     <Tabs
       backBehavior="history"
       tabBar={props => <CustomTabBar {...props} />}
-      screenOptions={{
-        headerShown: false,
-      }}
+      screenOptions={{ headerShown: false }}
     >
-      {/* Visible tabs */}
-      <Tabs.Screen name="index" options={{ title: t('routing.home') }} />
-      <Tabs.Screen name="interests" options={{ title: t('routing.interests') }} />
-      <Tabs.Screen name="add" options={{ title: t('routing.add') }} />
-      <Tabs.Screen name="saved-routes" options={{ title: t('routing.savedRoutes') }} />
-      <Tabs.Screen name="profile" options={{ title: t('profile.title') }} />
+      {/* Visible bottom tabs */}
+      <Tabs.Screen name="index"     options={{ title: 'New Route' }} />
+      <Tabs.Screen name="interests" options={{ title: 'Search' }} />
+      <Tabs.Screen name="profile"   options={{ title: 'Profile' }} />
 
-      {/* Hidden screens — navigable but not in tab bar */}
-      <Tabs.Screen name="map" options={{ title: t('routing.map'), href: null }} />
-      <Tabs.Screen name="favorites" options={{ title: t('routing.favorites'), href: null }} />
-      <Tabs.Screen name="settings" options={{ title: t('settings.title'), href: null }} />
-      <Tabs.Screen name="recommendations" options={{ title: t('routing.recommendations'), href: null }} />
-      <Tabs.Screen name="route-planner" options={{ title: t('routing.routePlanner'), href: null }} />
-      <Tabs.Screen name="user-profile" options={{ title: t('profile.userProfile') ?? 'Profile', href: null }} />
-      <Tabs.Screen name="chats" options={{ title: t('chat.chats'), href: null }} />
-      <Tabs.Screen name="chat" options={{ title: t('chat.chat'), href: null }} />
-      <Tabs.Screen name="route-preview" options={{ title: t('routing.routePreview'), href: null }} />
-      <Tabs.Screen name="waypoints" options={{ title: t('routing.waypoints'), href: null }} />
-      <Tabs.Screen name="fullscreen-map" options={{ title: t('routing.fullscreenMap'), href: null }} />
-      <Tabs.Screen name="place-detail" options={{ title: 'Place', href: null }} />
-      <Tabs.Screen name="following" options={{ title: t('settings.following'), href: null }} />
+      {/* Hidden — navigable but not in tab bar */}
+      <Tabs.Screen name="add"           options={{ href: null }} />
+      <Tabs.Screen name="saved-routes"  options={{ href: null }} />
+      <Tabs.Screen name="map"           options={{ href: null }} />
+      <Tabs.Screen name="favorites"     options={{ href: null }} />
+      <Tabs.Screen name="settings"      options={{ href: null }} />
+      <Tabs.Screen name="recommendations" options={{ href: null }} />
+      <Tabs.Screen name="route-planner" options={{ href: null }} />
+      <Tabs.Screen name="user-profile"  options={{ href: null }} />
+      <Tabs.Screen name="chats"         options={{ href: null }} />
+      <Tabs.Screen name="chat"          options={{ href: null }} />
+      <Tabs.Screen name="route-preview" options={{ href: null }} />
+      <Tabs.Screen name="waypoints"     options={{ href: null }} />
+      <Tabs.Screen name="fullscreen-map" options={{ href: null }} />
+      <Tabs.Screen name="place-detail"  options={{ href: null }} />
+      <Tabs.Screen name="following"     options={{ href: null }} />
     </Tabs>
   );
 }
@@ -144,6 +125,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#2D3E50',
     alignItems: 'center',
     justifyContent: 'space-around',
+    paddingHorizontal: 8,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.1,
@@ -156,32 +138,23 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     height: '100%',
   },
-  activeTab: {
-    width: 50,
-    height: 50,
+  activeTabPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#10B981',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
     borderRadius: 25,
-    backgroundColor: '#10B981',
+  },
+  inactiveTab: {
     alignItems: 'center',
     justifyContent: 'center',
+    padding: 8,
   },
-  fab: {
-    position: 'absolute',
-    top: 0,
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: '#10B981',
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-    elevation: 8,
-    borderWidth: 4,
-    borderColor: '#fff',
-  },
-  fabPlaceholder: {
-    flex: 1,
+  activeTabLabel: {
+    color: '#fff',
+    fontSize: 13,
+    fontWeight: '700',
   },
 });
