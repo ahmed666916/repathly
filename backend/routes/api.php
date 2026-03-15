@@ -7,6 +7,16 @@ use App\Http\Controllers\Api\ExperienceCardController;
 use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\RouteController;
 
+// Serve uploaded files directly via API (fallback if storage symlink is not set up)
+Route::get('/files/{disk}/{filename}', function (string $disk, string $filename) {
+    $path = storage_path("app/public/{$disk}/{$filename}");
+    if (!file_exists($path)) {
+        abort(404);
+    }
+    $mimeType = mime_content_type($path);
+    return response()->file($path, ['Content-Type' => $mimeType]);
+})->where('filename', '.+');
+
 // Test endpoint for mobile connection
 Route::get('/test', function () {
     return response()->json([

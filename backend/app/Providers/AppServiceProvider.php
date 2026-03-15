@@ -19,6 +19,15 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // Auto-create storage symlink if it doesn't exist (avoids needing to run
+        // `php artisan storage:link` manually on fresh server deployments)
+        $publicStoragePath = public_path('storage');
+        if (!file_exists($publicStoragePath)) {
+            try {
+                \Artisan::call('storage:link');
+            } catch (\Exception $e) {
+                \Log::warning('Could not create storage symlink: ' . $e->getMessage());
+            }
+        }
     }
 }

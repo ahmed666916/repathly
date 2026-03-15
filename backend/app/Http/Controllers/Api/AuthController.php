@@ -426,8 +426,12 @@ class AuthController extends Controller
             $user->profile_photo = $path;
             $user->save();
 
+            // Use direct API file-serving URL (works regardless of storage:link status)
+            $filename = basename($path);
+            $photoUrl = url("api/files/profile-photos/{$filename}");
+
             return $this->success([
-                'profilePhoto' => url('storage/' . $path),
+                'profilePhoto' => $photoUrl,
             ], 'Fotoğraf başarıyla yüklendi.');
 
         } catch (\Illuminate\Validation\ValidationException $e) {
