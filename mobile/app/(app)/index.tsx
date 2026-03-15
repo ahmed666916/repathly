@@ -17,6 +17,7 @@ import { useRouter, useFocusEffect } from 'expo-router';
 import ProfileButton from '../../components/ProfileButton';
 import GOOGLE_MAPS_KEY from '../../constants/googleMapsKey';
 import { t } from '../../services/api/i18n';
+import { useAuthContext } from '../../contexts/AuthContext';
 
 interface PlaceSuggestion {
   place_id: string;
@@ -29,6 +30,7 @@ interface PlaceSuggestion {
 
 export default function HomeScreen() {
   const router = useRouter();
+  const { user } = useAuthContext();
   const [destination, setDestination] = useState('');
   const [suggestions, setSuggestions] = useState<PlaceSuggestion[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -135,7 +137,8 @@ export default function HomeScreen() {
         <View style={styles.profileButtonContainer}>
           <ProfileButton
             onPress={handleProfilePress}
-            userName={t('profile.user')}
+            userImage={user?.profilePhoto ?? undefined}
+            userName={user?.name ?? t('profile.user')}
             authProvider="google"
           />
         </View>
