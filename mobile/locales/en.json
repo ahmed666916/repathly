@@ -91,11 +91,16 @@
         "following": "Follow",
         "visitedPlaces": "Places Visited",
         "recentReviews": "Recent Reviews",
-        "favoriteExperiences": "Favorites",
+        "favoriteExperiences": "My Interests",
+        "myInterestsTitle": "Interest Cards",
+        "myInterestsSubtitle": "Cards you selected during onboarding",
+        "editInterests": "Edit Interests",
         "userNotFound": "User not found",
         "back": "Go Back",
         "editProfile": "Edit Profile",
-        "noReviewsYet": "No reviews yet."
+        "noReviewsYet": "No reviews yet.",
+        "noInterestsYet": "You haven't selected any interest cards yet.",
+        "addInterests": "Add Interests"
     },
     "settings": {
         "title": "Settings",

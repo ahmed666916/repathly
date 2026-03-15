@@ -91,11 +91,16 @@
         "following": "Takip",
         "visitedPlaces": "Gezdiği Yerler",
         "recentReviews": "Son Yorumlar",
-        "favoriteExperiences": "Favoriler",
+        "favoriteExperiences": "İlgi Alanlarım",
+        "myInterestsTitle": "İlgi Kartları",
+        "myInterestsSubtitle": "Kayıt sırasında seçtiğin kartlar",
+        "editInterests": "İlgileri Düzenle",
         "userNotFound": "Kullanıcı bulunamadı",
         "back": "Geri Dön",
         "editProfile": "Profili Düzenle",
-        "noReviewsYet": "Henüz yorum yok."
+        "noReviewsYet": "Henüz yorum yok.",
+        "noInterestsYet": "Henüz ilgi kartı seçmediniz.",
+        "addInterests": "İlgi Ekle"
     },
     "settings": {
         "title": "Ayarlar",

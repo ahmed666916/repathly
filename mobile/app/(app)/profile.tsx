@@ -219,46 +219,44 @@ export default function ProfileScreen() {
 
         {/* Tab Content */}
         {activeTab === 'favorites' ? (
-          <View style={styles.experienceWeightsContainer}>
+          <View style={styles.interestsContainer}>
             {experienceWeights.length === 0 ? (
               <View style={styles.emptyState}>
                 <FontAwesome5 name="compass" size={40} color="#ccc" />
-                <Text style={styles.emptyText}>
-                  {t('onboarding.selectCards')}
-                </Text>
+                <Text style={styles.emptyText}>{t('profile.noInterestsYet')}</Text>
                 <TouchableOpacity
                   style={styles.addExperiencesButton}
                   onPress={() => router.push('/(app)/settings/experience-weights')}
                 >
-                  <Text style={styles.addExperiencesText}>{t('taste_dna.editExperienceWeights')}</Text>
+                  <Text style={styles.addExperiencesText}>{t('profile.addInterests')}</Text>
                 </TouchableOpacity>
               </View>
             ) : (
-              experienceWeights.map((weight) => (
-                <View key={weight.cardId} style={styles.experienceWeightItem}>
-                  <View style={styles.experienceWeightInfo}>
-                    <Text style={styles.experienceWeightName}>
-                      {locale === 'tr'
-                        ? (weight.cardNameTr || weight.cardName || weight.cardSlug)
-                        : (weight.cardName || weight.cardNameTr || weight.cardSlug)}
-                    </Text>
-                    <View style={styles.weightDots}>
-                      {[1, 2, 3, 4, 5].map((dot) => (
-                        <View
-                          key={dot}
-                          style={[
-                            styles.weightDot,
-                            dot <= weight.weight && styles.weightDotActive,
-                          ]}
-                        />
-                      ))}
-                    </View>
-                  </View>
-                  <View style={[styles.weightBadge, { backgroundColor: getWeightColor(weight.weight) }]}>
-                    <Text style={styles.weightBadgeText}>{weight.weight}/5</Text>
-                  </View>
+              <>
+                <View style={styles.interestsHeader}>
+                  <Text style={styles.interestsTitle}>{t('profile.myInterestsTitle')}</Text>
+                  <TouchableOpacity
+                    onPress={() => router.push('/(app)/settings/experience-weights')}
+                  >
+                    <Text style={styles.editInterestsLink}>{t('profile.editInterests')}</Text>
+                  </TouchableOpacity>
                 </View>
-              ))
+                <Text style={styles.interestsSubtitle}>{t('profile.myInterestsSubtitle')}</Text>
+                <View style={styles.chipsWrap}>
+                  {experienceWeights.map((weight) => (
+                    <View
+                      key={weight.cardId}
+                      style={[styles.interestChip, { backgroundColor: getWeightColor(weight.weight) }]}
+                    >
+                      <Text style={styles.interestChipText}>
+                        {locale === 'tr'
+                          ? (weight.cardNameTr || weight.cardName || weight.cardSlug)
+                          : (weight.cardName || weight.cardNameTr || weight.cardSlug)}
+                      </Text>
+                    </View>
+                  ))}
+                </View>
+              </>
             )}
           </View>
         ) : (
@@ -542,7 +540,7 @@ const styles = StyleSheet.create({
   },
   addExperiencesButton: {
     marginTop: 16,
-    backgroundColor: '#007AFF',
+    backgroundColor: '#E91E63',
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 20,
@@ -552,50 +550,44 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     fontSize: 14,
   },
-  experienceWeightsContainer: {
+  interestsContainer: {
     paddingHorizontal: 20,
-    paddingBottom: 20,
+    paddingBottom: 30,
   },
-  experienceWeightItem: {
+  interestsHeader: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    alignItems: 'center',
+    marginBottom: 4,
   },
-  experienceWeightInfo: {
-    flex: 1,
-    marginRight: 12,
-  },
-  experienceWeightName: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 6,
-    textTransform: 'capitalize',
-  },
-  weightDots: {
-    flexDirection: 'row',
-    gap: 4,
-  },
-  weightDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#E5E7EB',
-  },
-  weightDotActive: {
-    backgroundColor: '#007AFF',
-  },
-  weightBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  weightBadgeText: {
-    color: '#fff',
-    fontSize: 12,
+  interestsTitle: {
+    fontSize: 16,
     fontWeight: '700',
+    color: '#333',
+  },
+  editInterestsLink: {
+    fontSize: 13,
+    color: '#E91E63',
+    fontWeight: '600',
+  },
+  interestsSubtitle: {
+    fontSize: 13,
+    color: '#999',
+    marginBottom: 16,
+  },
+  chipsWrap: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+  },
+  interestChip: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+  },
+  interestChipText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
   },
 });
