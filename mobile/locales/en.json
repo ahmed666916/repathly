@@ -238,5 +238,32 @@
         "tasteDnaLabel": "Travel Style",
         "startExploring": "Start Exploring",
         "cardCount": "{{count}} experience cards selected"
+    },
+    "routeSettings": {
+        "title": "Route Settings",
+        "subtitle": "Customize your journey before we build your route.",
+        "routeMode": "Route Mode",
+        "routeModeSubtitle": "How do you want to travel?",
+        "passThrough": "Pass-Through",
+        "passThroughDesc": "Fastest route, minimal stops",
+        "passThroughPhilosophy": "I want to reach my destination quickly.",
+        "casual": "Casual",
+        "casualDesc": "Balanced route with meaningful stops",
+        "casualPhilosophy": "I want to enjoy the journey too.",
+        "flexible": "Flexible",
+        "flexibleDesc": "Experience-first, destination is secondary",
+        "flexiblePhilosophy": "The journey matters more than the destination.",
+        "experiences": "Experience Preferences",
+        "experiencesSubtitle": "Which interests should shape this route? (All selected by default)",
+        "detourTolerance": "Max Extra Travel Time",
+        "detourToleranceSubtitle": "How much longer are you willing to travel for great stops?",
+        "stopDensity": "Number of Stops",
+        "stopDensitySubtitle": "How many places do you want to stop at?",
+        "fewStops": "Few",
+        "manyStops": "Many",
+        "scenicPriority": "Prioritize Scenic Roads",
+        "scenicPriorityDesc": "Choose routes with better views over faster alternatives.",
+        "continue": "Continue",
+        "noExperiences": "No interests saved yet. Complete your profile first."
     }
 }

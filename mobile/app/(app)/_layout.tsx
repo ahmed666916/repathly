@@ -90,7 +90,8 @@ export default function TabLayout() {
       <Tabs.Screen name="favorites"     options={{ href: null }} />
       <Tabs.Screen name="settings"      options={{ href: null }} />
       <Tabs.Screen name="recommendations" options={{ href: null }} />
-      <Tabs.Screen name="route-planner" options={{ href: null }} />
+      <Tabs.Screen name="route-planner"  options={{ href: null }} />
+      <Tabs.Screen name="route-settings" options={{ href: null }} />
       <Tabs.Screen name="user-profile"  options={{ href: null }} />
       <Tabs.Screen name="chats"         options={{ href: null }} />
       <Tabs.Screen name="chat"          options={{ href: null }} />

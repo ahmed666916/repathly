@@ -54,9 +54,9 @@ export default function HomeScreen() {
     // Global'e kaydet
     (global as any).routeDestination = destination.trim();
 
-    // Ara nokta sayfasına git
+    // Önce rota ayarları sayfasına git
     router.push({
-      pathname: '/(app)/waypoints',
+      pathname: '/(app)/route-settings',
       params: { destination: destination.trim() }
     });
   };

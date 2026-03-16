@@ -238,5 +238,32 @@
         "tasteDnaLabel": "Seyahat Stili",
         "startExploring": "Keşfetmeye Başla",
         "cardCount": "{{count}} deneyim kartı seçildi"
+    },
+    "routeSettings": {
+        "title": "Rota Ayarları",
+        "subtitle": "Rotanızı oluşturmadan önce yolculuğunuzu özelleştirin.",
+        "routeMode": "Rota Modu",
+        "routeModeSubtitle": "Nasıl seyahat etmek istiyorsunuz?",
+        "passThrough": "Hızlı Geçiş",
+        "passThroughDesc": "Minimum durakla en hızlı rota",
+        "passThroughPhilosophy": "Hedefe hızlıca ulaşmak istiyorum.",
+        "casual": "Rahat Seyahat",
+        "casualDesc": "Anlamlı duraklar içeren dengeli rota",
+        "casualPhilosophy": "Yolculuğun tadını da çıkarmak istiyorum.",
+        "flexible": "Esnek Keşif",
+        "flexibleDesc": "Deneyim öncelikli, hedef ikincil",
+        "flexiblePhilosophy": "Yolculuk, varış noktasından daha önemli.",
+        "experiences": "Deneyim Tercihleri",
+        "experiencesSubtitle": "Bu rotayı hangi ilgi alanları şekillendirmeli? (Varsayılan: tümü seçili)",
+        "detourTolerance": "Maksimum Ek Süre",
+        "detourToleranceSubtitle": "Harika duraklar için ne kadar daha uzun yolculuk yapmaya razısınız?",
+        "stopDensity": "Durak Sayısı",
+        "stopDensitySubtitle": "Kaç yerde durmak istiyorsunuz?",
+        "fewStops": "Az",
+        "manyStops": "Çok",
+        "scenicPriority": "Manzaralı Yolları Tercih Et",
+        "scenicPriorityDesc": "Daha hızlı alternatiflere karşın güzel manzaralı yolları tercih et.",
+        "continue": "Devam Et",
+        "noExperiences": "Henüz ilgi alanı kaydedilmedi. Önce profilinizi tamamlayın."
     }
 }
