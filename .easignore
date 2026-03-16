@@ -1,0 +1,3 @@
+# Exclude the entire backend from EAS Build archives.
+# EAS only needs the mobile/ directory.
+backend/
