@@ -13,22 +13,22 @@ import {
   TextInput,
   ActivityIndicator,
   Alert,
+  Modal,
 } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../../hooks/useAuth';
-import { getToken } from '../../utils/secureStorage';
-import { checkOnboardingStatus } from '../../services/api/experienceCards';
 import { t } from '../../services/api/i18n';
 
 export default function LoginScreen() {
   const router = useRouter();
-  const { login, isLoading } = useAuth();
+  const { login } = useAuth();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {};
@@ -50,50 +50,20 @@ export default function LoginScreen() {
   const handleLogin = async () => {
     if (!validateForm()) return;
 
+    setIsSubmitting(true);
     const result = await login(email.trim(), password);
 
     if (result.success) {
-      // Route to onboarding resolver which will determine the correct next step
+      // Keep isSubmitting=true — the overlay stays visible until navigation
+      // unmounts this screen, preventing the blank white flash.
       router.replace('/(auth)/onboarding-resolver');
     } else {
+      setIsSubmitting(false);
       Alert.alert(t('common.error'), result.message);
     }
   };
 
   const handleSocialSignIn = () => router.replace('/(app)');
-
-  // TEST BACKEND CONNECTION - ADD THIS
-  const testBackendConnection = async () => {
-    try {
-      console.log('🔧 Testing connection to: http://37.60.245.127:8080/api/test');
-
-      const response = await fetch('http://37.60.245.127:8080/api/test', {
-        method: 'GET',
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-        },
-      });
-
-      console.log('✅ Response status:', response.status);
-      const data = await response.json();
-      console.log('✅ Response data:', data);
-
-      Alert.alert(
-        'Backend Çalışıyor! ✅',
-        `${data.message}\n\nZaman: ${data.timestamp}`,
-        [{ text: 'Tamam' }]
-      );
-    } catch (error) {
-      console.error('❌ Connection error:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Bilinmeyen bir hata oluştu';
-      Alert.alert(
-        'Bağlantı Hatası ❌',
-        `Hata: ${errorMessage}\n\nKontrol edin:\n• Laravel çalışıyor mu?\n• Aynı Wi-Fi'de misiniz?\n• IP doğru mu?`,
-        [{ text: 'Tamam' }]
-      );
-    }
-  };
 
 
 
@@ -178,15 +148,11 @@ export default function LoginScreen() {
 
               {/* Login Button */}
               <TouchableOpacity
-                style={[styles.loginButton, isLoading && styles.disabledButton]}
+                style={[styles.loginButton, isSubmitting && styles.disabledButton]}
                 onPress={handleLogin}
-                disabled={isLoading}
+                disabled={isSubmitting}
               >
-                {isLoading ? (
-                  <ActivityIndicator color="#fff" />
-                ) : (
-                  <Text style={styles.loginButtonText}>Giriş Yap</Text>
-                )}
+                <Text style={styles.loginButtonText}>{t('auth.login')}</Text>
               </TouchableOpacity>
             </View>
 
@@ -208,16 +174,6 @@ export default function LoginScreen() {
                 <Text style={styles.socialButtonText}>Apple</Text>
               </TouchableOpacity>
             </View>
-
-            {/* TEST BUTTON - ADD THIS */}
-            <TouchableOpacity
-              style={styles.testButton}
-              onPress={testBackendConnection}
-            >
-              <Text style={styles.testButtonText}>🔧 Test Backend</Text>
-            </TouchableOpacity>
-
-
 
 
 
@@ -241,6 +197,17 @@ export default function LoginScreen() {
           </ScrollView>
         </KeyboardAvoidingView>
       </View>
+
+      {/* Full-screen loading overlay — prevents blank white screen during navigation */}
+      <Modal visible={isSubmitting} transparent animationType="fade" statusBarTranslucent>
+        <View style={styles.loadingOverlay}>
+          <View style={styles.loadingCard}>
+            <ActivityIndicator size="large" color="#E91E63" />
+            <Text style={styles.loadingTitle}>{t('auth.loggingIn')}</Text>
+            <Text style={styles.loadingSubtitle}>{t('auth.loggingInSubtitle')}</Text>
+          </View>
+        </View>
+      </Modal>
     </ImageBackground>
   );
 }
@@ -412,18 +379,36 @@ const styles = StyleSheet.create({
     width: 20,
     height: 20,
   },
-  testButton: {
-    backgroundColor: 'rgba(99, 102, 241, 0.8)',
-    borderRadius: 12,
-    paddingVertical: 12,
+  loadingOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 20,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.3)',
   },
-  testButtonText: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: '600',
+  loadingCard: {
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    paddingVertical: 36,
+    paddingHorizontal: 40,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.2,
+    shadowRadius: 16,
+    elevation: 10,
+    minWidth: 220,
+  },
+  loadingTitle: {
+    marginTop: 20,
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#1a1a1a',
+  },
+  loadingSubtitle: {
+    marginTop: 8,
+    fontSize: 13,
+    color: '#666',
+    textAlign: 'center',
+    lineHeight: 18,
   },
 });

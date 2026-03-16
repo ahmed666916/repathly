@@ -24,6 +24,8 @@
     },
     "auth": {
         "login": "Login",
+        "loggingIn": "Logging in...",
+        "loggingInSubtitle": "Please wait while we sign you in.",
         "register": "Register",
         "email": "Email",
         "password": "Password",

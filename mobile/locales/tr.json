@@ -24,6 +24,8 @@
     },
     "auth": {
         "login": "Giriş Yap",
+        "loggingIn": "Giriş yapılıyor...",
+        "loggingInSubtitle": "Lütfen bekleyin, hesabınıza giriş yapılıyor.",
         "register": "Kayıt Ol",
         "email": "E-posta",
         "password": "Şifre",
