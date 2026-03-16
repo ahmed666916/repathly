@@ -1,0 +1,6 @@
+backend
+docs
+database
+node_modules
+.git
+.gitignore
